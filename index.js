@@ -25,8 +25,11 @@ instance.prototype.updateConfig = function(config) {
 }
 
 instance.prototype.init = function() {
-	console.log("Init YT_module")
 	var self = this;
+
+	self.log('debug', 'Initializing YT module');
+	self.status(self.STATUS_WARN, 'Initializing');
+
 	var yt_dir_path       = self.config.path_to_yt_directory;
 	var secrets_file_path = yt_dir_path + "client-secret.json";
 	var token_path        = yt_dir_path + "token.json";
@@ -36,88 +39,88 @@ instance.prototype.init = function() {
 	if (yt_dir_path) {
 		fs.readFile(secrets_file_path, (err, config_file) => {
 			if (err) {
-				self.log("warn", "Cannot load app OAuth credentials, " + err);
-				self.status(self.STATUS_ERROR, "Cannot load app OAuth credentials, " + err);
+				self.log('warn', 'Cannot load app OAuth credentials: ' + err);
+				self.status(self.STATUS_ERROR, 'Cannot load app OAuth credentials: ' + err);
 				return;
 			}
 
-			var config_json   = JSON.parse(config_file);
-			var client_id     = config_json["web"]["client_id"];
-			var client_secret = config_json["web"]["client_secret"];
-			console.log("client_seceret: " + client_secret);
-			var redirect_url  = config_json["web"]["redirect_uris"][0];
+			try {
+				var config_json   = JSON.parse(config_file);
+				var client_id     = config_json["web"]["client_id"];
+				var client_secret = config_json["web"]["client_secret"];
+				var redirect_url  = config_json["web"]["redirect_uris"][0];
 
-			self.yt_api_handler = new Youtube_api_handler(client_id, client_secret, redirect_url, scopes, token_path);
-			if (fs.existsSync(token_path)) {
-				if (fs.lstatSync(token_path).isFile()) {
-					console.log("Token file (token.json) is provided");
+				self.yt_api_handler = new Youtube_api_handler(client_id, client_secret, redirect_url, scopes, token_path);
 
-					fs.readFile(token_path, (error, token) => {
-						if (error) {
-							let promise = self.yt_api_handler.oauth_login()
-							promise.then(acces_credentials => {
-								self.yt_api_handler.oauth2client.credentials = acces_credentials;
-								self.yt_api_handler.create_yt_service();
-								let get_broadcasts = self.yt_api_handler.get_all_broadcasts();
-								get_broadcasts.then(streams_dict => {
-									self.yt_api_handler.streams_dict = streams_dict;
-									console.log(self.yt_api_handler.streams_dict);
-									self.actions();
-								});
-								get_broadcasts.catch(console.error);
-							});
-							promise.catch(console.error);
-						} else {
-							self.yt_api_handler.oauth2client.credentials = JSON.parse(token);
-							self.yt_api_handler.create_yt_service();
-							let get_broadcasts = self.yt_api_handler.get_all_broadcasts();
-							get_broadcasts.then(streams_dict => {
-								self.yt_api_handler.streams_dict = streams_dict;
-								console.log(self.yt_api_handler.streams_dict);
-								self.actions();
-							});
-							get_broadcasts.catch(console.error);
-						}
-					});
-				} else {
-					console.log("Token file (token.json) cannot be used, you need to sign in")
-					let promise = self.yt_api_handler.oauth_login()
-					promise.then(acces_credentials => {
-						self.yt_api_handler.oauth2client.credentials = acces_credentials;
-						self.yt_api_handler.create_yt_service();
-						let get_broadcasts = self.yt_api_handler.get_all_broadcasts();
-						get_broadcasts.then(streams_dict => {
-							self.yt_api_handler.streams_dict = streams_dict;
-							console.log(self.yt_api_handler.streams_dict);
-							self.actions();
-						});
-						get_broadcasts.catch(console.error);
-					});
-					promise.catch(console.error);
-				}
-			} else {
-				console.log("Token file (token.json) does not exist, you need to sign in.")
-				let promise = self.yt_api_handler.oauth_login()
-					promise.then(acces_credentials => {
-						self.yt_api_handler.oauth2client.credentials = acces_credentials;
-						self.yt_api_handler.create_yt_service();
-						let get_broadcasts = self.yt_api_handler.get_all_broadcasts();
-						get_broadcasts.then(streams_dict => {
-							self.yt_api_handler.streams_dict = streams_dict;
-							console.log(self.yt_api_handler.streams_dict);
-							self.actions();
-						});
-						get_broadcasts.catch(console.error);
-					});
-					promise.catch(console.error);
+			} catch (err) {
+				self.log('warn', 'Cannot parse app OAuth credentials: ' + err);
+				self.status(self.STATUS_ERROR, 'Cannot parse app OAuth credentials: ' + err);
+				return;
 			}
+
+			fs.readFile(token_path, (err, token) => {
+				var credentials;
+
+				if (!err) {
+					try {
+						credentials = JSON.parse(token);
+					} catch (err2) {
+						err = err2;
+					}
+				}
+
+				if (!err) {
+					self.log('debug', 'Token file (token.json) loaded, reusing credentials');
+					self.initApiDirectly(credentials);
+				} else {
+					self.log('info', 'Cannot load token file (token.json) (' + err + '), opening app authorization page...');
+					self.initApiWithLogin();
+				}
+			});
 
 		});
 
 	} else {
-		console.error("Path to YouTube operating directory is not provided");
+		self.log('warn', 'Module not configured, path to YouTube operating directory is not provided');
+		self.status(self.STATUS_ERROR, 'Module not configured, path to YouTube operating directory is not provided');
 	}
 };
+
+instance.prototype.initApiWithLogin = function() {
+	var self = this;
+
+	self.log('debug', 'Starting OAuth login...');
+
+	self.yt_api_handler.oauth_login().then( credentials => {
+		self.log('debug', 'OAuth login successful');
+		self.initApiDirectly(credentials);
+
+	}).catch( err => {
+		self.log('warn', 'OAuth login failed: ' + err);
+		self.status(self.STATUS_ERROR, 'OAuth login failed: ' + err);
+	});
+}
+
+instance.prototype.initApiDirectly = function(credentials) {
+	var self = this;
+
+	self.yt_api_handler.oauth2client.credentials = credentials;
+	self.yt_api_handler.create_yt_service();
+
+	self.yt_api_handler.get_all_broadcasts().then( streams_dict => {
+		self.yt_api_handler.streams_dict = streams_dict;
+
+		self.log('debug', 'YT broadcast query successful: ' + JSON.stringify(self.yt_api_handler.streams_dict));
+		self.actions();
+
+		self.log('info', 'YT Module initialized successfully');
+		self.status(self.STATUS_OK);
+
+	}).catch( err => {
+		self.log('warn', 'YT broadcast query failed: ' + err);
+		self.status(self.STATUS_ERROR, 'YT Broadcast query failed: ' + err);
+	});
+}
 
 instance.prototype.destroy = function() {
 	var self = this;
