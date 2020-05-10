@@ -178,26 +178,23 @@ instance.prototype.actions = function(system) {
 
 instance.prototype.action = function(action) {
 	var self = this;
+
 	if (action.action == "start_stream") {
-		streams_starter = self.yt_api_handler.set_broadcast_live(action.options["stream_to_start"]);
-		streams_starter.then(response => {
+		self.yt_api_handler.set_broadcast_live(
+			action.options["stream_to_start"]
+		).then( response => {
 			self.log("info", "YouTube stream was set live successfully");
-			return;
-		});
-		streams_starter.catch(err => {
+		}).catch( err => {
 			self.log("debug", "Error occured during stream state actualization, details: " + err);
-			return;
 		});
-	}
-	else if (action.action == "stop_stream") {
-		streams_stopper = self.yt_api_handler.set_broadcast_finished(action.options["stream_to_stop"]);
-		streams_stopper.then(response => {
+
+	} else if (action.action == "stop_stream") {
+		self.yt_api_handler.set_broadcast_finished(
+			action.options["stream_to_stop"]
+		).then( response => {
 			self.log("info", "YouTube stream finished successfully");
-			return;
-		});
-		streams_stopper.catch(err => {
+		}).catch( err => {
 			self.log("debug","Error occured during finishing a stream, details: " + err);
-			return;
 		});
 	}
 }
