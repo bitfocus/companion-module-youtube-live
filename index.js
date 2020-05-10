@@ -277,10 +277,10 @@ class Youtube_api_handler {
 						"privacyStatus" : privacy_status
 					}
 				}
-			}).then(function(response) {
+			}).then( response => {
 				console.log("Broadcast created successfully ; details: " + response);
 				resolve(response);
-			}, function(err) {
+			}, err => {
 				console.log("Error during execution of create live broadcast action ; details: " + err);
 				reject(err);
 			})
@@ -294,13 +294,13 @@ class Youtube_api_handler {
 				"part" : "snippet, contentDetails, status",
 				"broadcastType" : "all",
 				"mine" : true
-			}).then(function(response) {
+			}).then( response => {
 				let streams_dict = {};
-				response.data.items.forEach(function(item, index) {
+				response.data.items.forEach( (item, index) => {
 					streams_dict[item.id] = item.snippet.title;
 				})
 				resolve(streams_dict);
-			}, function(err) {
+			}, err => {
 				Console.log("Error retreaving list of streams")
 				reject(err);
 			});
@@ -313,9 +313,9 @@ class Youtube_api_handler {
 				"part" : "snippet, contentDetails, status",
 				"id" : id,
 				"broadcastStatus" : "live"
-			}).then(function(response) {
+			}).then( response => {
 				resolve(response);
-			}, function(err) {
+			}, err => {
 				reject(err);
 			});
 		});
@@ -327,9 +327,9 @@ class Youtube_api_handler {
 				"part" : "snippet, contentDetails, status",
 				"id" : id,
 				"broadcastStatus" : "complete"
-			}).then(function(response) {
+			}).then( response => {
 				resolve(response);
-			}, function(err) {
+			}, err => {
 				reject(err);
 			});
 		});
