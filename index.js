@@ -16,7 +16,7 @@ function instance(system, id, config) {
 	return self;
 };
 
-instance.prototype.updateConfig = function(config){
+instance.prototype.updateConfig = function(config) {
 	var self = this;
 	self.config = config;
 	console.log("Update config YT_module")
@@ -24,7 +24,7 @@ instance.prototype.updateConfig = function(config){
 	self.init();
 }
 
-instance.prototype.init = function(){
+instance.prototype.init = function() {
 	console.log("Init YT_module")
 	var self = this;
 	var yt_dir_path = self.config.path_to_yt_directory;
@@ -43,8 +43,8 @@ instance.prototype.init = function(){
 			var redirect_url = config_json["web"]["redirect_uris"][0];
 
 			self.yt_api_handler = new Youtube_api_handler(client_id, client_secret, redirect_url, scopes, token_path);
-			if (fs.existsSync(token_path)){
-				if (fs.lstatSync(token_path).isFile()){
+			if (fs.existsSync(token_path)) {
+				if (fs.lstatSync(token_path).isFile()) {
 					console.log("Token file (token.json) is provided");
 
 					fs.readFile(token_path, (error, token) => {
@@ -114,13 +114,13 @@ instance.prototype.init = function(){
 	}
 };
 
-instance.prototype.destroy = function(){
+instance.prototype.destroy = function() {
 	var self = this;
 	self.stream_to_start_list = [];
 	self.stream_to_stop_list = [];
 };
 
-instance.prototype.config_fields = function(){
+instance.prototype.config_fields = function() {
 	var self = this;
 	return [
 		{
@@ -140,15 +140,15 @@ instance.prototype.config_fields = function(){
 	]
 };
 
-instance.prototype.actions = function(system){
+instance.prototype.actions = function(system) {
 	var self = this;
 
 	self.streams_list_to_display = [];
 
-	if (self.yt_api_handler !== undefined){
-		for (var key in self.yt_api_handler.streams_dict){
+	if (self.yt_api_handler !== undefined) {
+		for (var key in self.yt_api_handler.streams_dict) {
 			self.streams_list_to_display.push({id : key, label : self.yt_api_handler.streams_dict[key]});
-			}
+		}
 	}
 
 	self.setActions({
@@ -174,9 +174,9 @@ instance.prototype.actions = function(system){
 	self.system.emit('instance_actions', self.id, self.setActions);
 };
 
-instance.prototype.action = function(action){
+instance.prototype.action = function(action) {
 	var self = this;
-	if (action.action == "start_stream"){
+	if (action.action == "start_stream") {
 		streams_starter = self.yt_api_handler.set_broadcast_live(action.options["stream_to_start"]);
 		streams_starter.then(response => {
 			self.log("info", "YouTube stream was set live successfully");
@@ -187,7 +187,7 @@ instance.prototype.action = function(action){
 			return;
 		});
 	}
-	else if (action.action == "stop_stream"){
+	else if (action.action == "stop_stream") {
 		streams_stopper = self.yt_api_handler.set_broadcast_finished(action.options["stream_to_stop"]);
 		streams_stopper.then(response => {
 			self.log("info", "YouTube stream finished successfully");
@@ -227,7 +227,7 @@ class Youtube_api_handler {
 			  .createServer(async (req, res) => {
 				try {
 					console.log(req.url);
-					if (req.url.indexOf("code=") !== -1){
+					if (req.url.indexOf("code=") !== -1) {
 						const qs = new url.URL(req.url, 'http://localhost:3000')
 						.searchParams;
 						console.log(qs)
@@ -287,7 +287,7 @@ class Youtube_api_handler {
 			})
 		});
 	}
-	async create_live_stream(){}
+	async create_live_stream() {}
 
 	async get_all_broadcasts() {
 		return new Promise((resolve, reject) => {
@@ -314,9 +314,9 @@ class Youtube_api_handler {
 				"part" : "snippet, contentDetails, status",
 				"id" : id,
 				"broadcastStatus" : "live"
-			}).then(function(response){
+			}).then(function(response) {
 				resolve(response);
-			}, function(err){
+			}, function(err) {
 				reject(err);
 			});
 		});
@@ -328,7 +328,7 @@ class Youtube_api_handler {
 				"part" : "snippet, contentDetails, status",
 				"id" : id,
 				"broadcastStatus" : "complete"
-			}).then(function(response){
+			}).then(function(response) {
 				resolve(response);
 			}, function(err) {
 				reject(err);
