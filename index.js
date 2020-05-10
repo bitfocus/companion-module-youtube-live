@@ -1,10 +1,10 @@
 var instance_skel = require("../../instance_skel");
-const {google} = require("googleapis");
-var fs = require("fs");
-const url = require("url");
-const http = require("http");
-const opn = require("opn");
-const destroyer = require('server-destroy');
+const {google}    = require("googleapis");
+var fs            = require("fs");
+const url         = require("url");
+const http        = require("http");
+const opn         = require("opn");
+const destroyer   = require('server-destroy');
 
 function instance(system, id, config) {
 	var self = this;
@@ -27,20 +27,20 @@ instance.prototype.updateConfig = function(config) {
 instance.prototype.init = function() {
 	console.log("Init YT_module")
 	var self = this;
-	var yt_dir_path = self.config.path_to_yt_directory;
+	var yt_dir_path       = self.config.path_to_yt_directory;
 	var secrets_file_path = yt_dir_path + "client-secret.json";
-	var token_path = yt_dir_path + "token.json";
+	var token_path        = yt_dir_path + "token.json";
 
 	var scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"];
 
 	if (yt_dir_path) {
 		if (fs.lstatSync(secrets_file_path).isFile()) {
-			var config_file = fs.readFileSync(secrets_file_path);
-			var config_json = JSON.parse(config_file);
-			var client_id = config_json["web"]["client_id"];
+			var config_file   = fs.readFileSync(secrets_file_path);
+			var config_json   = JSON.parse(config_file);
+			var client_id     = config_json["web"]["client_id"];
 			var client_secret = config_json["web"]["client_secret"];
 			console.log("client_seceret: " + client_secret);
-			var redirect_url = config_json["web"]["redirect_uris"][0];
+			var redirect_url  = config_json["web"]["redirect_uris"][0];
 
 			self.yt_api_handler = new Youtube_api_handler(client_id, client_secret, redirect_url, scopes, token_path);
 			if (fs.existsSync(token_path)) {
@@ -117,7 +117,7 @@ instance.prototype.init = function() {
 instance.prototype.destroy = function() {
 	var self = this;
 	self.stream_to_start_list = [];
-	self.stream_to_stop_list = [];
+	self.stream_to_stop_list  = [];
 };
 
 instance.prototype.config_fields = function() {
@@ -202,12 +202,12 @@ instance.prototype.action = function(action) {
 
 class Youtube_api_handler {
 	constructor(client_id, client_secret, redirect_url, scopes, token_path) {
-		this.streams_dict = {};
-		this.client_id = client_id;
+		this.streams_dict  = {};
+		this.client_id     = client_id;
 		this.client_secret = client_secret;
-		this.redirect_url = redirect_url;
-		this.scopes = scopes;
-		this.token_path = token_path;
+		this.redirect_url  = redirect_url;
+		this.scopes        = scopes;
+		this.token_path    = token_path;
 		this.oauth2client = new google.auth.OAuth2(
 			this.client_id,
 			this.client_secret,
