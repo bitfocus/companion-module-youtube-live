@@ -178,26 +178,23 @@ instance.prototype.actions = function(system) {
 
 instance.prototype.action = function(action) {
 	var self = this;
+
 	if (action.action == "start_stream") {
-		streams_starter = self.yt_api_handler.set_broadcast_live(action.options["stream_to_start"]);
-		streams_starter.then(response => {
+		self.yt_api_handler.set_broadcast_live(
+			action.options["stream_to_start"]
+		).then( response => {
 			self.log("info", "YouTube stream was set live successfully");
-			return;
-		});
-		streams_starter.catch(err => {
+		}).catch( err => {
 			self.log("debug", "Error occured during stream state actualization, details: " + err);
-			return;
 		});
-	}
-	else if (action.action == "stop_stream") {
-		streams_stopper = self.yt_api_handler.set_broadcast_finished(action.options["stream_to_stop"]);
-		streams_stopper.then(response => {
+
+	} else if (action.action == "stop_stream") {
+		self.yt_api_handler.set_broadcast_finished(
+			action.options["stream_to_stop"]
+		).then( response => {
 			self.log("info", "YouTube stream finished successfully");
-			return;
-		});
-		streams_stopper.catch(err => {
+		}).catch( err => {
 			self.log("debug","Error occured during finishing a stream, details: " + err);
-			return;
 		});
 	}
 }
@@ -280,10 +277,10 @@ class Youtube_api_handler {
 						"privacyStatus" : privacy_status
 					}
 				}
-			}).then(function(response) {
+			}).then( response => {
 				console.log("Broadcast created successfully ; details: " + response);
 				resolve(response);
-			}, function(err) {
+			}, err => {
 				console.log("Error during execution of create live broadcast action ; details: " + err);
 				reject(err);
 			})
@@ -297,13 +294,13 @@ class Youtube_api_handler {
 				"part" : "snippet, contentDetails, status",
 				"broadcastType" : "all",
 				"mine" : true
-			}).then(function(response) {
+			}).then( response => {
 				let streams_dict = {};
-				response.data.items.forEach(function(item, index) {
+				response.data.items.forEach( (item, index) => {
 					streams_dict[item.id] = item.snippet.title;
 				})
 				resolve(streams_dict);
-			}, function(err) {
+			}, err => {
 				Console.log("Error retreaving list of streams")
 				reject(err);
 			});
@@ -316,9 +313,9 @@ class Youtube_api_handler {
 				"part" : "snippet, contentDetails, status",
 				"id" : id,
 				"broadcastStatus" : "live"
-			}).then(function(response) {
+			}).then( response => {
 				resolve(response);
-			}, function(err) {
+			}, err => {
 				reject(err);
 			});
 		});
@@ -330,9 +327,9 @@ class Youtube_api_handler {
 				"part" : "snippet, contentDetails, status",
 				"id" : id,
 				"broadcastStatus" : "complete"
-			}).then(function(response) {
+			}).then( response => {
 				resolve(response);
-			}, function(err) {
+			}, err => {
 				reject(err);
 			});
 		});
