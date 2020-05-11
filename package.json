@@ -14,7 +14,7 @@
 	"product": "YouTube",
 	"shortname": "YT",
 	"author": "Matěj Melichna",
-	"license": "ISC",
+	"license": "MIT",
 	"dependencies": {
 		"googleapis": "^48.0.0",
 		"server-destroy": "^1.0.1"
