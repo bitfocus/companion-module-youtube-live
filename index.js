@@ -5,6 +5,7 @@ const url         = require("url");
 const http        = require("http");
 const opn         = require("opn");
 const destroyer   = require('server-destroy');
+const path        = require('path');
 
 function instance(system, id, config) {
 	var self = this;
@@ -30,9 +31,9 @@ instance.prototype.init = function() {
 	self.log('debug', 'Initializing YT module');
 	self.status(self.STATUS_WARN, 'Initializing');
 
-	var yt_dir_path       = self.config.path_to_yt_directory;
-	var secrets_file_path = yt_dir_path + "client-secret.json";
-	var token_path        = yt_dir_path + "token.json";
+	var yt_dir_path       = path.resolve(self.config.path_to_yt_directory);
+	var secrets_file_path = path.join(yt_dir_path, "client-secret.json");
+	var token_path        = path.join(yt_dir_path, "token.json");
 
 	var scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"];
 
@@ -131,13 +132,6 @@ instance.prototype.destroy = function() {
 instance.prototype.config_fields = function() {
 	var self = this;
 	return [
-		{
-			type: 'text',
-			id: 'info',
-			width: 12,
-			label: 'Information',
-			value: "The path to the folder should contain / or \\ at the end. (Depends on your system -> Unix: / ; Win: \\)"
-		},
 		{
 			type: "textinput",
 			id: "path_to_yt_directory",
