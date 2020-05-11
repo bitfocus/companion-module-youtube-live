@@ -118,6 +118,10 @@ instance.prototype.destroy = function() {
 	var self = this;
 	self.stream_to_start_list = [];
 	self.stream_to_stop_list  = [];
+
+	if (self.yt_api_handler !== undefined) {
+		self.yt_api_handler.destroy();
+	}
 };
 
 instance.prototype.config_fields = function() {
@@ -234,6 +238,7 @@ class Youtube_api_handler {
 		this.redirect_url  = redirect_url;
 		this.scopes        = scopes;
 		this.log           = log;
+		this.server        = null;
 		this.oauth2client = new google.auth.OAuth2(
 			this.client_id,
 			this.client_secret,
@@ -242,8 +247,21 @@ class Youtube_api_handler {
 		google.options({auth: this.oauth2client});
 	}
 
+	destroy() {
+		if (this.server !== null) {
+			this.log('debug', 'destroying orphaned OAuth callback server');
+			this.server.destroy();
+			this.server = null;
+		}
+	}
+
 	async oauth_login() {
 		return new Promise((resolve, reject) => {
+			if (this.server !== null) {
+				this.log('warn', 'Cannot start new OAuth authorization - already running');
+				reject(new Error('OAuth authorization server is already running'));
+			}
+
 			// grab the url that will be used for authorization
 			const authorizeUrl = this.oauth2client.generateAuthUrl({
 			  access_type: 'offline',
@@ -251,7 +269,7 @@ class Youtube_api_handler {
 			});
 
 			// start the callback server
-			const server = http.createServer(async (req, res) => {
+			this.server = http.createServer(async (req, res) => {
 				try {
 					const address = url.parse(req.url, true);
 					const query   = address.query;
@@ -265,7 +283,8 @@ class Youtube_api_handler {
 						res.writeHead(200, {'Content-Type': 'text/plain'});
 						res.end('Authorization successful! You can now close this window.');
 
-						server.destroy();
+						this.server.destroy();
+						this.server = null;
 						resolve(tokens);
 
 					} else {
@@ -285,7 +304,7 @@ class Youtube_api_handler {
 				this.log('debug', 'Opening browser at ' + authorizeUrl);
 				opn(authorizeUrl, {wait: false}).then(cp => cp.unref());
 			});
-			destroyer(server);
+			destroyer(this.server);
 		});
 	}
 
