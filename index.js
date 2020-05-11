@@ -249,35 +249,45 @@ class Youtube_api_handler {
 			  access_type: 'offline',
 			  scope: this.scopes.join(' '),
 			});
-			this.log('debug', 'Authorization request URL: ' + authorizeUrl);
-			const server = http
-			  .createServer(async (req, res) => {
+
+			// start the callback server
+			const server = http.createServer(async (req, res) => {
 				try {
-					this.log('debug', 'Received callback: ' + req.url);
-					if (req.url.indexOf("code=") !== -1) {
-						const qs = new url.URL(req.url, 'http://localhost:3000')
-						.searchParams;
-						this.log('debug', qs);
-						res.end('Authentication successful! Please return to the Companion.');
-						this.log('debug', "Code: " + qs.get("code"));
-						const {tokens} = await this.oauth2client.getToken(qs.get('code'));
-						this.log('debug', "Credentials: " + tokens);
+					const address = url.parse(req.url, true);
+					const query   = address.query;
+					this.log('debug', 'Received callback at path ' + address.pathname);
+
+					if (query.code) {
+						this.log('debug', 'Callback OK');
+
+						const {tokens} = await this.oauth2client.getToken(query.code);
+
+						res.writeHead(200, {'Content-Type': 'text/plain'});
+						res.end('Authorization successful! You can now close this window.');
+
 						server.destroy();
 						resolve(tokens);
+
+					} else {
+						// this may happen for favicon.ico
+						this.log('debug', 'Callback KO');
+						res.writeHead(400, {'Content-Type': 'text/plain'});
+						res.end('Authorization token required');
 					}
 				} catch (e) {
-				  this.log('warn', "Callback request processing error; " + req.url + " detail: " + e);
-				  reject(e);
+					this.log('warn', "Callback request processing error; " + req.url + " detail: " + e);
+					res.writeHead(500, {'Content-Type': 'text/plain'});
+					res.end('Callback processing failed');
+					reject(e);
 				}
-			  })
-			  .listen(3000, () => {
-				// open the browser to the authorize url to start the workflow
+			}).listen(3000, () => {
+				// and open the browser to the authorize url to start the workflow
+				this.log('debug', 'Opening browser at ' + authorizeUrl);
 				opn(authorizeUrl, {wait: false}).then(cp => cp.unref());
-			  });
+			});
 			destroyer(server);
-			this.log('debug', "Server destroyed");
-		  });
-		}
+		});
+	}
 
 	async create_yt_service() {
 		this.log('debug', "Creating youtube service.");
