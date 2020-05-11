@@ -247,6 +247,7 @@ class Youtube_api_handler {
 			// grab the url that will be used for authorization
 			const authorizeUrl = this.oauth2client.generateAuthUrl({
 			  access_type: 'offline',
+			  prompt: 'consent',
 			  scope: this.scopes.join(' '),
 			});
 
