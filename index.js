@@ -20,7 +20,7 @@ function instance(system, id, config) {
 instance.prototype.updateConfig = function(config) {
 	var self = this;
 	self.config = config;
-	console.log("Update config YT_module")
+	self.log("Updated config of YT module");
 	self.destroy();
 	self.init();
 }
@@ -249,24 +249,24 @@ class Youtube_api_handler {
 			  access_type: 'offline',
 			  scope: this.scopes.join(' '),
 			});
-			console.log(authorizeUrl);
+			this.log('debug', 'Authorization request URL: ' + authorizeUrl);
 			const server = http
 			  .createServer(async (req, res) => {
 				try {
-					console.log(req.url);
+					this.log('debug', 'Received callback: ' + req.url);
 					if (req.url.indexOf("code=") !== -1) {
 						const qs = new url.URL(req.url, 'http://localhost:3000')
 						.searchParams;
-						console.log(qs)
+						this.log('debug', qs);
 						res.end('Authentication successful! Please return to the Companion.');
-						console.log("Code: " + qs.get("code"));
+						this.log('debug', "Code: " + qs.get("code"));
 						const {tokens} = await this.oauth2client.getToken(qs.get('code'));
-						console.log("Credentials: " + tokens);
+						this.log('debug', "Credentials: " + tokens);
 						server.destroy();
 						resolve(tokens);
 					}
 				} catch (e) {
-				  console.log("Callback request processing error; " + req.url + " detail: " + e);
+				  this.log('warn', "Callback request processing error; " + req.url + " detail: " + e);
 				  reject(e);
 				}
 			  })
@@ -275,11 +275,12 @@ class Youtube_api_handler {
 				opn(authorizeUrl, {wait: false}).then(cp => cp.unref());
 			  });
 			destroyer(server);
-			console.log("Server destroyed");
+			this.log('debug', "Server destroyed");
 		  });
 		}
+
 	async create_yt_service() {
-		console.log("Creating youtube service.");
+		this.log('debug', "Creating youtube service.");
 		this.youtube_service = google.youtube({
 			version : "v3",
 			auth : this.oauth2client
@@ -303,14 +304,15 @@ class Youtube_api_handler {
 					}
 				}
 			}).then( response => {
-				console.log("Broadcast created successfully ; details: " + response);
+				this.log('debug', "Broadcast created successfully ; details: " + response);
 				resolve(response);
 			}, err => {
-				console.log("Error during execution of create live broadcast action ; details: " + err);
+				this.log('warn', "Error during execution of create live broadcast action ; details: " + err);
 				reject(err);
 			})
 		});
 	}
+
 	async create_live_stream() {}
 
 	async get_all_broadcasts() {
@@ -326,7 +328,7 @@ class Youtube_api_handler {
 				})
 				resolve(streams_dict);
 			}, err => {
-				Console.log("Error retreaving list of streams")
+				this.log('warn', "Error retrieving list of streams: " + err)
 				reject(err);
 			});
 		});
