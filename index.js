@@ -34,8 +34,13 @@ instance.prototype.init = function() {
 	var scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"];
 
 	if (yt_dir_path) {
-		if (fs.lstatSync(secrets_file_path).isFile()) {
-			var config_file   = fs.readFileSync(secrets_file_path);
+		fs.readFile(secrets_file_path, (err, config_file) => {
+			if (err) {
+				self.log("warn", "Cannot load app OAuth credentials, " + err);
+				self.status(self.STATUS_ERROR, "Cannot load app OAuth credentials, " + err);
+				return;
+			}
+
 			var config_json   = JSON.parse(config_file);
 			var client_id     = config_json["web"]["client_id"];
 			var client_secret = config_json["web"]["client_secret"];
@@ -107,7 +112,7 @@ instance.prototype.init = function() {
 					promise.catch(console.error);
 			}
 
-		}
+		});
 
 	} else {
 		console.error("Path to YouTube operating directory is not provided");
