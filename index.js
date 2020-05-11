@@ -105,7 +105,7 @@ instance.prototype.initApiWithLogin = function() {
 instance.prototype.initApiDirectly = function(credentials) {
 	var self = this;
 
-	self.yt_api_handler.oauth2client.credentials = credentials;
+	self.yt_api_handler.oauth2client.setCredentials(credentials);
 	self.yt_api_handler.create_yt_service();
 
 	self.yt_api_handler.get_all_broadcasts().then( streams_dict => {
@@ -121,7 +121,7 @@ instance.prototype.initApiDirectly = function(credentials) {
 		self.log('warn', 'YT broadcast query failed: ' + err);
 		self.status(self.STATUS_ERROR, 'YT Broadcast query failed: ' + err);
 	});
-}
+};
 
 instance.prototype.destroy = function() {
 	var self = this;
