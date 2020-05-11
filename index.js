@@ -31,81 +31,71 @@ instance.prototype.init = function() {
 	self.log('debug', 'Initializing YT module');
 	self.status(self.STATUS_WARN, 'Initializing');
 
-	var yt_dir_path       = path.resolve(self.config.path_to_yt_directory);
-	var secrets_file_path = path.join(yt_dir_path, "client-secret.json");
-	var token_path        = path.join(yt_dir_path, "token.json");
-
 	var scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"];
 
-	if (yt_dir_path) {
-		fs.readFile(secrets_file_path, (err, config_file) => {
-			if (err) {
-				self.log('warn', 'Cannot load app OAuth credentials: ' + err);
-				self.status(self.STATUS_ERROR, 'Cannot load app OAuth credentials: ' + err);
-				return;
-			}
+	if (!self.config.client_id     ||
+	    !self.config.client_secret ||
+	    !self.config.client_redirect_url) {
+		self.log('warn', 'Not all OAuth application parameters were configured');
+		self.status(self.STATUS_ERROR, 'Not all OAuth application parameters were configured');
+		return;
+	}
 
-			try {
-				var config_json   = JSON.parse(config_file);
-				var client_id     = config_json["web"]["client_id"];
-				var client_secret = config_json["web"]["client_secret"];
-				var redirect_url  = config_json["web"]["redirect_uris"][0];
+	self.yt_api_handler = new Youtube_api_handler(
+		self.config.client_id,
+		self.config.client_secret,
+		self.config.client_redirect_url,
+		scopes
+	);
 
-				self.yt_api_handler = new Youtube_api_handler(client_id, client_secret, redirect_url, scopes, token_path);
+	if (self.config.auth_token == 'login') {
+		self.log('info', 'New OAuth login requested...');
 
-			} catch (err) {
-				self.log('warn', 'Cannot parse app OAuth credentials: ' + err);
-				self.status(self.STATUS_ERROR, 'Cannot parse app OAuth credentials: ' + err);
-				return;
-			}
+		self.yt_api_handler.oauth_login().then( credentials => {
+			self.log('info', 'OAuth login successful');
+			self.config.auth_token = JSON.stringify(credentials);
+			self.saveConfig();
 
-			fs.readFile(token_path, (err, token) => {
-				var credentials;
+			self.log('debug', 'Initializing with the new token...');
+			self.init_api_from_token_text(self.config.auth_token);
 
-				if (!err) {
-					try {
-						credentials = JSON.parse(token);
-					} catch (err2) {
-						err = err2;
-					}
-				}
+		}).catch( err => {
+			self.log('warn', 'OAuth login failed: ' + err);
+			self.status(self.STATUS_ERROR, 'OAuth login failed: ' + err);
 
-				if (!err) {
-					self.log('debug', 'Token file (token.json) loaded, reusing credentials');
-					self.initApiDirectly(credentials);
-				} else {
-					self.log('info', 'Cannot load token file (token.json) (' + err + '), opening app authorization page...');
-					self.initApiWithLogin();
-				}
-			});
-
+			self.config.auth_token = '';
+			self.saveConfig();
 		});
 
+	} else if (self.config.auth_token) {
+		self.log('debug', 'Found existing OAuth token, proceeding directly');
+		self.init_api_from_token_text(self.config.auth_token);
+
 	} else {
-		self.log('warn', 'Module not configured, path to YouTube operating directory is not provided');
-		self.status(self.STATUS_ERROR, 'Module not configured, path to YouTube operating directory is not provided');
+		self.log('warn', 'No authorization token found, please request new login');
+		self.status(self.STATUS_ERROR, 'No authorization token found, please request new login');
 	}
 };
 
-instance.prototype.initApiWithLogin = function() {
+instance.prototype.init_api_from_token_text = function(token_text) {
 	var self = this;
 
-	self.log('debug', 'Starting OAuth login...');
+	var token_object;
+	try {
+		token_object = JSON.parse(token_text);
+	} catch (err) {
+		self.log('warn', 'Authorization token is corrupted, please request new login');
+		self.status(self.STATUS_ERROR, 'Authorization token is corrupted, please request new login');
+		return;
+	}
 
-	self.yt_api_handler.oauth_login().then( credentials => {
-		self.log('debug', 'OAuth login successful');
-		self.initApiDirectly(credentials);
+	self.init_api_from_token_object(token_object);
+};
 
-	}).catch( err => {
-		self.log('warn', 'OAuth login failed: ' + err);
-		self.status(self.STATUS_ERROR, 'OAuth login failed: ' + err);
-	});
-}
-
-instance.prototype.initApiDirectly = function(credentials) {
+instance.prototype.init_api_from_token_object = function(credentials) {
 	var self = this;
 
-	self.yt_api_handler.oauth2client.credentials = credentials;
+	self.yt_api_handler.oauth2client.setCredentials(credentials);
 	self.yt_api_handler.create_yt_service();
 
 	self.yt_api_handler.get_all_broadcasts().then( streams_dict => {
@@ -121,7 +111,7 @@ instance.prototype.initApiDirectly = function(credentials) {
 		self.log('warn', 'YT broadcast query failed: ' + err);
 		self.status(self.STATUS_ERROR, 'YT Broadcast query failed: ' + err);
 	});
-}
+};
 
 instance.prototype.destroy = function() {
 	var self = this;
@@ -133,11 +123,47 @@ instance.prototype.config_fields = function() {
 	var self = this;
 	return [
 		{
+			type: 'text',
+			id: 'api-key-info',
+			width: 12,
+			label: 'OAuth application parameters',
+			value: 'Following fields correspond to the Google API Application Credentials. Please see the YouTube Live module setup guide for more info.'
+		},
+		{
 			type: "textinput",
-			id: "path_to_yt_directory",
-			label: "Path to YouTube working directory:",
-			width: 4,
+			id: "client_id",
+			label: "OAuth client ID",
+			width: 12,
 			required: true
+		},
+		{
+			type: "textinput",
+			id: "client_secret",
+			label: "OAuth client secret",
+			width: 12,
+			required: true
+		},
+		{
+			type: "textinput",
+			id: "client_redirect_url",
+			label: "OAuth redirect url",
+			default: "http://localhost:3000",
+			width: 12,
+			required: true
+		},
+		{
+			type: 'text',
+			id: 'api-key-info',
+			width: 12,
+			label: 'Cached YouTube bearer token',
+			value: 'Following field contains something like a session token - it corresponds to one active access point to a YouTube account.'
+		},
+		{
+			type: "textinput",
+			id: "auth_token",
+			label: "Authorization token ('login' to re-authenticate)",
+			width: 12,
+			required: false
 		}
 	]
 };
@@ -200,13 +226,12 @@ instance.prototype.action = function(action) {
 }
 
 class Youtube_api_handler {
-	constructor(client_id, client_secret, redirect_url, scopes, token_path) {
+	constructor(client_id, client_secret, redirect_url, scopes) {
 		this.streams_dict  = {};
 		this.client_id     = client_id;
 		this.client_secret = client_secret;
 		this.redirect_url  = redirect_url;
 		this.scopes        = scopes;
-		this.token_path    = token_path;
 		this.oauth2client = new google.auth.OAuth2(
 			this.client_id,
 			this.client_secret,
@@ -234,9 +259,6 @@ class Youtube_api_handler {
 						console.log("Code: " + qs.get("code"));
 						const {tokens} = await this.oauth2client.getToken(qs.get('code'));
 						console.log("Credentials: " + tokens);
-						fs.writeFile(this.token_path, JSON.stringify(tokens), (error) => {
-							if (error) return console.log("Error in saving token, details: " + error);
-						});
 						server.destroy();
 						resolve(tokens);
 					}
