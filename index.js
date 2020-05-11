@@ -45,7 +45,8 @@ instance.prototype.init = function() {
 		self.config.client_id,
 		self.config.client_secret,
 		self.config.client_redirect_url,
-		scopes
+		scopes,
+		self.log.bind(self)
 	);
 
 	if (self.config.auth_token == 'login') {
@@ -226,12 +227,13 @@ instance.prototype.action = function(action) {
 }
 
 class Youtube_api_handler {
-	constructor(client_id, client_secret, redirect_url, scopes) {
+	constructor(client_id, client_secret, redirect_url, scopes, log) {
 		this.streams_dict  = {};
 		this.client_id     = client_id;
 		this.client_secret = client_secret;
 		this.redirect_url  = redirect_url;
 		this.scopes        = scopes;
+		this.log           = log;
 		this.oauth2client = new google.auth.OAuth2(
 			this.client_id,
 			this.client_secret,
@@ -239,6 +241,7 @@ class Youtube_api_handler {
 		);
 		google.options({auth: this.oauth2client});
 	}
+
 	async oauth_login() {
 		return new Promise((resolve, reject) => {
 			// grab the url that will be used for authorization
