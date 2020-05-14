@@ -192,6 +192,11 @@ instance.prototype.actions = function(system) {
 				label: "Stream:",
 				id: "stream_to_start",
 				choices: self.streams_list_to_display
+			}, {
+				type: "checkbox",
+				label: "Require confirmation",
+				id: "confirm",
+				default: false
 			}]
 		},
 		"stop_stream": {
@@ -201,6 +206,11 @@ instance.prototype.actions = function(system) {
 				label: "Stream:",
 				id: "stream_to_stop",
 				choices: self.streams_list_to_display
+			}, {
+				type: "checkbox",
+				label: "Require confirmation",
+				id: "confirm",
+				default: false
 			}]
 		}
 	});
