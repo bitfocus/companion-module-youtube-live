@@ -214,6 +214,12 @@ instance.prototype.actions = function(system) {
 				id: "confirm",
 				default: false
 			}]
+		},
+		"queue_confirm": {
+			label: "Confirm all pending jobs"
+		},
+		"queue_cancel": {
+			label: "Cancel all pending jobs"
 		}
 	});
 	self.system.emit('instance_actions', self.id, self.setActions);
@@ -252,6 +258,15 @@ instance.prototype.action = function(action) {
 				});
 			}
 		};
+
+	} else if (action.action == "queue_confirm") {
+		self.log("debug", "Running job queue");
+		self.perform_queued();
+
+	} else if (action.action == "queue_cancel") {
+		self.log("debug", "Dropping job queue");
+		self.cancel_queued();
+
 	}
 
 	if (job != null) {
@@ -270,6 +285,23 @@ instance.prototype.enqueue_for_confirmation = function(job) {
 	var self = this;
 
 	self.confirm_queue.push(job);
+}
+
+instance.prototype.perform_queued = async function() {
+	var self = this;
+
+	var queued = self.confirm_queue;
+	self.cancel_queued();
+
+	for (const item of queued) {
+		await item.perform();
+	}
+}
+
+instance.prototype.cancel_queued = function() {
+	var self = this;
+
+	self.confirm_queue = [];
 }
 
 class Youtube_api_handler {
