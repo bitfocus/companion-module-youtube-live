@@ -32,6 +32,7 @@ instance.prototype.init = function() {
 	self.status(self.STATUS_WARN, 'Initializing');
 
 	self.confirm_queue = [];
+	self.feedbacks();
 	self.variables();
 
 	var scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"];
@@ -287,6 +288,7 @@ instance.prototype.enqueue_for_confirmation = function(job) {
 
 	self.confirm_queue.push(job);
 	self.setVariable('queue_depth', self.confirm_queue.length);
+	self.checkFeedbacks('queue_active');
 }
 
 instance.prototype.perform_queued = async function() {
@@ -305,6 +307,44 @@ instance.prototype.cancel_queued = function() {
 
 	self.confirm_queue = [];
 	self.setVariable('queue_depth', 0);
+	self.checkFeedbacks('queue_active');
+}
+
+instance.prototype.feedbacks = function() {
+	var self = this;
+
+	self.setFeedbackDefinitions({
+		"queue_active": {
+			label:       "Confirmation highlighter",
+			description: "Highlights pending jobs for confirmation",
+			options: [{
+				type:  "colorpicker",
+				label: "Active - background",
+				id:    "alert_bg",
+				default: this.rgb(255, 0, 0)
+			}, {
+				type:  "colorpicker",
+				label: "Active - foreground",
+				id:    "alert_fg",
+				default: this.rgb(255, 255, 255)
+			}]
+		}
+	});
+}
+
+instance.prototype.feedback = function(event) {
+	var self = this;
+
+	if (event.type == "queue_active") {
+		if (self.confirm_queue.length > 0) {
+			return {
+				color:   event.options.alert_fg,
+				bgcolor: event.options.alert_bg
+			}
+		}
+	}
+
+	return {};
 }
 
 instance.prototype.variables = function() {
