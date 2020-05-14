@@ -31,6 +31,8 @@ instance.prototype.init = function() {
 	self.log('debug', 'Initializing YT module');
 	self.status(self.STATUS_WARN, 'Initializing');
 
+	self.confirm_queue = [];
+
 	var scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"];
 
 	if (!self.config.client_id     ||
@@ -219,25 +221,55 @@ instance.prototype.actions = function(system) {
 
 instance.prototype.action = function(action) {
 	var self = this;
+	var job = null;
 
 	if (action.action == "start_stream") {
-		self.yt_api_handler.set_broadcast_live(
-			action.options["stream_to_start"]
-		).then( response => {
-			self.log("info", "YouTube stream was set live successfully");
-		}).catch( err => {
-			self.log("debug", "Error occured during stream state actualization, details: " + err);
-		});
+		job = {
+			name:    "Start stream " + action.options["stream_to_start"],
+			confirm: action.options["confirm"],
+			perform: async function() {
+				return self.yt_api_handler.set_broadcast_live(
+					action.options["stream_to_start"]
+				).then( response => {
+					self.log("info", "YouTube stream was set live successfully");
+				}, err => {
+					self.log("debug", "Error occured during stream state actualization, details: " + err);
+				});
+			}
+		};
 
 	} else if (action.action == "stop_stream") {
-		self.yt_api_handler.set_broadcast_finished(
-			action.options["stream_to_stop"]
-		).then( response => {
-			self.log("info", "YouTube stream finished successfully");
-		}).catch( err => {
-			self.log("debug","Error occured during finishing a stream, details: " + err);
-		});
+		job = {
+			name:    "Stop stream " + action.options["stream_to_stop"],
+			confirm: action.options["confirm"],
+			perform: async function() {
+				return self.yt_api_handler.set_broadcast_finished(
+					action.options["stream_to_stop"]
+				).then( response => {
+					self.log("info", "YouTube stream finished successfully");
+				}, err => {
+					self.log("debug","Error occured during finishing a stream, details: " + err);
+				});
+			}
+		};
 	}
+
+	if (job != null) {
+		if (job.confirm) {
+			self.log("debug", "Enqueuing: " + job.name);
+			self.enqueue_for_confirmation(job);
+
+		} else {
+			self.log("debug", "Starting: " + job.name);
+			job.perform();
+		}
+	}
+}
+
+instance.prototype.enqueue_for_confirmation = function(job) {
+	var self = this;
+
+	self.confirm_queue.push(job);
 }
 
 class Youtube_api_handler {
