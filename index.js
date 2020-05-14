@@ -32,6 +32,7 @@ instance.prototype.init = function() {
 	self.status(self.STATUS_WARN, 'Initializing');
 
 	self.confirm_queue = [];
+	self.variables();
 
 	var scopes = ["https://www.googleapis.com/auth/youtube.force-ssl"];
 
@@ -285,6 +286,7 @@ instance.prototype.enqueue_for_confirmation = function(job) {
 	var self = this;
 
 	self.confirm_queue.push(job);
+	self.setVariable('queue_depth', self.confirm_queue.length);
 }
 
 instance.prototype.perform_queued = async function() {
@@ -302,6 +304,20 @@ instance.prototype.cancel_queued = function() {
 	var self = this;
 
 	self.confirm_queue = [];
+	self.setVariable('queue_depth', 0);
+}
+
+instance.prototype.variables = function() {
+	var self = this;
+
+	self.setVariableDefinitions([
+		{
+			label: "Number of queued jobs",
+			name:  "queue_depth"
+		}
+	]);
+
+	self.setVariable("queue_depth", 0);
 }
 
 class Youtube_api_handler {
