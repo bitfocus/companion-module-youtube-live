@@ -230,6 +230,19 @@ instance.prototype.action = function(action) {
 	}
 }
 
+// https://developers.google.com/youtube/v3/live/docs/liveBroadcasts#status.lifeCycleStatus
+const StreamLifecycle = {
+	Revoked: 'revoked',
+	Created: 'created',
+	Ready:   'ready',
+	TestStarting: 'testStarting',
+	TestRunning:  'testing',
+	LiveStarting: 'liveStarting',
+	LiveRunning:  'live',
+	Complete: 'complete'
+};
+Object.freeze(StreamLifecycle);
+
 class Youtube_api_handler {
 	constructor(client_id, client_secret, redirect_url, scopes, log) {
 		this.streams_dict  = {};
