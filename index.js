@@ -202,6 +202,15 @@ instance.prototype.actions = function(system) {
 				id: "stream_to_stop",
 				choices: self.streams_list_to_display
 			}]
+		},
+		"toggle_stream": {
+			label: "Toggle stream",
+			options: [{
+				type: "dropdown",
+				label: "Stream:",
+				id: "stream_to_toggle",
+				choices: self.streams_list_to_display
+			}]
 		}
 	});
 	self.system.emit('instance_actions', self.id, self.setActions);
@@ -226,6 +235,39 @@ instance.prototype.action = function(action) {
 			self.log("info", "YouTube stream finished successfully");
 		}).catch( err => {
 			self.log("debug","Error occured during finishing a stream, details: " + err);
+		});
+	} else if (action.action == "toggle_stream") {
+		let id = action.options["stream_to_toggle"];
+
+		self.yt_api_handler.get_broadcast(id).then( response => {
+			let status = response.status.lifeCycleStatus;
+			self.log("debug", "Status of stream to toggle is " + status);
+
+			switch (status) {
+				case StreamLifecycle.Ready:
+				case StreamLifecycle.TestStarting:
+				case StreamLifecycle.TestRunning:
+					self.log("debug", "Starting stream " + id);
+					return self.yt_api_handler.set_broadcast_live(id);
+
+				case StreamLifecycle.LiveStarting:
+				case StreamLifecycle.LiveRunning:
+					self.log("debug", "Ending stream " + id);
+					return self.yt_api_handler.set_broadcast_finished(id);
+
+				case StreamLifecycle.Revoked:
+					throw new Error("Stream is revoked");
+				case StreamLifecycle.Created:
+					throw new Error("Stream is not configured properly");
+				case StreamLifecycle.Complete:
+					throw new Error("Stream is completed");
+				default:
+					throw new Error("Unknown stream status");
+			}
+		}).then( response => {
+			self.log("debug", "Stream toggled successfully");
+		}).catch( err => {
+			self.log("warn", "Error occured during stream toggling, details: " + err);
 		});
 	}
 }
