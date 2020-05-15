@@ -1,56 +1,55 @@
-# companion-module-youtube-live
-See HELP.md and LICENSE
+## YouTube Live
 
-## Currently available actions
+### Available actions
 
-- **Start stream**
-  This action sets staus of predefined YouTube broadcast to _**live**_
-- **Stop stream**
-  This action sets status of predifined YouTube broadcast to _**finished**_
+- **Start stream** - this action starts a YouTube stream and makes it available for viewing.
+- **Stop stream**  - this action finishes a YouTube stream.
 
-## Usage
+### Usage
 
-The module is able to only manipulate predefined streams, it is not able to create them currently.
-So all streams to be controled by the module should be created in YouTube Studio.
+The module is only able to manipulate predefined streams, it is currently not capable of creating them.
+So all streams to be controlled by the module have to be created in the YouTube Studio first.
 
-### Authentication of the module to manipulate YouTube account content
+#### Connecting to YouTube account
 
-In order to set up module correcty, you need to authorize it for accessing YouTube Data API. This is done via Google API console in several steps:
+In order to set up module, you need to authorize it for accessing your channel via the YouTube Data API.
+For this you will need to create a new Google API application.
+This is done via the Google API console:
 
-1. Log in into API console with google account ([console.developers.google.com](https://console.developers.google.com/)).
-2. Create new project (name of the project doesn't matter, but we suggest something as _companion-yt-control_).
-3. Enable YouTube data API v3 in your project - easiest way of doing so is to search for it and on its administartion page click on _enable_.
-4. Create credentials for accessing the API.
+1. Log in to the [API console](https://console.developers.google.com/) with your personal Google account.
+2. Create a new project (name of the project doesn't matter, but we suggest something as _companion-yt-control_).
+3. Enable _YouTube Data API v3_ for the project - the easiest way to do so is to search for it and click on _enable_ on its page.
+4. Create credentials for accessing the API:
 
    From the left panel select _Credentials_ and click _Create credentials_ on the top of the page.
    From the options select _OAuth client ID_. After that, you will be asked to configure _OAuth consent screen_.
 
    Use these options:
-    - User Type: External (do not worry, there is no need to submit the app to verification)
+    - User Type: _External_ (do not worry, there is no need to submit the app for verification)
     - Application name: `youtube-live`
     - Scopes for Google APIs: add `/auth/youtube.force-ssl`
-
-   After cofiguring OAuth consent screen, it is time for generating access information.
 
 5. Head to _credentials_ page and at the top click on _create credentials_ and select _OAuth client ID_.
 
    Create the client ID with these options:
-     - Aplication type: Web aplication
+     - Aplication type: _Web aplication_
      - Name is not important, its only used to identify created credentials in the API console
-     - Authorized redirect URLs: This is important for callback from Google OAuth server, so it
-       should be the same as the config parameter OAuth redirect url in Companion (by default `http://localshost:3000`)
+     - Authorized redirect URLs: This is where the Google OAuth server will forward the credentials, so it
+       *must* be the set to the same value as the _OAuth redirect url_ parameter in Companion (by default `http://localhost:3000`)
 
-    After creating these credentials, copy _client ID_ and _client secret_ into correspondig fields in module instance cofiguration in Companion.
+    After creating these credentials, copy _client ID_ and _client secret_ into correspondig fields in the module instance cofiguration in Companion.
 
-6. When first configuring the module the _Authorization token_ field (in instance configuration) should be filled with `login` </li>
-7. After applying changes to module configuration, you will be redirected to OAuth consent screen
-   in order to authorize module for accessing YouTube account (there you log in to account with which you want the module to interact</li>
+6. When first configuring the module, fill the _Authorization token_ field (in instance configuration) with `login`
+7. After applying changes to module configuration, you will be redirected to the OAuth consent screen
+   in order to authorize module for accessing your YouTube channel. Log in with the account with which you want the module to interact.
 
-When all above is done, the module is ready to work
+When all above is done, the module is ready for work.
 
-### Actions configuration
+#### Action configuration
 
-When creating the buttons for either starting the broadcast or stopping the broadcast, the only option there is dropdown menu with titles of all broadcasts on selected YouTube channel. Simply pick the broadcast you want to work with.
+When creating buttons for either starting or stopping a broadcast,
+you should pick the stream to work with using the provided dropdown menu.
+It should contain all streams present on the channel.
 
 ### Thanks
 
