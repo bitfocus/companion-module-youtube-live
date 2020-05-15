@@ -20,29 +20,24 @@ This is done via the Google API console:
 1. Log in to the [API console](https://console.developers.google.com/) with your personal Google account.
 2. Create a new project (name of the project doesn't matter, but we suggest something as _companion-yt-control_).
 3. Enable _YouTube Data API v3_ for the project - the easiest way to do so is to search for it and click on _enable_ on its page.
-4. Create credentials for accessing the API:
-
-   From the left panel select _Credentials_ and click _Create credentials_ on the top of the page.
-   From the options select _OAuth client ID_. After that, you will be asked to configure _OAuth consent screen_.
-
-   Use these options:
+4. Go back by clicking the Google APIs logo. Then, click on _OAuth consent screen_ on the sidebar and fill in the following information:
     - User Type: _External_ (do not worry, there is no need to submit the app for verification)
-    - Application name: `youtube-live`
-    - Scopes for Google APIs: add `/auth/youtube.force-ssl`
+    - Application name: _YouTube Live_ (the exact name does not matter)
+    - Scopes for Google APIs: add `../auth/youtube.force-ssl`
 
-5. Head to _credentials_ page and at the top click on _create credentials_ and select _OAuth client ID_.
+5. Head to _Credentials_ page. Select _Create credentials_ on the top bar and pick _OAuth client ID_.
 
    Create the client ID with these options:
-     - Aplication type: _Web aplication_
+     - Aplication type: _Web application_
      - Name is not important, its only used to identify created credentials in the API console
-     - Authorized redirect URLs: This is where the Google OAuth server will forward the credentials, so it
-       *must* be the set to the same value as the _OAuth redirect url_ parameter in Companion (by default `http://localhost:3000`)
+     - Authorized redirect URLs: This is where the Google OAuth server will forward the authorization grant, so it
+       **must** be the same as the _OAuth redirect url_ parameter set in Companion (by default `http://localhost:3000`)
 
-    After creating these credentials, copy _client ID_ and _client secret_ into correspondig fields in the module instance cofiguration in Companion.
+    After creating these credentials, copy _client ID_ and _client secret_ into corresponding fields in the module instance cofiguration in Companion.
 
-6. When first configuring the module, fill the _Authorization token_ field (in instance configuration) with `login`
-7. After applying changes to module configuration, you will be redirected to the OAuth consent screen
-   in order to authorize module for accessing your YouTube channel. Log in with the account with which you want the module to interact.
+6. When first configuring the module, fill the _Authorization token_ field (in instance configuration) with `login`.
+7. After applying changes to module configuration, you will be redirected to your OAuth consent screen
+   to authorize module for accessing your YouTube channel. Proceed with the account with which you want the module to interact.
 
 When all above is done, the module is ready for work.
 
