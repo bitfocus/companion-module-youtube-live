@@ -22,10 +22,10 @@ instance.prototype.updateConfig = function(config) {
 	self.config = config;
 	self.log("Updated config of YT module");
 	self.destroy();
-	self.init();
+	self.init(true);
 }
 
-instance.prototype.init = function() {
+instance.prototype.init = function(is_config) {
 	var self = this;
 
 	self.log('debug', 'Initializing YT module');
@@ -49,8 +49,8 @@ instance.prototype.init = function() {
 		self.log.bind(self)
 	);
 
-	if (self.config.auth_token == 'login') {
-		self.log('info', 'New OAuth login requested...');
+	if (!self.config.auth_token && is_config) {
+		self.log('info', 'New config without OAuth token, trying new login...');
 
 		self.yt_api_handler.oauth_login().then( credentials => {
 			self.log('info', 'OAuth login successful');
@@ -68,13 +68,13 @@ instance.prototype.init = function() {
 			self.saveConfig();
 		});
 
+	} else if (!self.config.auth_token && !is_config) {
+		self.log('warn', 'No OAuth authorization present, please reconfigure the module');
+		self.status(self.STATUS_ERROR, 'No OAuth authorization present, please reconfigure the module');
+
 	} else if (self.config.auth_token) {
 		self.log('debug', 'Found existing OAuth token, proceeding directly');
 		self.init_api_from_token_text(self.config.auth_token);
-
-	} else {
-		self.log('warn', 'No authorization token found, please request new login');
-		self.status(self.STATUS_ERROR, 'No authorization token found, please request new login');
 	}
 };
 
@@ -166,7 +166,7 @@ instance.prototype.config_fields = function() {
 		{
 			type: "textinput",
 			id: "auth_token",
-			label: "Authorization token ('login' to re-authenticate)",
+			label: "Authorization token (empty to re-authenticate)",
 			width: 12,
 			required: false
 		}
