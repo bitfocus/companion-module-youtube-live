@@ -316,30 +316,23 @@ class Youtube_api_handler {
 			auth : this.oauth2client
 		});
 	}
+
 	async create_live_broadcast(title, scheduled_start_time, record_from_start, enable_dvr, privacy_status) {
-		return new Promise((resolve, reject) => {
-			this.youtube_service.liveBroadcasts.insert({
-				"part" : "snippet, contentDetails, staus",
-				"resource" : {
-					"snippet" : {
-						"title" : title,
-						"scheduledStartTime" : scheduled_start_time,
-					},
-					"contentDetails" : {
-						"recordFromStart" : record_from_start,
-						"enableDvr" : enable_dvr
-					},
-					"status" : {
-						"privacyStatus" : privacy_status
-					}
+		return this.youtube_service.liveBroadcasts.insert({
+			"part" : "snippet, contentDetails, staus",
+			"resource" : {
+				"snippet" : {
+					"title" : title,
+					"scheduledStartTime" : scheduled_start_time,
+				},
+				"contentDetails" : {
+					"recordFromStart" : record_from_start,
+					"enableDvr" : enable_dvr
+				},
+				"status" : {
+					"privacyStatus" : privacy_status
 				}
-			}).then( response => {
-				this.log('debug', "Broadcast created successfully ; details: " + response);
-				resolve(response);
-			}, err => {
-				this.log('warn', "Error during execution of create live broadcast action ; details: " + err);
-				reject(err);
-			})
+			}
 		});
 	}
 
@@ -363,49 +356,32 @@ class Youtube_api_handler {
 	}
 
 	async get_all_broadcasts() {
-		return new Promise((resolve, reject) => {
-			this.youtube_service.liveBroadcasts.list({
-				"part" : "snippet, contentDetails, status",
-				"broadcastType" : "all",
-				"mine" : true
-			}).then( response => {
-				let streams_dict = {};
-				response.data.items.forEach( (item, index) => {
-					streams_dict[item.id] = item.snippet.title;
-				})
-				resolve(streams_dict);
-			}, err => {
-				this.log('warn', "Error retrieving list of streams: " + err)
-				reject(err);
-			});
+		let response = await this.youtube_service.liveBroadcasts.list({
+			"part" : "snippet, contentDetails, status",
+			"broadcastType" : "all",
+			"mine" : true
 		});
+
+		let streams_dict = {};
+		response.data.items.forEach( (item, index) => {
+			streams_dict[item.id] = item.snippet.title;
+		})
+		return streams_dict;
 	}
 
 	async set_broadcast_live(id) {
-		return new Promise((resolve, reject) => {
-			this.youtube_service.liveBroadcasts.transition({
-				"part" : "snippet, contentDetails, status",
-				"id" : id,
-				"broadcastStatus" : "live"
-			}).then( response => {
-				resolve(response);
-			}, err => {
-				reject(err);
-			});
+		return this.youtube_service.liveBroadcasts.transition({
+			"part" : "snippet, contentDetails, status",
+			"id" : id,
+			"broadcastStatus" : "live"
 		});
 	}
 
 	async set_broadcast_finished(id) {
-		return new Promise((resolve, reject) => {
-			this.youtube_service.liveBroadcasts.transition({
-				"part" : "snippet, contentDetails, status",
-				"id" : id,
-				"broadcastStatus" : "complete"
-			}).then( response => {
-				resolve(response);
-			}, err => {
-				reject(err);
-			});
+		return this.youtube_service.liveBroadcasts.transition({
+			"part" : "snippet, contentDetails, status",
+			"id" : id,
+			"broadcastStatus" : "complete"
 		});
 	}
 }
