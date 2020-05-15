@@ -1,5 +1,7 @@
 ## YouTube Live
 
+This module will allow you to control YouTube live streams.
+
 ### Available actions
 
 - **Start a stream**  - this action starts a YouTube stream and makes it available for viewing.
