@@ -2,16 +2,16 @@
 
 This module will allow you to control YouTube live streams.
 
+The module is only able to manipulate predefined streams, it is currently not capable of creating them.
+So all streams to be controlled by the module have to be created in the YouTube Studio first.
+
 ### Available actions
 
 - **Start a stream**  - this action starts a YouTube stream and makes it available for viewing.
 - **Stop a stream**   - this action finishes a YouTube stream.
 - **Toggle a stream** - this action either starts or stops a stream, depending on current stream state (`ready` → `live`, `live` → `completed`).
 
-### Usage
-
-The module is only able to manipulate predefined streams, it is currently not capable of creating them.
-So all streams to be controlled by the module have to be created in the YouTube Studio first.
+### Configuration
 
 #### Connecting to YouTube account
 
