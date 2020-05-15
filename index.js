@@ -13,6 +13,7 @@ function instance(system, id, config) {
 	instance_skel.apply(this, arguments);
 
 	self.actions();
+	self.init_feedbacks();
 
 	return self;
 };
@@ -101,9 +102,12 @@ instance.prototype.init_api_from_token_object = function(credentials) {
 
 	self.yt_api_handler.get_all_broadcasts().then( streams_dict => {
 		self.yt_api_handler.streams_dict = streams_dict;
+		
 
 		self.log('debug', 'YT broadcast query successful: ' + JSON.stringify(self.yt_api_handler.streams_dict));
 		self.actions();
+		setInterval(self.update_broadcasts_state.bind(self), 20000);
+		self.init_feedbacks();
 
 		self.log('info', 'YT Module initialized successfully');
 		self.status(self.STATUS_OK);
@@ -271,6 +275,84 @@ instance.prototype.action = function(action) {
 		});
 	}
 }
+instance.prototype.init_feedbacks = function() {
+	var self = this;
+
+	var feedbacks = {};
+
+	self.streams_list_to_display = [];
+
+	if (self.yt_api_handler !== undefined) {
+		for (var key in self.yt_api_handler.streams_dict) {
+			self.streams_list_to_display.push({id : key, label : self.yt_api_handler.streams_dict[key]});
+		}
+	}
+
+	feedbacks["broadcast_status"] = {
+		label: "Broadcast status",
+		description: "Feedback providing information about state of a broadcast in a broadcast lifecycle",
+		options: [
+			{
+				type: "colorpicker",
+				label: "Background color (live)",
+				id: "bg_live",
+				default: self.rgb(255,0,0)
+			},
+			{
+				type: "colorpicker",
+				label: "Background color (testing)",
+				id: "bg_testing",
+				default: self.rgb(255,255,0)
+			},
+			{
+				type: "colorpicker",
+				label: "Background color (complete)",
+				id: "bg_complete",
+				default: self.rgb(0,0,255)
+			},
+			{
+				type: "colorpicker",
+				label: "Background color (ready)",
+				id: "bg_ready",
+				default: self.rgb(0,255,0)
+			},
+			{
+				type: "dropdown",
+				label: "Broadcast",
+				id: "broadcast",
+				choices: self.streams_list_to_display
+			}
+		]
+	}
+	self.setFeedbackDefinitions(feedbacks);
+}
+
+instance.prototype.feedback = function(feedback) {
+	var self = this;
+
+	if (feedback.type === "broadcast_status") {
+		switch(self.broadcasts_states_dict[feedback.options.broadcast]) {
+			case StreamLifecycle.LiveRunning:
+				return {bgcolor: feedback.options.bg_live};
+			case StreamLifecycle.TestRunning:
+				return {bgcolor: feedback.options.bg_testing};
+			case StreamLifecycle.Complete:
+				return {bgcolor: feedback.options.bg_complete};
+			case StreamLifecycle.Ready:
+				return {bgcolor: feedback.options.bg_ready};
+		}
+	}
+}
+
+instance.prototype.update_broadcasts_state = function() {
+	var self = this;
+
+	self.yt_api_handler.get_all_broadcasts_state().then(broadcasts_state_dict => {
+		self.broadcasts_states_dict = broadcasts_state_dict;
+		self.checkFeedbacks("broadcast_status");
+		return;
+	});
+}
 
 // https://developers.google.com/youtube/v3/live/docs/liveBroadcasts#status.lifeCycleStatus
 const StreamLifecycle = {
@@ -420,7 +502,7 @@ class Youtube_api_handler {
 		let streams_dict = {};
 		response.data.items.forEach( (item, index) => {
 			streams_dict[item.id] = item.snippet.title;
-		})
+		});
 		return streams_dict;
 	}
 
@@ -438,6 +520,22 @@ class Youtube_api_handler {
 			"id" : id,
 			"broadcastStatus" : "complete"
 		});
+	}
+	
+	async get_all_broadcasts_state() {
+		let response = await this.youtube_service.liveBroadcasts.list({
+			"part" : "status",
+			"broadcastType" : "all",
+			"mine" : true
+		});
+
+		let broadcasts_states_dict = {};
+		response.data.items.forEach( (item, index) => {
+			broadcasts_states_dict[item.id] = item.status.lifeCycleStatus
+		});
+		return broadcasts_states_dict;
+
+
 	}
 }
 
