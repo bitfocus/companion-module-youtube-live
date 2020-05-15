@@ -37,7 +37,7 @@ This is done via the Google API console:
 
     After creating these credentials, copy _client ID_ and _client secret_ into corresponding fields in the module instance cofiguration in Companion.
 
-6. When first configuring the module, fill the _Authorization token_ field (in instance configuration) with `login`.
+6. When first configuring the module, make sure that the _Authorization token_ field in instance configuration is empty.
 7. After applying changes to module configuration, you will be redirected to your OAuth consent screen
    to authorize module for accessing your YouTube channel. Proceed with the account with which you want the module to interact.
 
