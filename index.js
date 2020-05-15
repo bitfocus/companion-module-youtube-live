@@ -202,6 +202,15 @@ instance.prototype.actions = function(system) {
 				id: "stream_to_stop",
 				choices: self.streams_list_to_display
 			}]
+		},
+		"toggle_stream": {
+			label: "Toggle stream",
+			options: [{
+				type: "dropdown",
+				label: "Stream:",
+				id: "stream_to_toggle",
+				choices: self.streams_list_to_display
+			}]
 		}
 	});
 	self.system.emit('instance_actions', self.id, self.setActions);
@@ -227,8 +236,54 @@ instance.prototype.action = function(action) {
 		}).catch( err => {
 			self.log("debug","Error occured during finishing a stream, details: " + err);
 		});
+	} else if (action.action == "toggle_stream") {
+		let id = action.options["stream_to_toggle"];
+
+		self.yt_api_handler.get_broadcast(id).then( response => {
+			let status = response.status.lifeCycleStatus;
+			self.log("debug", "Status of stream to toggle is " + status);
+
+			switch (status) {
+				case StreamLifecycle.Ready:
+				case StreamLifecycle.TestStarting:
+				case StreamLifecycle.TestRunning:
+					self.log("debug", "Starting stream " + id);
+					return self.yt_api_handler.set_broadcast_live(id);
+
+				case StreamLifecycle.LiveStarting:
+				case StreamLifecycle.LiveRunning:
+					self.log("debug", "Ending stream " + id);
+					return self.yt_api_handler.set_broadcast_finished(id);
+
+				case StreamLifecycle.Revoked:
+					throw new Error("Stream is revoked");
+				case StreamLifecycle.Created:
+					throw new Error("Stream is not configured properly");
+				case StreamLifecycle.Complete:
+					throw new Error("Stream is completed");
+				default:
+					throw new Error("Unknown stream status");
+			}
+		}).then( response => {
+			self.log("debug", "Stream toggled successfully");
+		}).catch( err => {
+			self.log("warn", "Error occured during stream toggling, details: " + err);
+		});
 	}
 }
+
+// https://developers.google.com/youtube/v3/live/docs/liveBroadcasts#status.lifeCycleStatus
+const StreamLifecycle = {
+	Revoked: 'revoked',
+	Created: 'created',
+	Ready:   'ready',
+	TestStarting: 'testStarting',
+	TestRunning:  'testing',
+	LiveStarting: 'liveStarting',
+	LiveRunning:  'live',
+	Complete: 'complete'
+};
+Object.freeze(StreamLifecycle);
 
 class Youtube_api_handler {
 	constructor(client_id, client_secret, redirect_url, scopes, log) {
@@ -316,79 +371,72 @@ class Youtube_api_handler {
 			auth : this.oauth2client
 		});
 	}
+
 	async create_live_broadcast(title, scheduled_start_time, record_from_start, enable_dvr, privacy_status) {
-		return new Promise((resolve, reject) => {
-			this.youtube_service.liveBroadcasts.insert({
-				"part" : "snippet, contentDetails, staus",
-				"resource" : {
-					"snippet" : {
-						"title" : title,
-						"scheduledStartTime" : scheduled_start_time,
-					},
-					"contentDetails" : {
-						"recordFromStart" : record_from_start,
-						"enableDvr" : enable_dvr
-					},
-					"status" : {
-						"privacyStatus" : privacy_status
-					}
+		return this.youtube_service.liveBroadcasts.insert({
+			"part" : "snippet, contentDetails, staus",
+			"resource" : {
+				"snippet" : {
+					"title" : title,
+					"scheduledStartTime" : scheduled_start_time,
+				},
+				"contentDetails" : {
+					"recordFromStart" : record_from_start,
+					"enableDvr" : enable_dvr
+				},
+				"status" : {
+					"privacyStatus" : privacy_status
 				}
-			}).then( response => {
-				this.log('debug', "Broadcast created successfully ; details: " + response);
-				resolve(response);
-			}, err => {
-				this.log('warn', "Error during execution of create live broadcast action ; details: " + err);
-				reject(err);
-			})
+			}
 		});
 	}
 
 	async create_live_stream() {}
 
-	async get_all_broadcasts() {
-		return new Promise((resolve, reject) => {
-			this.youtube_service.liveBroadcasts.list({
-				"part" : "snippet, contentDetails, status",
-				"broadcastType" : "all",
-				"mine" : true
-			}).then( response => {
-				let streams_dict = {};
-				response.data.items.forEach( (item, index) => {
-					streams_dict[item.id] = item.snippet.title;
-				})
-				resolve(streams_dict);
-			}, err => {
-				this.log('warn', "Error retrieving list of streams: " + err)
-				reject(err);
-			});
+	async get_broadcast(id) {
+		let response = await this.youtube_service.liveBroadcasts.list({
+			"part": "snippet, contentDetails, status",
+			"id": id
 		});
+
+		if (response.data.items.length < 1) {
+			throw new Error("No stream found with ID " + id);
+
+		} else if (response.data.items.length > 1) {
+			throw new Error("Two or more streams found with ID " + id);
+
+		} else {
+			return response.data.items[0];
+		}
+	}
+
+	async get_all_broadcasts() {
+		let response = await this.youtube_service.liveBroadcasts.list({
+			"part" : "snippet, contentDetails, status",
+			"broadcastType" : "all",
+			"mine" : true
+		});
+
+		let streams_dict = {};
+		response.data.items.forEach( (item, index) => {
+			streams_dict[item.id] = item.snippet.title;
+		})
+		return streams_dict;
 	}
 
 	async set_broadcast_live(id) {
-		return new Promise((resolve, reject) => {
-			this.youtube_service.liveBroadcasts.transition({
-				"part" : "snippet, contentDetails, status",
-				"id" : id,
-				"broadcastStatus" : "live"
-			}).then( response => {
-				resolve(response);
-			}, err => {
-				reject(err);
-			});
+		return this.youtube_service.liveBroadcasts.transition({
+			"part" : "snippet, contentDetails, status",
+			"id" : id,
+			"broadcastStatus" : "live"
 		});
 	}
 
 	async set_broadcast_finished(id) {
-		return new Promise((resolve, reject) => {
-			this.youtube_service.liveBroadcasts.transition({
-				"part" : "snippet, contentDetails, status",
-				"id" : id,
-				"broadcastStatus" : "complete"
-			}).then( response => {
-				resolve(response);
-			}, err => {
-				reject(err);
-			});
+		return this.youtube_service.liveBroadcasts.transition({
+			"part" : "snippet, contentDetails, status",
+			"id" : id,
+			"broadcastStatus" : "complete"
 		});
 	}
 }
