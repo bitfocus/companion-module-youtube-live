@@ -345,6 +345,23 @@ class Youtube_api_handler {
 
 	async create_live_stream() {}
 
+	async get_broadcast(id) {
+		let response = await this.youtube_service.liveBroadcasts.list({
+			"part": "snippet, contentDetails, status",
+			"id": id
+		});
+
+		if (response.data.items.length < 1) {
+			throw new Error("No stream found with ID " + id);
+
+		} else if (response.data.items.length > 1) {
+			throw new Error("Two or more streams found with ID " + id);
+
+		} else {
+			return response.data.items[0];
+		}
+	}
+
 	async get_all_broadcasts() {
 		return new Promise((resolve, reject) => {
 			this.youtube_service.liveBroadcasts.list({
