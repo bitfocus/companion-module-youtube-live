@@ -2,8 +2,9 @@
 
 ### Available actions
 
-- **Start stream** - this action starts a YouTube stream and makes it available for viewing.
-- **Stop stream**  - this action finishes a YouTube stream.
+- **Start a stream**  - this action starts a YouTube stream and makes it available for viewing.
+- **Stop a stream**   - this action finishes a YouTube stream.
+- **Toggle a stream** - this action either starts or stops a stream, depending on current stream state (`ready` → `live`, `live` → `completed`).
 
 ### Usage
 
