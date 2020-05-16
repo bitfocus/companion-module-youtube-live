@@ -110,6 +110,7 @@ instance.prototype.init_api_from_token_object = function(credentials) {
 		self.update_broadcasts_state();
 
 		self.refresher = setInterval(self.update_broadcasts_state.bind(self), 20000);
+    
 		self.init_feedbacks();
 
 		self.log('info', 'YT Module initialized successfully');
@@ -123,8 +124,6 @@ instance.prototype.init_api_from_token_object = function(credentials) {
 
 instance.prototype.destroy = function() {
 	var self = this;
-	self.stream_to_start_list = [];
-	self.stream_to_stop_list  = [];
 
 	if (self.refresher !== undefined) {
 		clearInterval(self.refresher);
@@ -509,7 +508,7 @@ class Youtube_api_handler {
 
 	async get_all_broadcasts() {
 		let response = await this.youtube_service.liveBroadcasts.list({
-			"part" : "snippet, contentDetails, status",
+			"part" : "snippet",
 			"broadcastType" : "all",
 			"mine" : true
 		});
