@@ -318,25 +318,25 @@ instance.prototype.init_feedbacks = function() {
 				type: "colorpicker",
 				label: "Background color (live)",
 				id: "bg_live",
-				default: self.rgb(255,0,0)
+				default: self.rgb(222, 0, 0)
 			},
 			{
 				type: "colorpicker",
 				label: "Background color (testing)",
 				id: "bg_testing",
-				default: self.rgb(255,255,0)
+				default: self.rgb(0, 172, 0)
 			},
 			{
 				type: "colorpicker",
 				label: "Background color (complete)",
 				id: "bg_complete",
-				default: self.rgb(0,0,255)
+				default: self.rgb(0, 0, 168)
 			},
 			{
 				type: "colorpicker",
 				label: "Background color (ready)",
 				id: "bg_ready",
-				default: self.rgb(0,255,0)
+				default: self.rgb(209, 209, 0)
 			},
 			{
 				type: "dropdown",
