@@ -237,6 +237,7 @@ instance.prototype.action = function(action) {
 			action.options["stream_to_start"]
 		).then( response => {
 			self.log("info", "YouTube stream was set live successfully");
+			self.update_broadcasts_state();
 		}).catch( err => {
 			self.log("debug", "Error occured during stream state actualization, details: " + err);
 		});
@@ -246,6 +247,7 @@ instance.prototype.action = function(action) {
 			action.options["stream_to_stop"]
 		).then( response => {
 			self.log("info", "YouTube stream finished successfully");
+			self.update_broadcasts_state();
 		}).catch( err => {
 			self.log("debug","Error occured during finishing a stream, details: " + err);
 		});
@@ -279,6 +281,7 @@ instance.prototype.action = function(action) {
 			}
 		}).then( response => {
 			self.log("debug", "Stream toggled successfully");
+			self.update_broadcasts_state();
 		}).catch( err => {
 			self.log("warn", "Error occured during stream toggling, details: " + err);
 		});
