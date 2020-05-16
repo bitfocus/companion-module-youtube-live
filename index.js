@@ -254,32 +254,7 @@ instance.prototype.action = function(action) {
 	} else if (action.action == "toggle_stream") {
 		let id = action.options["stream_to_toggle"];
 
-		self.yt_api_handler.get_broadcast(id).then( response => {
-			let status = response.status.lifeCycleStatus;
-			self.log("debug", "Status of stream to toggle is " + status);
-
-			switch (status) {
-				case StreamLifecycle.Ready:
-				case StreamLifecycle.TestStarting:
-				case StreamLifecycle.TestRunning:
-					self.log("debug", "Starting stream " + id);
-					return self.yt_api_handler.set_broadcast_live(id);
-
-				case StreamLifecycle.LiveStarting:
-				case StreamLifecycle.LiveRunning:
-					self.log("debug", "Ending stream " + id);
-					return self.yt_api_handler.set_broadcast_finished(id);
-
-				case StreamLifecycle.Revoked:
-					throw new Error("Stream is revoked");
-				case StreamLifecycle.Created:
-					throw new Error("Stream is not configured properly");
-				case StreamLifecycle.Complete:
-					throw new Error("Stream is completed");
-				default:
-					throw new Error("Unknown stream status");
-			}
-		}).then( response => {
+		self.do_toggle(id).then( response => {
 			self.log("debug", "Stream toggled successfully");
 			self.update_broadcasts_state();
 		}).catch( err => {
@@ -287,6 +262,36 @@ instance.prototype.action = function(action) {
 		});
 	}
 }
+
+instance.prototype.do_toggle = async function(id) {
+	var self = this;
+
+	let status = self.broadcasts_states_dict[id];
+	self.log("debug", "Status of stream to toggle is " + status);
+
+	switch (status) {
+		case StreamLifecycle.Ready:
+		case StreamLifecycle.TestStarting:
+		case StreamLifecycle.TestRunning:
+			self.log("debug", "Starting stream " + id);
+			return self.yt_api_handler.set_broadcast_live(id);
+
+		case StreamLifecycle.LiveStarting:
+		case StreamLifecycle.LiveRunning:
+			self.log("debug", "Ending stream " + id);
+			return self.yt_api_handler.set_broadcast_finished(id);
+
+		case StreamLifecycle.Revoked:
+			throw new Error("Stream is revoked");
+		case StreamLifecycle.Created:
+			throw new Error("Stream is not configured properly");
+		case StreamLifecycle.Complete:
+			throw new Error("Stream is completed");
+		default:
+			throw new Error("Unknown stream status");
+	}
+}
+
 instance.prototype.init_feedbacks = function() {
 	var self = this;
 
@@ -486,23 +491,6 @@ class Youtube_api_handler {
 	}
 
 	async create_live_stream() {}
-
-	async get_broadcast(id) {
-		let response = await this.youtube_service.liveBroadcasts.list({
-			"part": "snippet, contentDetails, status",
-			"id": id
-		});
-
-		if (response.data.items.length < 1) {
-			throw new Error("No stream found with ID " + id);
-
-		} else if (response.data.items.length > 1) {
-			throw new Error("Two or more streams found with ID " + id);
-
-		} else {
-			return response.data.items[0];
-		}
-	}
 
 	async get_all_broadcasts() {
 		let response = await this.youtube_service.liveBroadcasts.list({
