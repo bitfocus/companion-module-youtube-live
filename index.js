@@ -106,6 +106,9 @@ instance.prototype.init_api_from_token_object = function(credentials) {
 
 		self.log('debug', 'YT broadcast query successful: ' + JSON.stringify(self.yt_api_handler.streams_dict));
 		self.actions();
+
+		self.update_broadcasts_state();
+
 		self.refresher = setInterval(self.update_broadcasts_state.bind(self), 20000);
 		self.init_feedbacks();
 
