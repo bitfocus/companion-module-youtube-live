@@ -349,8 +349,10 @@ instance.prototype.feedback = function(feedback) {
 
 	if (feedback.type === "broadcast_status") {
 		switch(self.broadcasts_states_dict[feedback.options.broadcast]) {
+			case StreamLifecycle.LiveStarting:
 			case StreamLifecycle.LiveRunning:
 				return {bgcolor: feedback.options.bg_live};
+			case StreamLifecycle.TestStarting:
 			case StreamLifecycle.TestRunning:
 				return {bgcolor: feedback.options.bg_testing};
 			case StreamLifecycle.Complete:
