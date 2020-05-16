@@ -233,8 +233,9 @@ instance.prototype.action = function(action) {
 	var self = this;
 
 	if (action.action == "start_stream") {
-		self.yt_api_handler.set_broadcast_live(
-			action.options["stream_to_start"]
+		self.yt_api_handler.set_broadcast_state(
+			action.options["stream_to_start"],
+			StreamTransition.ToLive
 		).then( response => {
 			self.log("info", "YouTube stream was set live successfully");
 			self.update_broadcasts_state();
@@ -243,8 +244,9 @@ instance.prototype.action = function(action) {
 		});
 
 	} else if (action.action == "stop_stream") {
-		self.yt_api_handler.set_broadcast_finished(
-			action.options["stream_to_stop"]
+		self.yt_api_handler.set_broadcast_state(
+			action.options["stream_to_stop"],
+			StreamTransition.ToCompleted
 		).then( response => {
 			self.log("info", "YouTube stream finished successfully");
 			self.update_broadcasts_state();
@@ -271,15 +273,18 @@ instance.prototype.do_toggle = async function(id) {
 
 	switch (status) {
 		case StreamLifecycle.Ready:
+			self.log("debug", "Starting testing stream " + id);
+			return self.yt_api_handler.set_broadcast_state(id, StreamTransition.ToTesting);
+
 		case StreamLifecycle.TestStarting:
 		case StreamLifecycle.TestRunning:
 			self.log("debug", "Starting stream " + id);
-			return self.yt_api_handler.set_broadcast_live(id);
+			return self.yt_api_handler.set_broadcast_state(id, StreamTransition.ToLive);
 
 		case StreamLifecycle.LiveStarting:
 		case StreamLifecycle.LiveRunning:
 			self.log("debug", "Ending stream " + id);
-			return self.yt_api_handler.set_broadcast_finished(id);
+			return self.yt_api_handler.set_broadcast_state(id, StreamTransition.ToCompleted);
 
 		case StreamLifecycle.Revoked:
 			throw new Error("Stream is revoked");
@@ -383,6 +388,14 @@ const StreamLifecycle = {
 	LiveStarting: 'liveStarting',
 	LiveRunning:  'live',
 	Complete: 'complete'
+};
+Object.freeze(StreamLifecycle);
+
+// https://developers.google.com/youtube/v3/live/docs/liveBroadcasts#status.lifeCycleStatus
+const StreamTransition = {
+	ToTesting:   'testing',
+	ToLive:      'live',
+	ToCompleted: 'complete',
 };
 Object.freeze(StreamLifecycle);
 
@@ -508,19 +521,11 @@ class Youtube_api_handler {
 		return streams_dict;
 	}
 
-	async set_broadcast_live(id) {
+	async set_broadcast_state(id, transition) {
 		return this.youtube_service.liveBroadcasts.transition({
-			"part" : "snippet, contentDetails, status",
+			"part" : "id",
 			"id" : id,
-			"broadcastStatus" : "live"
-		});
-	}
-
-	async set_broadcast_finished(id) {
-		return this.youtube_service.liveBroadcasts.transition({
-			"part" : "snippet, contentDetails, status",
-			"id" : id,
-			"broadcastStatus" : "complete"
+			"broadcastStatus" : transition
 		});
 	}
 
