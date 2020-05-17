@@ -2,7 +2,7 @@
 	"name": "youtube-live",
 	"version": "1.0.0",
 	"api_version": "1.0.0",
-	"description": "Simple module for controlling YT streaming",
+	"description": "Simple module for controlling YouTube live broadcasts",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
