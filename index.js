@@ -47,6 +47,7 @@ instance.prototype.init = function(is_config) {
 		self.config.client_secret,
 		self.config.client_redirect_url,
 		scopes,
+		self.config.fetch_max_count || 10,
 		self.log.bind(self)
 	);
 
@@ -139,6 +140,16 @@ instance.prototype.destroy = function() {
 instance.prototype.config_fields = function() {
 	var self = this;
 	return [
+		{
+			type:  'number',
+			label: 'How many broadcasts to fetch from YouTube',
+			id:    'fetch_max_count',
+			width: 6,
+			min:  1,
+			max: 50,
+			default: 10,
+			required: true
+		},
 		{
 			type: 'text',
 			id: 'api-key-info',
@@ -399,7 +410,7 @@ const BroadcastTransition = {
 Object.freeze(BroadcastLifecycle);
 
 class Youtube_api_handler {
-	constructor(client_id, client_secret, redirect_url, scopes, log) {
+	constructor(client_id, client_secret, redirect_url, scopes, fetch_max, log) {
 		this.broadcasts_dict  = {};
 		this.client_id     = client_id;
 		this.client_secret = client_secret;
@@ -407,6 +418,7 @@ class Youtube_api_handler {
 		this.scopes        = scopes;
 		this.log           = log;
 		this.server        = null;
+		this.fetch_max_cnt = fetch_max;
 		this.oauth2client = new google.auth.OAuth2(
 			this.client_id,
 			this.client_secret,
@@ -508,7 +520,8 @@ class Youtube_api_handler {
 		let response = await this.youtube_service.liveBroadcasts.list({
 			"part" : "snippet",
 			"broadcastType" : "all",
-			"mine" : true
+			"mine" : true,
+			"maxResults": this.fetch_max_cnt
 		});
 
 		let broadcasts_dict = {};
@@ -530,7 +543,8 @@ class Youtube_api_handler {
 		let response = await this.youtube_service.liveBroadcasts.list({
 			"part" : "status",
 			"broadcastType" : "all",
-			"mine" : true
+			"mine" : true,
+			"maxResults": this.fetch_max_cnt
 		});
 
 		let broadcasts_states_dict = {};
