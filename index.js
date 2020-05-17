@@ -100,17 +100,17 @@ instance.prototype.init_api_from_token_object = function(credentials) {
 	self.yt_api_handler.oauth2client.setCredentials(credentials);
 	self.yt_api_handler.create_yt_service();
 
-	self.yt_api_handler.get_all_broadcasts().then( streams_dict => {
-		self.yt_api_handler.streams_dict = streams_dict;
+	self.yt_api_handler.get_all_broadcasts().then( broadcasts_dict => {
+		self.yt_api_handler.broadcasts_dict = broadcasts_dict;
 
 
-		self.log('debug', 'YT broadcast query successful: ' + JSON.stringify(self.yt_api_handler.streams_dict));
+		self.log('debug', 'YT broadcast query successful: ' + JSON.stringify(self.yt_api_handler.broadcasts_dict));
 		self.actions();
 
 		self.update_broadcasts_state();
 
 		self.refresher = setInterval(self.update_broadcasts_state.bind(self), 20000);
-    
+
 		self.init_feedbacks();
 
 		self.log('info', 'YT Module initialized successfully');
@@ -188,40 +188,40 @@ instance.prototype.config_fields = function() {
 instance.prototype.actions = function(system) {
 	var self = this;
 
-	self.streams_list_to_display = [];
+	self.broadcasts_list_to_display = [];
 
 	if (self.yt_api_handler !== undefined) {
-		for (var key in self.yt_api_handler.streams_dict) {
-			self.streams_list_to_display.push({id : key, label : self.yt_api_handler.streams_dict[key]});
+		for (var key in self.yt_api_handler.broadcasts_dict) {
+			self.broadcasts_list_to_display.push({id : key, label : self.yt_api_handler.broadcasts_dict[key]});
 		}
 	}
 
 	self.setActions({
-		"start_stream": {
-			label: "Start stream",
+		"start_broadcast": {
+			label: "Start a broadcast",
 			options: [{
 				type: "dropdown",
-				label: "Stream:",
-				id: "stream_to_start",
-				choices: self.streams_list_to_display
+				label: "Broadcast:",
+				id: "broadcast_id",
+				choices: self.broadcasts_list_to_display
 			}]
 		},
-		"stop_stream": {
-			label: "Stop stream",
+		"stop_broadcast": {
+			label: "Stop a broadcast",
 			options: [{
 				type: "dropdown",
-				label: "Stream:",
-				id: "stream_to_stop",
-				choices: self.streams_list_to_display
+				label: "Broadcast:",
+				id: "broadcast_id",
+				choices: self.broadcasts_list_to_display
 			}]
 		},
-		"toggle_stream": {
-			label: "Toggle stream",
+		"toggle_broadcast": {
+			label: "Toggle a broadcast",
 			options: [{
 				type: "dropdown",
-				label: "Stream:",
-				id: "stream_to_toggle",
-				choices: self.streams_list_to_display
+				label: "Broadcast:",
+				id: "broadcast_id",
+				choices: self.broadcasts_list_to_display
 			}]
 		}
 	});
@@ -231,35 +231,35 @@ instance.prototype.actions = function(system) {
 instance.prototype.action = function(action) {
 	var self = this;
 
-	if (action.action == "start_stream") {
+	if (action.action == "start_broadcast") {
 		self.yt_api_handler.set_broadcast_state(
-			action.options["stream_to_start"],
-			StreamTransition.ToLive
+			action.options["broadcast_id"],
+			BroadcastTransition.ToLive
 		).then( response => {
-			self.log("info", "YouTube stream was set live successfully");
+			self.log("info", "YouTube broadcast was set live successfully");
 			self.update_broadcasts_state();
 		}).catch( err => {
-			self.log("debug", "Error occured during stream state actualization, details: " + err);
+			self.log("debug", "Error occured during broadcast state actualization, details: " + err);
 		});
 
-	} else if (action.action == "stop_stream") {
+	} else if (action.action == "stop_broadcast") {
 		self.yt_api_handler.set_broadcast_state(
-			action.options["stream_to_stop"],
-			StreamTransition.ToCompleted
+			action.options["broadcast_id"],
+			BroadcastTransition.ToCompleted
 		).then( response => {
-			self.log("info", "YouTube stream finished successfully");
+			self.log("info", "YouTube broadcast finished successfully");
 			self.update_broadcasts_state();
 		}).catch( err => {
-			self.log("debug","Error occured during finishing a stream, details: " + err);
+			self.log("debug","Error occured during finishing a broadcast, details: " + err);
 		});
-	} else if (action.action == "toggle_stream") {
-		let id = action.options["stream_to_toggle"];
+	} else if (action.action == "toggle_broadcast") {
+		let id = action.options["broadcast_id"];
 
 		self.do_toggle(id).then( response => {
-			self.log("debug", "Stream toggled successfully");
+			self.log("debug", "YouTube broadcast toggled successfully");
 			self.update_broadcasts_state();
 		}).catch( err => {
-			self.log("warn", "Error occured during stream toggling, details: " + err);
+			self.log("warn", "Error occured during broadcast toggling, details: " + err);
 		});
 	}
 }
@@ -268,31 +268,31 @@ instance.prototype.do_toggle = async function(id) {
 	var self = this;
 
 	let status = self.broadcasts_states_dict[id];
-	self.log("debug", "Status of stream to toggle is " + status);
+	self.log("debug", "Status of broadcast to toggle is " + status);
 
 	switch (status) {
-		case StreamLifecycle.Ready:
-			self.log("debug", "Starting testing stream " + id);
-			return self.yt_api_handler.set_broadcast_state(id, StreamTransition.ToTesting);
+		case BroadcastLifecycle.Ready:
+			self.log("debug", "Starting broadcast test " + id);
+			return self.yt_api_handler.set_broadcast_state(id, BroadcastTransition.ToTesting);
 
-		case StreamLifecycle.TestStarting:
-		case StreamLifecycle.TestRunning:
-			self.log("debug", "Starting stream " + id);
-			return self.yt_api_handler.set_broadcast_state(id, StreamTransition.ToLive);
+		case BroadcastLifecycle.TestStarting:
+		case BroadcastLifecycle.TestRunning:
+			self.log("debug", "Starting broadcast " + id);
+			return self.yt_api_handler.set_broadcast_state(id, BroadcastTransition.ToLive);
 
-		case StreamLifecycle.LiveStarting:
-		case StreamLifecycle.LiveRunning:
-			self.log("debug", "Ending stream " + id);
-			return self.yt_api_handler.set_broadcast_state(id, StreamTransition.ToCompleted);
+		case BroadcastLifecycle.LiveStarting:
+		case BroadcastLifecycle.LiveRunning:
+			self.log("debug", "Ending broadcast " + id);
+			return self.yt_api_handler.set_broadcast_state(id, BroadcastTransition.ToCompleted);
 
-		case StreamLifecycle.Revoked:
-			throw new Error("Stream is revoked");
-		case StreamLifecycle.Created:
-			throw new Error("Stream is not configured properly");
-		case StreamLifecycle.Complete:
-			throw new Error("Stream is completed");
+		case BroadcastLifecycle.Revoked:
+			throw new Error("Broadcast is revoked");
+		case BroadcastLifecycle.Created:
+			throw new Error("Broadcast is not configured properly");
+		case BroadcastLifecycle.Complete:
+			throw new Error("Broadcast is completed");
 		default:
-			throw new Error("Unknown stream status");
+			throw new Error("Unknown broadcast status");
 	}
 }
 
@@ -301,11 +301,11 @@ instance.prototype.init_feedbacks = function() {
 
 	var feedbacks = {};
 
-	self.streams_list_to_display = [];
+	self.broadcasts_list_to_display = [];
 
 	if (self.yt_api_handler !== undefined) {
-		for (var key in self.yt_api_handler.streams_dict) {
-			self.streams_list_to_display.push({id : key, label : self.yt_api_handler.streams_dict[key]});
+		for (var key in self.yt_api_handler.broadcasts_dict) {
+			self.broadcasts_list_to_display.push({id : key, label : self.yt_api_handler.broadcasts_dict[key]});
 		}
 	}
 
@@ -341,7 +341,7 @@ instance.prototype.init_feedbacks = function() {
 				type: "dropdown",
 				label: "Broadcast",
 				id: "broadcast",
-				choices: self.streams_list_to_display
+				choices: self.broadcasts_list_to_display
 			}
 		]
 	}
@@ -353,15 +353,15 @@ instance.prototype.feedback = function(feedback) {
 
 	if (feedback.type === "broadcast_status") {
 		switch(self.broadcasts_states_dict[feedback.options.broadcast]) {
-			case StreamLifecycle.LiveStarting:
-			case StreamLifecycle.LiveRunning:
+			case BroadcastLifecycle.LiveStarting:
+			case BroadcastLifecycle.LiveRunning:
 				return {bgcolor: feedback.options.bg_live};
-			case StreamLifecycle.TestStarting:
-			case StreamLifecycle.TestRunning:
+			case BroadcastLifecycle.TestStarting:
+			case BroadcastLifecycle.TestRunning:
 				return {bgcolor: feedback.options.bg_testing};
-			case StreamLifecycle.Complete:
+			case BroadcastLifecycle.Complete:
 				return {bgcolor: feedback.options.bg_complete};
-			case StreamLifecycle.Ready:
+			case BroadcastLifecycle.Ready:
 				return {bgcolor: feedback.options.bg_ready};
 		}
 	}
@@ -378,7 +378,7 @@ instance.prototype.update_broadcasts_state = function() {
 }
 
 // https://developers.google.com/youtube/v3/live/docs/liveBroadcasts#status.lifeCycleStatus
-const StreamLifecycle = {
+const BroadcastLifecycle = {
 	Revoked: 'revoked',
 	Created: 'created',
 	Ready:   'ready',
@@ -388,19 +388,19 @@ const StreamLifecycle = {
 	LiveRunning:  'live',
 	Complete: 'complete'
 };
-Object.freeze(StreamLifecycle);
+Object.freeze(BroadcastLifecycle);
 
 // https://developers.google.com/youtube/v3/live/docs/liveBroadcasts#status.lifeCycleStatus
-const StreamTransition = {
+const BroadcastTransition = {
 	ToTesting:   'testing',
 	ToLive:      'live',
 	ToCompleted: 'complete',
 };
-Object.freeze(StreamLifecycle);
+Object.freeze(BroadcastLifecycle);
 
 class Youtube_api_handler {
 	constructor(client_id, client_secret, redirect_url, scopes, log) {
-		this.streams_dict  = {};
+		this.broadcasts_dict  = {};
 		this.client_id     = client_id;
 		this.client_secret = client_secret;
 		this.redirect_url  = redirect_url;
@@ -504,8 +504,6 @@ class Youtube_api_handler {
 		});
 	}
 
-	async create_live_stream() {}
-
 	async get_all_broadcasts() {
 		let response = await this.youtube_service.liveBroadcasts.list({
 			"part" : "snippet",
@@ -513,11 +511,11 @@ class Youtube_api_handler {
 			"mine" : true
 		});
 
-		let streams_dict = {};
+		let broadcasts_dict = {};
 		response.data.items.forEach( (item, index) => {
-			streams_dict[item.id] = item.snippet.title;
+			broadcasts_dict[item.id] = item.snippet.title;
 		});
-		return streams_dict;
+		return broadcasts_dict;
 	}
 
 	async set_broadcast_state(id, transition) {
