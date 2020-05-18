@@ -108,9 +108,9 @@ instance.prototype.init_api_from_token_object = function(credentials) {
 		self.log('debug', 'YT broadcast query successful: ' + JSON.stringify(self.yt_api_handler.broadcasts_dict));
 		self.actions();
 
-		self.update_broadcasts_state();
+		self.update_streams_broadcasts_state();
 
-		self.refresher = setInterval(self.update_broadcasts_state.bind(self), 20000);
+		self.refresher = setInterval(self.update_streams_broadcasts_state.bind(self), self.config.refresh_interval*1000);
 
 		self.init_feedbacks();
 
@@ -148,6 +148,14 @@ instance.prototype.config_fields = function() {
 			min:  1,
 			max: 50,
 			default: 10,
+			required: true
+		},
+		{
+			type: "number",
+			label: "Interval between refreshments of broadcasts statuses and streams health (in seconds)",
+			id: "refresh_interval",
+			width: 6,
+			default: 60,
 			required: true
 		},
 		{
@@ -203,7 +211,7 @@ instance.prototype.actions = function(system) {
 
 	if (self.yt_api_handler !== undefined) {
 		for (var key in self.yt_api_handler.broadcasts_dict) {
-			self.broadcasts_list_to_display.push({id : key, label : self.yt_api_handler.broadcasts_dict[key]});
+			self.broadcasts_list_to_display.push({id : key, label : self.yt_api_handler.broadcasts_dict[key]["title"]});
 		}
 	}
 
@@ -248,7 +256,7 @@ instance.prototype.action = function(action) {
 			BroadcastTransition.ToLive
 		).then( response => {
 			self.log("info", "YouTube broadcast was set live successfully");
-			self.update_broadcasts_state();
+			self.update_streams_broadcasts_state();
 		}).catch( err => {
 			self.log("debug", "Error occured during broadcast state actualization, details: " + err);
 		});
@@ -259,7 +267,7 @@ instance.prototype.action = function(action) {
 			BroadcastTransition.ToCompleted
 		).then( response => {
 			self.log("info", "YouTube broadcast finished successfully");
-			self.update_broadcasts_state();
+			self.update_streams_broadcasts_state();
 		}).catch( err => {
 			self.log("debug","Error occured during finishing a broadcast, details: " + err);
 		});
@@ -268,7 +276,7 @@ instance.prototype.action = function(action) {
 
 		self.do_toggle(id).then( response => {
 			self.log("debug", "YouTube broadcast toggled successfully");
-			self.update_broadcasts_state();
+			self.update_streams_broadcasts_state();
 		}).catch( err => {
 			self.log("warn", "Error occured during broadcast toggling, details: " + err);
 		});
@@ -313,12 +321,18 @@ instance.prototype.init_feedbacks = function() {
 	var feedbacks = {};
 
 	self.broadcasts_list_to_display = [];
+	self.broadcast_id_stream_id_list = [];
+	self.id_list = []
 
 	if (self.yt_api_handler !== undefined) {
 		for (var key in self.yt_api_handler.broadcasts_dict) {
-			self.broadcasts_list_to_display.push({id : key, label : self.yt_api_handler.broadcasts_dict[key]});
+			self.broadcasts_list_to_display.push({id : key, label : self.yt_api_handler.broadcasts_dict[key]["title"]});
+			self.broadcast_id_stream_id_list.push({id : self.yt_api_handler.broadcasts_dict[key]["bound_stream_id"],
+													label : self.yt_api_handler.broadcasts_dict[key]["title"]});
+			self.id_list.push(self.yt_api_handler.broadcasts_dict[key]["bound_stream_id"]);
 		}
 	}
+	console.log(self.broadcast_id_stream_id_list);
 
 	feedbacks["broadcast_status"] = {
 		label: "Broadcast status",
@@ -356,6 +370,43 @@ instance.prototype.init_feedbacks = function() {
 			}
 		]
 	}
+
+	feedbacks["broadcast_bound_stream_health"] = {
+		label: "Health of stream bound to broadcast",
+		description: "Feedback reflecting the health of video stream bound to a broadcast",
+		options: [
+			{
+				type: "colorpicker",
+				label: "Background color (good)",
+				id: "bg_good",
+				default: self.rgb(124, 252, 0)
+			},
+			{
+				type: "colorpicker",
+				label: "Background color (ok)",
+				id: "bg_ok",
+				default: self.rgb(0, 100, 0)
+			},
+			{
+				type: "colorpicker",
+				label: "Background color (bad)",
+				id: "bg_bad",
+				default: self.rgb(255, 255, 0)
+			},
+			{
+				type: "colorpicker",
+				label: "Background color (No data)",
+				id: "bg_no_data",
+				default: self.rgb(255, 0, 0)
+			},
+			{
+				type: "dropdown",
+				label: "Broadcast",
+				id: "broadcast",
+				choices: self.broadcast_id_stream_id_list
+			}
+		]
+	}
 	self.setFeedbackDefinitions(feedbacks);
 }
 
@@ -376,15 +427,34 @@ instance.prototype.feedback = function(feedback) {
 				return {bgcolor: feedback.options.bg_ready};
 		}
 	}
+
+	if (feedback.type === "broadcast_bound_stream_health") {
+		switch(self.streams_health_dict[feedback.options.broadcast]) {
+			case StreamHealthStatus.Good:
+				return {bgcolor: feedback.options.bg_good};
+			case StreamHealthStatus.Ok:
+				return {bgcolor: feedback.options.bg_ok};
+			case StreamHealthStatus.Bad:
+				return {bgcolor: feedback.options.bg_bad};
+			case StreamHealthStatus.NoData:
+				return {bgcolor: feedback.options.bg_no_data};
+		}
+	}
 }
 
-instance.prototype.update_broadcasts_state = function() {
+instance.prototype.update_streams_broadcasts_state = function() {
 	var self = this;
 
 	self.yt_api_handler.get_all_broadcasts_state().then(broadcasts_state_dict => {
 		self.broadcasts_states_dict = broadcasts_state_dict;
 		self.checkFeedbacks("broadcast_status");
-		return;
+
+		self.yt_api_handler.get_all_streams_health(self.id_list).then(streams_health_dict => {
+			self.streams_health_dict = streams_health_dict;
+			console.log(self.streams_health_dict);
+			self.checkFeedbacks("broadcast_bound_stream_health");
+			return;
+		})
 	});
 }
 
@@ -408,6 +478,15 @@ const BroadcastTransition = {
 	ToCompleted: 'complete',
 };
 Object.freeze(BroadcastLifecycle);
+
+// https://developers.google.com/youtube/v3/live/docs/liveStreams#status.healthStatus.status
+const StreamHealthStatus = {
+	Good: "good",
+	Ok: "ok",
+	Bad: "bad",
+	NoData: "noData"
+};
+Object.freeze(StreamHealthStatus);
 
 class Youtube_api_handler {
 	constructor(client_id, client_secret, redirect_url, scopes, fetch_max, log) {
@@ -518,7 +597,7 @@ class Youtube_api_handler {
 
 	async get_all_broadcasts() {
 		let response = await this.youtube_service.liveBroadcasts.list({
-			"part" : "snippet",
+			"part" : "snippet, contentDetails",
 			"broadcastType" : "all",
 			"mine" : true,
 			"maxResults": this.fetch_max_cnt
@@ -526,7 +605,7 @@ class Youtube_api_handler {
 
 		let broadcasts_dict = {};
 		response.data.items.forEach( (item, index) => {
-			broadcasts_dict[item.id] = item.snippet.title;
+			broadcasts_dict[item.id] = {"title" : item.snippet.title, "bound_stream_id" : item.contentDetails.boundStreamId}; 
 		});
 		return broadcasts_dict;
 	}
@@ -549,11 +628,27 @@ class Youtube_api_handler {
 
 		let broadcasts_states_dict = {};
 		response.data.items.forEach( (item, index) => {
-			broadcasts_states_dict[item.id] = item.status.lifeCycleStatus
+			broadcasts_states_dict[item.id] = item.status.lifeCycleStatus;
 		});
 		return broadcasts_states_dict;
+	}
 
+	async get_all_streams_health(streams_id_list) {
+		let streams_states_dict = {};
 
+		let already_seen_list = []
+		for(const value of streams_id_list) {
+			if (already_seen_list.indexOf(value) == -1) {
+				let response = await this.youtube_service.liveStreams.list({
+					"part" : "status",
+					"id" : value,
+					"maxResults" : this.fetch_max_cnt,
+				});
+				streams_states_dict[value] = response.data.items[0].status.healthStatus.status;
+				already_seen_list.push(value);
+			}
+		}
+		return streams_states_dict;
 	}
 }
 
