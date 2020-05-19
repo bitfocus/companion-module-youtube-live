@@ -251,6 +251,10 @@ instance.prototype.actions = function(system) {
 				id: "broadcast_id",
 				choices: self.broadcasts_list_to_display
 			}]
+		},
+		"refresh_status": {
+			label: "Refresh feedbacks",
+			options: []
 		}
 	});
 	self.system.emit('instance_actions', self.id, self.setActions);
@@ -269,6 +273,7 @@ instance.prototype.action = function(action) {
 		}).catch( err => {
 			self.log("debug", "Error occured during broadcast state actualization, details: " + err);
 		});
+
 	} else if (action.action == "start_broadcast") {
 		self.yt_api_handler.set_broadcast_state(
 			action.options["broadcast_id"],
@@ -290,6 +295,7 @@ instance.prototype.action = function(action) {
 		}).catch( err => {
 			self.log("debug","Error occured during finishing a broadcast, details: " + err);
 		});
+
 	} else if (action.action == "toggle_broadcast") {
 		let id = action.options["broadcast_id"];
 
@@ -299,6 +305,9 @@ instance.prototype.action = function(action) {
 		}).catch( err => {
 			self.log("warn", "Error occured during broadcast toggling, details: " + err);
 		});
+
+	} else if (action.action == "refresh_status") {
+		self.update_streams_broadcasts_state();
 	}
 }
 
