@@ -269,7 +269,7 @@ instance.prototype.action = function(action) {
 		}).catch( err => {
 			self.log("debug", "Error occured during broadcast state actualization, details: " + err);
 		});
-
+	}
 	else if (action.action == "start_broadcast") {
 		self.yt_api_handler.set_broadcast_state(
 			action.options["broadcast_id"],
