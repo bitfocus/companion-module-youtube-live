@@ -216,6 +216,15 @@ instance.prototype.actions = function(system) {
 	}
 
 	self.setActions({
+		"init_broadcast": {
+			label: "Initialize a broadcast",
+			options: [{
+				type: "dropdown",
+				label: "Broadcast:",
+				id: "broadcast_id",
+				choices: self.broadcasts_list_to_display
+			}]
+		},
 		"start_broadcast": {
 			label: "Start a broadcast",
 			options: [{
@@ -250,7 +259,18 @@ instance.prototype.actions = function(system) {
 instance.prototype.action = function(action) {
 	var self = this;
 
-	if (action.action == "start_broadcast") {
+	if (action.action == "init_broadcast") {
+		self.yt_api_handler.set_broadcast_state(
+			action.options["broadcast_id"],
+			BroadcastTransition.ToTesting
+		).then( response => {
+			self.log("info", "YouTube broadcast was initialized successfully");
+			self.update_streams_broadcasts_state();
+		}).catch( err => {
+			self.log("debug", "Error occured during broadcast state actualization, details: " + err);
+		});
+
+	else if (action.action == "start_broadcast") {
 		self.yt_api_handler.set_broadcast_state(
 			action.options["broadcast_id"],
 			BroadcastTransition.ToLive
@@ -605,7 +625,7 @@ class Youtube_api_handler {
 
 		let broadcasts_dict = {};
 		response.data.items.forEach( (item, index) => {
-			broadcasts_dict[item.id] = {"title" : item.snippet.title, "bound_stream_id" : item.contentDetails.boundStreamId}; 
+			broadcasts_dict[item.id] = {"title" : item.snippet.title, "bound_stream_id" : item.contentDetails.boundStreamId};
 		});
 		return broadcasts_dict;
 	}
