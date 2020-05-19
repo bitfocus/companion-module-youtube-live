@@ -269,8 +269,7 @@ instance.prototype.action = function(action) {
 		}).catch( err => {
 			self.log("debug", "Error occured during broadcast state actualization, details: " + err);
 		});
-	}
-	else if (action.action == "start_broadcast") {
+	} else if (action.action == "start_broadcast") {
 		self.yt_api_handler.set_broadcast_state(
 			action.options["broadcast_id"],
 			BroadcastTransition.ToLive
@@ -656,18 +655,22 @@ class Youtube_api_handler {
 	async get_all_streams_health(streams_id_list) {
 		let streams_states_dict = {};
 
-		let already_seen_list = []
-		for(const value of streams_id_list) {
-			if (already_seen_list.indexOf(value) == -1) {
-				let response = await this.youtube_service.liveStreams.list({
-					"part" : "status",
-					"id" : value,
-					"maxResults" : this.fetch_max_cnt,
-				});
-				streams_states_dict[value] = response.data.items[0].status.healthStatus.status;
-				already_seen_list.push(value);
+		let deduplicated_list = [];
+		streams_id_list.forEach( (item, index) => {
+			if (deduplicated_list.indexOf(item) == -1) {
+				deduplicated_list.push(item);
 			}
-		}
+		});
+
+		let response = await this.youtube_service.liveStreams.list({
+			"part" : "status",
+			"id" : deduplicated_list.join(","),
+			"maxResults" : this.fetch_max_cnt
+		});
+
+		response.data.items.forEach( (item, index) => {
+			streams_states_dict[item.id] = item.status.healthStatus.status;
+		});
 		return streams_states_dict;
 	}
 }
