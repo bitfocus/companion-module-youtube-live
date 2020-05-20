@@ -13,6 +13,7 @@ So all broadcasts to be controlled by the module have to be created in the YouTu
 - **Start a broadcast**  - this action starts a YouTube broadcast and makes it available for the public. The associated [YouTube API transition][ytapi] is `live`.
 - **Stop a broadcast**   - this action finishes a YouTube broadcast. The associated [YouTube API transition][ytapi] is `completed`.
 - **Toggle a broadcast** - this action combines the above actions into one action (off → initialized → live → completed).
+- **Refresh feedbacks** - force all status feedbacks to be refreshed.
 
 [ytapi]: https://developers.google.com/youtube/v3/live/docs/liveBroadcasts/transition
 
