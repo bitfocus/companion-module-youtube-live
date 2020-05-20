@@ -481,9 +481,81 @@ instance.prototype.update_streams_broadcasts_state = function() {
 			self.streams_health_dict = streams_health_dict;
 			console.log(self.streams_health_dict);
 			self.checkFeedbacks("broadcast_bound_stream_health");
+			self.push_variable_data();
 			return;
 		})
 	});
+}
+
+instance.prototype.push_variable_data = function() {
+	var self = this;
+
+	let var_defs = [];
+	let var_vals = [];
+
+	// step 1: process all broadcasts
+	for (var broadcast of self.broadcasts_list_to_display) {
+		let id    = broadcast.id;
+		let name  = broadcast.label;
+		let state = self.broadcasts_states_dict[id];
+
+		let definition = {
+			"name":  "lifecycle:" + id,
+			"label": "Lifecycle state of broadcast titled '" + name + "'"
+		};
+
+		let content = {
+			"name":  definition.name,
+			"value": "unknown"
+		};
+
+		switch (state) {
+			case BroadcastLifecycle.Revoked:      content.value = "REMOVED"; break;
+			case BroadcastLifecycle.Created:      content.value = "NOTCONF"; break;
+			case BroadcastLifecycle.Ready:        content.value = "INIT";    break;
+			case BroadcastLifecycle.TestStarting: content.value = "TEST*";   break;
+			case BroadcastLifecycle.TestRunning:  content.value = "TEST";    break;
+			case BroadcastLifecycle.LiveStarting: content.value = "LIVE*";   break;
+			case BroadcastLifecycle.LiveRunning:  content.value = "LIVE";    break;
+			case BroadcastLifecycle.Complete:     content.value = "DONE";    break;
+		}
+
+		var_defs.push(definition);
+		var_vals.push(content);
+	}
+
+	// step 2: read all streams
+	for (var stream of self.broadcast_id_stream_id_list) {
+		let id     = stream.id;
+		let name   = stream.label;
+		let health = self.streams_health_dict[id];
+
+		let definition = {
+			"name":  "health:" + id,
+			"label": "Health of the stream bound to broadcast titled '" + name + "' (unstable!)"
+		};
+
+		let content = {
+			"name":  definition.name,
+			"value": "unknown"
+		};
+
+		switch (health) {
+			case StreamHealthStatus.Good:   content.value = "GOOD";   break;
+			case StreamHealthStatus.Ok:     content.value = "OK";     break;
+			case StreamHealthStatus.Bad:    content.value = "BAD";    break;
+			case StreamHealthStatus.NoData: content.value = "NODATA"; break;
+		}
+
+		var_defs.push(definition);
+		var_vals.push(content);
+	}
+
+	// step 3: push to Companion
+	self.setVariableDefinitions(var_defs);
+	for (var item of var_vals) {
+		self.setVariable(item.name, item.value);
+	}
 }
 
 // https://developers.google.com/youtube/v3/live/docs/liveBroadcasts#status.lifeCycleStatus
