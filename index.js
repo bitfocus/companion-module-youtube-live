@@ -113,6 +113,7 @@ instance.prototype.init_api_from_token_object = function(credentials) {
 		self.refresher = setInterval(self.update_streams_broadcasts_state.bind(self), self.config.refresh_interval*1000);
 
 		self.init_feedbacks();
+		self.init_presets();
 
 		self.log('info', 'YT Module initialized successfully');
 		self.status(self.STATUS_OK);
@@ -556,6 +557,142 @@ instance.prototype.push_variable_data = function() {
 	for (var item of var_vals) {
 		self.setVariable(item.name, item.value);
 	}
+}
+instance.prototype.init_presets = function() {
+	var self = this;
+	let presets = [];
+
+	self.broadcasts_list_to_display.forEach( (item, index) =>  {
+		let start_obj = {
+			category: "Start broadcast",
+			label: "Start " + item["label"],
+			bank: {
+				style: "text",
+				text: "Start " + item["label"],
+				size: 'auto',
+				color: self.rgb(255, 255, 255),
+				bgcolor: 0
+			},
+			feedbacks: [
+				{
+					type: "broadcast_status",
+					options: {
+						bg_live: self.rgb(222, 0, 0),
+						bg_testing: self.rgb(0, 172, 0),
+						bg_complete: self.rgb(0, 0, 168),
+						bg_ready: self.rgb(209, 209, 0),
+						broadcast: item["id"]
+					}
+				}
+			],
+			actions: [
+				{
+					action: "start_broadcast",
+					options: {
+						broadcast_id: item["id"]
+					}
+				}
+			]
+		};
+
+		let stop_obj = {
+			category: "Stop broadcast",
+			label: "Stop " + item["label"],
+			bank: {
+				style: "text",
+				text: "Stop " + item["label"],
+				size: 'auto',
+				color: self.rgb(255, 255, 255),
+				bgcolor: 0
+			},
+			feedbacks: [
+				{
+					type: "broadcast_status",
+					options: {
+						bg_live: self.rgb(222, 0, 0),
+						bg_testing: self.rgb(0, 172, 0),
+						bg_complete: self.rgb(0, 0, 168),
+						bg_ready: self.rgb(209, 209, 0),
+						broadcast: item["id"]
+					}
+				}
+			],
+			actions: [
+				{
+					action: "stop_broadcast",
+					options: {
+						broadcast_id: item["id"]
+					}
+				}
+			]
+		};
+
+		let toggle_obj = {
+			category: "Toggle broadcast",
+			label: "Toggle " + item["label"],
+			bank: {
+				style: "text",
+				text: "Toggle " + item["label"],
+				size: 'auto',
+				color: self.rgb(255, 255, 255),
+				bgcolor: 0
+			},
+			feedbacks: [
+				{
+					type: "broadcast_status",
+					options: {
+						bg_live: self.rgb(222, 0, 0),
+						bg_testing: self.rgb(0, 172, 0),
+						bg_complete: self.rgb(0, 0, 168),
+						bg_ready: self.rgb(209, 209, 0),
+						broadcast: item["id"]
+					}
+				}
+			],
+			actions: [
+				{
+					action: "toggle_broadcast",
+					options: {
+						broadcast_id: item["id"]
+					}
+				}
+			]
+		};
+
+		let init_obj = {
+			category: "Init broadcast",
+			label: "Init " + item["label"],
+			bank: {
+				style: "text",
+				text: "Init " + item["label"],
+				size: 'auto',
+				color: self.rgb(255, 255, 255),
+				bgcolor: 0
+			},
+			feedbacks: [
+				{
+					type: "broadcast_status",
+					options: {
+						bg_live: self.rgb(222, 0, 0),
+						bg_testing: self.rgb(0, 172, 0),
+						bg_complete: self.rgb(0, 0, 168),
+						bg_ready: self.rgb(209, 209, 0),
+						broadcast: item["id"]
+					}
+				}
+			],
+			actions: [
+				{
+					action: "init_broadcast",
+					options: {
+						broadcast_id: item["id"]
+					}
+				}
+			]
+		};
+		presets.push(start_obj, stop_obj, toggle_obj, init_obj);
+	});
+	self.setPresetDefinitions(presets);
 }
 
 // https://developers.google.com/youtube/v3/live/docs/liveBroadcasts#status.lifeCycleStatus
