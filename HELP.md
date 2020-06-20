@@ -7,13 +7,13 @@ So all broadcasts to be controlled by the module have to be created in the YouTu
 
 ### Available actions
 
-- **Initialize a broadcast** - this action initializes a YouTube broadcast. You'll need to use this after you start sending data
-  to YouTube and before you use the *Start a broadcast* action. Alternatively you can just visit the Live Control Room
-  of the broadcast and that should initialize the stream too. The associated [YouTube API transition][ytapi] is `testing`.
-- **Start a broadcast**  - this action starts a YouTube broadcast and makes it available for the public. The associated [YouTube API transition][ytapi] is `live`.
-- **Stop a broadcast**   - this action finishes a YouTube broadcast. The associated [YouTube API transition][ytapi] is `completed`.
-- **Toggle a broadcast** - this action combines the above actions into one action (off → initialized → live → completed).
-- **Refresh feedbacks** - force all status feedbacks to be refreshed.
+- **Start broadcast test** - this action initializes a YouTube broadcast. You'll need to explicitly use this only if you want
+  to launch the so called "monitor stream" of a broadcast. The same goal can be achieved by visiting the Live Control Room
+  of the broadcast when the associated input stream is active.
+- **Go live**  - this action starts a YouTube broadcast and makes it available for the public.
+- **Finish broadcast**   - this action ends a published YouTube broadcast.
+- **Advance broadcast to next phase** - this action combines the above actions into one action (off → testing → live → finished).
+- **Reload broadcasts** - forces all cached data to be reloaded from YouTube.
 
 [ytapi]: https://developers.google.com/youtube/v3/live/docs/liveBroadcasts/transition
 
