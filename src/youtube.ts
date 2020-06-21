@@ -2,7 +2,6 @@
 import { OAuth2Client } from 'google-auth-library';
 import { google, youtube_v3 } from 'googleapis';
 import { BroadcastID, BroadcastMap, StreamMap, BroadcastLifecycle, StreamHealth, Broadcast } from './cache';
-import { isNotDuplicate } from './common';
 
 /**
  * Broadcast transition types
@@ -136,9 +135,7 @@ export class YoutubeConnector {
 	 * @returns Map of known streams
 	 */
 	async listBoundStreams(broadcasts: BroadcastMap): Promise<StreamMap> {
-		const streamIds = Object.values(broadcasts)
-			.map((broadcast) => broadcast.BoundStreamId)
-			.filter(isNotDuplicate);
+		const streamIds = Array.from(new Set(Object.values(broadcasts).map((broadcast) => broadcast.BoundStreamId)));
 
 		const response = await this.ApiClient.liveStreams.list({
 			part: 'status',

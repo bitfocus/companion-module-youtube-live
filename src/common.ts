@@ -9,16 +9,6 @@ export type RGBFunction = IModule['rgb'];
 export type Logger = IModule['log'];
 
 /**
- * Check if given element is the first one in a given array.
- * @param value Current element value
- * @param index Current element index
- * @param self Array in which the element is stored
- */
-export function isNotDuplicate<T>(value: T, index: number, self: T[]): boolean {
-	return self.indexOf(value) === index;
-}
-
-/**
  * Promise that can be fulfilled outside of its executor.
  */
 export class DetachedPromise<T> {

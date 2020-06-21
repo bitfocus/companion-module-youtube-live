@@ -75,7 +75,7 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase 
 	 */
 	saveToken(raw: string): void {
 		this.config.auth_token = raw;
-		this.system.emit('instance_config_put', this.id, this.config, true);
+		this.saveConfig();
 	}
 
 	/**
