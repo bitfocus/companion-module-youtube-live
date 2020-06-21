@@ -53,8 +53,8 @@ export class NewAuthorization {
 		this.Scopes = how.Scopes.join(' ');
 
 		const Url = url.parse(how.RedirectURL);
-		this.ListenHost = Url.hostname || 'localhost';
-		this.ListenPort = parseInt(Url.port || '80');
+		this.ListenHost = Url.hostname ?? 'localhost';
+		this.ListenPort = parseInt(Url.port ?? '80');
 	}
 
 	/**

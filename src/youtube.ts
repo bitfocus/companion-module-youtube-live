@@ -55,11 +55,7 @@ export class YoutubeConnector {
 		response.data.items?.forEach((item) => {
 			const id = item.id!;
 			const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
-
-			let monitor = item.contentDetails!.monitorStream!.enableMonitorStream;
-			if (typeof monitor == 'undefined' || monitor === null) {
-				monitor = true;
-			}
+			const monitor = item.contentDetails!.monitorStream!.enableMonitorStream ?? true;
 
 			mapping[id] = {
 				Id: id,
