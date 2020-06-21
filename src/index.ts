@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import InstanceSkel from '../../../instance_skel';
+import InstanceSkel = require('../../../instance_skel');
 import { YoutubeConfig, listConfigFields, loadMaxBroadcastCount, loadRefreshInterval } from './config';
 import {
 	CompanionFeedbackEvent,

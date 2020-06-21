@@ -1,4 +1,4 @@
-import InstanceSkel from '../../../instance_skel';
+import InstanceSkel = require('../../../instance_skel');
 
 /** Generic module skeleton for extracting function types. */
 type IModule = InstanceSkel<null>;

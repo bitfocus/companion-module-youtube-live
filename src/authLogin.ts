@@ -1,8 +1,8 @@
 import { OAuth2Client, Credentials } from 'google-auth-library';
-import http from 'http';
-import opn from 'open';
-import url from 'url';
-import destroyer from 'server-destroy';
+import http = require('http');
+import opn = require('open');
+import url = require('url');
+import destroyer = require('server-destroy');
 import { ParsedUrlQuery } from 'querystring';
 import { Logger } from './common';
 
