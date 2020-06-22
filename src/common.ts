@@ -36,3 +36,13 @@ export class DetachedPromise<T> {
 		});
 	}
 }
+
+export function clone<T>(obj: T): T {
+	return JSON.parse(JSON.stringify(obj)) as T;
+}
+
+export function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	});
+}

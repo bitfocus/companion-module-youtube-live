@@ -1,6 +1,5 @@
-import { OAuth2Client } from 'google-auth-library';
 import { StateMemory, BroadcastID, BroadcastLifecycle, Broadcast } from './cache';
-import { YoutubeConnector, Transition } from './youtube';
+import { Transition, YoutubeAPI } from './youtube';
 import { DetachedPromise, Logger } from './common';
 import { ActionHandler } from './actions';
 
@@ -29,7 +28,7 @@ export class Core implements ActionHandler {
 	Cache: StateMemory;
 
 	/** Wrapper around YouTube API */
-	YouTube: YoutubeConnector;
+	YouTube: YoutubeAPI;
 
 	/** Companion/module glue interface */
 	Module: ModuleBase;
@@ -53,12 +52,12 @@ export class Core implements ActionHandler {
 	 * @param maxBroadcasts Number of broadcasts to fetch
 	 * @param refreshInterval How often (in ms) to check for broadcast state/stream health changes
 	 */
-	constructor(mod: ModuleBase, auth: OAuth2Client, maxBroadcasts: number, refreshInterval: number) {
+	constructor(mod: ModuleBase, api: YoutubeAPI, refreshInterval: number, pollInterval = 1000) {
 		this.Module = mod;
-		this.Cache = new StateMemory();
-		this.YouTube = new YoutubeConnector(auth, maxBroadcasts);
+		this.YouTube = api;
+		this.Cache = { Broadcasts: {}, Streams: {} };
 		this.RefreshInterval = refreshInterval;
-		this.TransitionPollInterval = 1000;
+		this.TransitionPollInterval = pollInterval;
 		this.RunningTransitions = {};
 	}
 
@@ -134,9 +133,15 @@ export class Core implements ActionHandler {
 					return this.transitionTo(id, Transition.ToLive);
 				}
 			case BroadcastLifecycle.Testing:
-				return this.transitionTo(id, Transition.ToLive);
+				if (hasMonitor) {
+					return this.transitionTo(id, Transition.ToLive);
+				} else {
+					throw new Error(
+						`Logical inconsistency detected: broadcast ${id} without monitoring stream is in testing state`
+					);
+				}
 			case BroadcastLifecycle.Live:
-				return Promise.resolve();
+				throw new Error(`Broadcast ${id} is already live`);
 			default:
 				throw new Error(`Cannot init+start broadcast ${id}: broadcast is ${name}`);
 		}
@@ -160,7 +165,13 @@ export class Core implements ActionHandler {
 				}
 
 			case BroadcastLifecycle.Testing:
-				return this.transitionTo(id, Transition.ToLive);
+				if (hasMonitor) {
+					return this.transitionTo(id, Transition.ToLive);
+				} else {
+					throw new Error(
+						`Logical inconsistency detected: broadcast ${id} without monitoring stream is in testing state`
+					);
+				}
 
 			case BroadcastLifecycle.Live:
 				return this.transitionTo(id, Transition.ToComplete);

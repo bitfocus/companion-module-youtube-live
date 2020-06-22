@@ -98,7 +98,7 @@ export function getBroadcastVars(broadcast: Broadcast): VariableContent[] {
  * @param broadcast Broadcast that the stream is bound to
  * @param stream Stream to generate variables for
  */
-function getStreamVars(broadcast: Broadcast, stream: Stream): VariableContent[] {
+export function getStreamVars(broadcast: Broadcast, stream: Stream): VariableContent[] {
 	const content: VariableContent = {
 		name: `health:${broadcast.Id}`,
 		value: 'unknown',

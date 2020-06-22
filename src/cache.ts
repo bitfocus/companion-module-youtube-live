@@ -90,15 +90,10 @@ export interface Stream {
 /**
  * Module-wide YouTube object cache.
  */
-export class StateMemory {
+export interface StateMemory {
 	/** All fetched broadcasts. */
 	Broadcasts: Record<BroadcastID, Broadcast>;
 
 	/** All fetched streams */
 	Streams: Record<StreamID, Stream>;
-
-	constructor() {
-		this.Broadcasts = {};
-		this.Streams = {};
-	}
 }

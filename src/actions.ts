@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { CompanionActions, CompanionActionEvent, DropdownChoice } from '../../../instance_skel_types';
 import { BroadcastMap, BroadcastID, StateMemory } from './cache';
-import { Logger } from './common';
 
 /**
  * Interface for implementing module actions
@@ -99,41 +98,32 @@ export function listActions(broadcasts: BroadcastMap): CompanionActions {
  * @param handler Implementation of actions
  * @param log Logging function
  */
-export function handleAction(
+export async function handleAction(
 	event: CompanionActionEvent,
 	memory: StateMemory,
-	handler: ActionHandler,
-	log: Logger
-): void {
-	let result: Promise<void>;
-
+	handler: ActionHandler
+): Promise<void> {
 	if (event.options.broadcast_id) {
 		if (!(event.options.broadcast_id in memory.Broadcasts)) {
-			log('warn', 'Action has unknown broadcast ID');
-			return;
+			throw new Error('Action has unknown broadcast ID');
 		}
 	} else {
 		if (event.action != 'refresh_status') {
-			log('warn', 'Action has undefined broadcast ID');
-			return;
+			throw new Error('Action has undefined broadcast ID');
 		}
 	}
 
 	if (event.action == 'init_broadcast') {
-		result = handler.startBroadcastTest(event.options.broadcast_id as BroadcastID);
+		return handler.startBroadcastTest(event.options.broadcast_id as BroadcastID);
 	} else if (event.action == 'start_broadcast') {
-		result = handler.makeBroadcastLive(event.options.broadcast_id as BroadcastID);
+		return handler.makeBroadcastLive(event.options.broadcast_id as BroadcastID);
 	} else if (event.action == 'stop_broadcast') {
-		result = handler.finishBroadcast(event.options.broadcast_id as BroadcastID);
+		return handler.finishBroadcast(event.options.broadcast_id as BroadcastID);
 	} else if (event.action == 'toggle_broadcast') {
-		result = handler.toggleBroadcast(event.options.broadcast_id as BroadcastID);
+		return handler.toggleBroadcast(event.options.broadcast_id as BroadcastID);
 	} else if (event.action == 'refresh_status') {
-		result = handler.refreshCache();
+		return handler.refreshCache();
 	} else {
 		throw new Error(`unknown action called: ${event.action}`);
 	}
-
-	result.catch((reason) => {
-		log('warn', `Action failed: ${reason}`);
-	});
 }

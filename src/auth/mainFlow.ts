@@ -1,28 +1,40 @@
-import { OAuth2Client } from 'google-auth-library';
-import { YoutubeConfig } from './config';
-import { AppCredentials, UserCredentials, NewAuthorization, makeClient } from './authLogin';
-import { Logger } from './common';
+import url = require('url');
+import { Logger } from '../common';
+import { AppCredentials, UserCredentials } from './types';
+import { YoutubeConfig } from '../config';
 
-export interface AuthLog {
+import { GoogleLoginForm } from './loginFlow';
+import { makeOAuth2Client, OAuth2Client } from './oauthclient';
+
+/**
+ * Dependency injector for authorization flow
+ */
+export interface AuthorizationEnvironment {
+	/**
+	 * Logger for sending messages to Companion
+	 */
 	log: Logger;
+
+	/**
+	 * Current module configuration
+	 */
+	config: YoutubeConfig;
 }
 
 /**
  * Top-level YouTube authorization flow.
  */
 export class YoutubeAuthorization {
-	private NewAuth?: NewAuthorization;
-	private Config: YoutubeConfig;
-	private Logger: AuthLog;
+	private Environment: AuthorizationEnvironment;
+	private NewAuth?: GoogleLoginForm;
 
 	/**
 	 * Initialize a new auth flow.
 	 * @param config Module configuration
 	 * @param io Tracker and logger for the authorization flow.
 	 */
-	constructor(config: YoutubeConfig, io: AuthLog) {
-		this.Config = config;
-		this.Logger = io;
+	constructor(io: AuthorizationEnvironment) {
+		this.Environment = io;
 	}
 
 	/**
@@ -31,24 +43,33 @@ export class YoutubeAuthorization {
 	 */
 	async authorize(isReconfiguration: boolean): Promise<OAuth2Client> {
 		this.cancel();
+
 		const app = this.initAppCredentials();
 		const user = await this.initUserCredentials(app, isReconfiguration);
-		return makeClient(app, user);
+		return makeOAuth2Client(app, user);
 	}
 
 	/**
 	 * Load OAuth2 application params from module configuration.
 	 */
 	private initAppCredentials(): AppCredentials {
-		if (!this.Config.client_id || !this.Config.client_secret || !this.Config.client_redirect_url) {
+		const conf = this.Environment.config;
+
+		if (!conf.client_id || !conf.client_secret || !conf.client_redirect_url) {
 			throw new Error('OAuth2 application parameters are not configured');
 		}
 
+		try {
+			new url.URL(conf.client_redirect_url);
+		} catch (err) {
+			throw new Error('Specified redirect URL is not valid: ' + err);
+		}
+
 		return {
-			ClientID: this.Config.client_id,
-			ClientSecret: this.Config.client_secret,
+			ClientID: conf.client_id,
+			ClientSecret: conf.client_secret,
 			Scopes: ['https://www.googleapis.com/auth/youtube.force-ssl'],
-			RedirectURL: this.Config.client_redirect_url,
+			RedirectURL: conf.client_redirect_url,
 		};
 	}
 
@@ -60,12 +81,12 @@ export class YoutubeAuthorization {
 	private async initUserCredentials(app: AppCredentials, isReconfiguration: boolean): Promise<UserCredentials> {
 		const user = this.tryStoredUser();
 		if (user) {
-			this.Logger.log('debug', 'Found existing OAuth token, proceeding directly');
+			this.Environment.log('debug', 'Found existing OAuth token, proceeding directly');
 			return user;
 		} else if (!isReconfiguration) {
 			throw new Error('No OAuth authorization present, please reconfigure the module');
 		} else {
-			this.Logger.log('info', 'New config without OAuth token, trying new login...');
+			this.Environment.log('info', 'New config without OAuth token, trying new login...');
 
 			return this.authorizeNewUser(app);
 		}
@@ -75,15 +96,15 @@ export class YoutubeAuthorization {
 	 * Try loading the stored OAuth2 authorization token.
 	 */
 	private tryStoredUser(): UserCredentials | null {
-		if (!this.Config.auth_token) {
-			this.Logger.log('info', 'Cannot load OAuth2 user token: not present');
+		if (!this.Environment.config.auth_token) {
+			this.Environment.log('info', 'Cannot load OAuth2 user token: not present');
 			return null;
 		}
 
 		try {
-			return { Token: JSON.parse(this.Config.auth_token) };
+			return { Token: JSON.parse(this.Environment.config.auth_token) };
 		} catch (err) {
-			this.Logger.log('info', `Cannot load OAuth2 user token: invalid JSON: ${err}`);
+			this.Environment.log('info', `Cannot load OAuth2 user token: invalid JSON: ${err}`);
 			return null;
 		}
 	}
@@ -93,7 +114,7 @@ export class YoutubeAuthorization {
 	 * @param app OAuth2 application params
 	 */
 	private async authorizeNewUser(app: AppCredentials): Promise<UserCredentials> {
-		this.NewAuth = new NewAuthorization(app, this.Logger.log);
+		this.NewAuth = new GoogleLoginForm(app, (level, msg) => this.Environment.log(level, msg));
 
 		let user: UserCredentials;
 		try {
@@ -102,7 +123,7 @@ export class YoutubeAuthorization {
 			throw new Error(`OAuth login failed: ${err}`);
 		}
 
-		this.Logger.log('info', 'OAuth login successful');
+		this.Environment.log('info', 'OAuth login successful');
 		return user;
 	}
 
@@ -110,7 +131,7 @@ export class YoutubeAuthorization {
 	 * Cancel any pending new authorizations.
 	 */
 	cancel(): void {
-		this.NewAuth?.end();
+		this.NewAuth?.abort();
 		this.NewAuth = undefined;
 	}
 }

@@ -29,7 +29,11 @@ export interface YoutubeConfig {
  * @returns Refresh interval in milliseconds.
  */
 export function loadRefreshInterval(config: YoutubeConfig): number {
-	return (config.refresh_interval ?? 60) * 1000;
+	let seconds = config.refresh_interval ?? 60;
+
+	if (seconds < 1) seconds = 1;
+
+	return seconds * 1000;
 }
 
 /**
@@ -38,7 +42,11 @@ export function loadRefreshInterval(config: YoutubeConfig): number {
  * @returns How many broadcasts to fetch from YouTube.
  */
 export function loadMaxBroadcastCount(config: YoutubeConfig): number {
-	return config.fetch_max_count ?? 10;
+	let items = config.fetch_max_count ?? 10;
+
+	if (items < 1) items = 1;
+
+	return items;
 }
 
 /**

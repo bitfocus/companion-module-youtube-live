@@ -8,18 +8,21 @@ import {
 	CompanionInputField,
 	CompanionActionEvent,
 } from '../../../instance_skel_types';
-import { YoutubeAuthorization } from './authFlow';
 import { Core, ModuleBase } from './core';
 import { handleFeedback, listFeedbacks } from './feedbacks';
 import { StateMemory, Broadcast } from './cache';
 import { getBroadcastVars, exportVars, declareVars } from './vars';
 import { listPresets } from './presets';
 import { listActions, handleAction } from './actions';
+import { YoutubeConnector } from './youtube';
+import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow';
 
 /**
  * Main Companion integration class of this module
  */
-class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase {
+class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase, AuthorizationEnvironment {
+	// let's go
+
 	/** Executive core of the module */
 	private Core?: Core;
 	/** YouTube authorization flow */
@@ -33,7 +36,7 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase 
 	 */
 	constructor(system: CompanionSystem, id: string, config: YoutubeConfig) {
 		super(system, id, config);
-		this.Auth = new YoutubeAuthorization(config, this);
+		this.Auth = new YoutubeAuthorization(this);
 	}
 
 	/**
@@ -48,9 +51,10 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase 
 			.then((googleAuth) => {
 				this.saveToken(JSON.stringify(googleAuth.credentials));
 
-				this.Core = new Core(this, googleAuth, loadMaxBroadcastCount(this.config), loadRefreshInterval(this.config));
+				const api = new YoutubeConnector(googleAuth, loadRefreshInterval(this.config));
 
-				this.Core.init()
+				this.Core = new Core(this, api, loadMaxBroadcastCount(this.config));
+				return this.Core.init()
 					.then(() => {
 						this.log('info', 'YT Module initialized successfully');
 						this.status(this.STATUS_OK);
@@ -112,7 +116,9 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase 
 	action(action: CompanionActionEvent): void {
 		if (!this.Core) return;
 
-		handleAction(action, this.Core.Cache, this.Core, this.log.bind(this));
+		handleAction(action, this.Core.Cache, this.Core).catch((err: Error) => {
+			this.log('warn', 'Action failed: ' + err);
+		});
 	}
 
 	/**
@@ -124,7 +130,7 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase 
 
 		const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
 
-		return handleFeedback(feedback, this.Core.Cache, dimStarting);
+		return handleFeedback(feedback, this.Core.Cache, this.rgb.bind(this), dimStarting);
 	}
 
 	/**

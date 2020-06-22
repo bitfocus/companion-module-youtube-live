@@ -15,10 +15,46 @@ export enum Transition {
 	ToComplete = 'complete',
 }
 
+export interface YoutubeAPI {
+	/**
+	 * Fetch known broadcasts (limited by max count)
+	 * @returns Map of known broadcasts
+	 */
+	listBroadcasts(): Promise<BroadcastMap>;
+
+	/**
+	 * Refresh lifecycle status of one broadcast
+	 * @param broadcast Old broadcast structure
+	 * @returns Updated broadcast structure
+	 */
+	refreshBroadcastStatus1(broadcast: Broadcast): Promise<Broadcast>;
+
+	/**
+	 * Refresh lifecycle status of all broadcasts
+	 * @param current Map of known broadcasts
+	 * @returns Updated map of broadcasts
+	 */
+	refreshBroadcastStatus(current: BroadcastMap): Promise<BroadcastMap>;
+
+	/**
+	 * Fetch streams bound to known broadcasts
+	 * @param broadcasts Map of known broadcasts
+	 * @returns Map of known streams
+	 */
+	listBoundStreams(broadcasts: BroadcastMap): Promise<StreamMap>;
+
+	/**
+	 * Transition one broadcast to a different state
+	 * @param id Broadcast ID to transition
+	 * @param to Target lifecycle phase/state
+	 */
+	transitionBroadcast(id: BroadcastID, to: Transition): Promise<void>;
+}
+
 /**
  * YouTube API wrapper
  */
-export class YoutubeConnector {
+export class YoutubeConnector implements YoutubeAPI {
 	/** Google API client */
 	ApiClient: youtube_v3.Youtube;
 
@@ -39,8 +75,7 @@ export class YoutubeConnector {
 	}
 
 	/**
-	 * Fetch known broadcasts (limited by max count)
-	 * @returns Map of known broadcasts
+	 * @inheritdoc
 	 */
 	async listBroadcasts(): Promise<BroadcastMap> {
 		const response = await this.ApiClient.liveBroadcasts.list({
@@ -70,9 +105,7 @@ export class YoutubeConnector {
 	}
 
 	/**
-	 * Refresh lifecycle status of one broadcast
-	 * @param broadcast Old broadcast structure
-	 * @returns Updated broadcast structure
+	 * @inheritdoc
 	 */
 	async refreshBroadcastStatus1(broadcast: Broadcast): Promise<Broadcast> {
 		const response = await this.ApiClient.liveBroadcasts.list({
@@ -81,8 +114,9 @@ export class YoutubeConnector {
 			maxResults: 1,
 		});
 
-		if (!response.data.items) throw new Error('no such broadcast: ' + broadcast.Id);
-
+		if (!response.data.items || response.data.items.length == 0) {
+			throw new Error('no such broadcast: ' + broadcast.Id);
+		}
 		const item = response.data.items[0];
 		const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
 
@@ -96,9 +130,7 @@ export class YoutubeConnector {
 	}
 
 	/**
-	 * Refresh lifecycle status of all broadcasts
-	 * @param current Map of known broadcasts
-	 * @returns Updated map of broadcasts
+	 * @inheritdoc
 	 */
 	async refreshBroadcastStatus(current: BroadcastMap): Promise<BroadcastMap> {
 		const response = await this.ApiClient.liveBroadcasts.list({
@@ -126,9 +158,7 @@ export class YoutubeConnector {
 	}
 
 	/**
-	 * Fetch streams bound to known broadcasts
-	 * @param broadcasts Map of known broadcasts
-	 * @returns Map of known streams
+	 * @inheritdoc
 	 */
 	async listBoundStreams(broadcasts: BroadcastMap): Promise<StreamMap> {
 		const streamIds = Array.from(new Set(Object.values(broadcasts).map((broadcast) => broadcast.BoundStreamId)));
@@ -155,9 +185,7 @@ export class YoutubeConnector {
 	}
 
 	/**
-	 * Transition one broadcast to a different state
-	 * @param id Broadcast ID to transition
-	 * @param to Target lifecycle phase/state
+	 * @inheritdoc
 	 */
 	async transitionBroadcast(id: BroadcastID, to: Transition): Promise<void> {
 		await this.ApiClient.liveBroadcasts.transition({

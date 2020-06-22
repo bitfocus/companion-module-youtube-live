@@ -109,12 +109,20 @@ export function listFeedbacks(broadcasts: BroadcastMap, rgb: RGBFunction): Compa
 export function handleFeedback(
 	feedback: CompanionFeedbackEvent,
 	memory: StateMemory,
+	rgb: RGBFunction,
 	dimStarting: boolean
 ): CompanionFeedbackResult {
 	if (feedback.type === 'broadcast_status') {
+		if (!feedback.options.broadcast) return {};
 		const id = feedback.options.broadcast as BroadcastID;
 
 		if (!(id in memory.Broadcasts)) return {};
+
+		// handle missing fields
+		feedback.options.bg_ready = feedback.options.bg_ready ?? rgb(209, 209, 0);
+		feedback.options.bg_testing = feedback.options.bg_testing ?? rgb(0, 172, 0);
+		feedback.options.bg_live = feedback.options.bg_live ?? rgb(222, 0, 0);
+		feedback.options.bg_complete = feedback.options.bg_complete ?? rgb(0, 0, 168);
 
 		switch (memory.Broadcasts[id].Status) {
 			case BroadcastLifecycle.LiveStarting:
@@ -135,11 +143,19 @@ export function handleFeedback(
 	}
 
 	if (feedback.type === 'broadcast_bound_stream_health') {
+		if (!feedback.options.broadcast) return {};
 		const id = feedback.options.broadcast as BroadcastID;
+
 		if (!(id in memory.Broadcasts)) return {};
 
 		const streamId = memory.Broadcasts[id].BoundStreamId;
 		if (streamId == null || !(streamId in memory.Streams)) return {};
+
+		// handle missing fields
+		feedback.options.bg_good = feedback.options.bg_good ?? rgb(124, 252, 0);
+		feedback.options.bg_ok = feedback.options.bg_ok ?? rgb(0, 100, 0);
+		feedback.options.bg_bad = feedback.options.bg_bad ?? rgb(255, 255, 0);
+		feedback.options.bg_no_data = feedback.options.bg_no_data ?? rgb(255, 0, 0);
 
 		switch (memory.Streams[streamId].Health) {
 			case StreamHealth.Good:
