@@ -63,7 +63,7 @@ describe('HTTP module interaction', () => {
 		const promise = new HttpReceiver('abcd', 1234, log).getCode(jest.fn());
 		mockEvent.emit('listening');
 
-		const req1 = { url: 'http://abcd:1234/favicon.ico' };
+		const req1 = { url: '/favicon.ico' };
 		const res1 = {
 			writeHead: jest.fn().mockImplementation((status: number, headers: object) => {
 				expect(status).toBe(400);
@@ -75,7 +75,7 @@ describe('HTTP module interaction', () => {
 		};
 		mockEvent.emit('request', req1, res1);
 
-		const req2 = { url: 'http://abcd:1234/callback?code=authCode' };
+		const req2 = { url: '/callback?code=authCode' };
 		const res2 = {
 			writeHead: jest.fn().mockImplementation((status: number, headers: object) => {
 				expect(status).toBe(200);
