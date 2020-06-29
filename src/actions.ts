@@ -19,7 +19,10 @@ export interface ActionHandler {
 	toggleBroadcast(id: BroadcastID): Promise<void>;
 
 	/** Reload broadcast list */
-	refreshCache(): Promise<void>;
+	reloadEverything(): Promise<void>;
+
+	/** Refresh broadcast status + stream health */
+	refreshFeedbacks(): Promise<void>;
 }
 
 /**
@@ -84,8 +87,12 @@ export function listActions(broadcasts: BroadcastMap): CompanionActions {
 				},
 			],
 		},
+		refresh_feedbacks: {
+			label: 'Refresh broadcast/stream feedbacks',
+			options: [],
+		},
 		refresh_status: {
-			label: 'Reload broadcasts',
+			label: 'Reload everything from YouTube',
 			options: [],
 		},
 	};
@@ -108,7 +115,7 @@ export async function handleAction(
 			throw new Error('Action has unknown broadcast ID');
 		}
 	} else {
-		if (event.action != 'refresh_status') {
+		if (event.action != 'refresh_status' && event.action != 'refresh_feedbacks') {
 			throw new Error('Action has undefined broadcast ID');
 		}
 	}
@@ -122,7 +129,9 @@ export async function handleAction(
 	} else if (event.action == 'toggle_broadcast') {
 		return handler.toggleBroadcast(event.options.broadcast_id as BroadcastID);
 	} else if (event.action == 'refresh_status') {
-		return handler.refreshCache();
+		return handler.reloadEverything();
+	} else if (event.action == 'refresh_feedbacks') {
+		return handler.refreshFeedbacks();
 	} else {
 		throw new Error(`unknown action called: ${event.action}`);
 	}

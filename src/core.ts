@@ -245,9 +245,21 @@ export class Core implements ActionHandler {
 	/**
 	 * Reload the list of broadcasts and streams
 	 */
-	async refreshCache(): Promise<void> {
+	async reloadEverything(): Promise<void> {
 		this.destroy();
 		return this.init();
+	}
+
+	/**
+	 * Trigger periodic refresh immediately + reschedule next timer-triggered refresh to happen
+	 * after the refresh interval elapses again
+	 */
+	async refreshFeedbacks(): Promise<void> {
+		if (this.RefreshTimer) {
+			global.clearInterval(this.RefreshTimer);
+			this.RefreshTimer = global.setInterval(this.refresher.bind(this), this.RefreshInterval);
+		}
+		return this.refresher();
 	}
 }
 

@@ -66,7 +66,7 @@ export class HttpReceiver {
 		if (typeof codeFrag == 'string') {
 			code = codeFrag;
 		} else if (Array.isArray(codeFrag) && codeFrag.length > 0) {
-			code = codeFrag[0]
+			code = codeFrag[0];
 		} else {
 			this.Log('debug', 'HTTP request does not contain authorization code');
 			res.writeHead(400, { 'Content-Type': 'text/plain' });

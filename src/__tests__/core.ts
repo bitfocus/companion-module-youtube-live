@@ -135,9 +135,19 @@ describe('Miscellaneous', () => {
 		await core.init();
 		mockYT.listBroadcasts.mockClear();
 		mockModule.reloadAll.mockClear();
-		await core.refreshCache();
+		await core.reloadEverything();
 		expect(mockYT.listBroadcasts).toHaveBeenCalled();
 		expect(mockModule.reloadAll).toHaveBeenCalled();
+	});
+
+	test('Partial reload works', async () => {
+		await core.init();
+		jest.clearAllMocks();
+		await core.refreshFeedbacks();
+		expect(mockYT.listBroadcasts).not.toHaveBeenCalled();
+		expect(mockYT.refreshBroadcastStatus).toHaveBeenCalled();
+		expect(mockModule.reloadAll).not.toHaveBeenCalled();
+		expect(mockModule.reloadStates).toHaveBeenCalled();
 	});
 });
 
