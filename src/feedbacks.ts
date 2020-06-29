@@ -29,9 +29,9 @@ export function listFeedbacks(broadcasts: BroadcastMap, rgb: RGBFunction): Compa
 			options: [
 				{
 					type: 'colorpicker',
-					label: 'Background color (live)',
-					id: 'bg_live',
-					default: rgb(222, 0, 0),
+					label: 'Background color (ready)',
+					id: 'bg_ready',
+					default: rgb(209, 209, 0),
 				},
 				{
 					type: 'colorpicker',
@@ -41,15 +41,15 @@ export function listFeedbacks(broadcasts: BroadcastMap, rgb: RGBFunction): Compa
 				},
 				{
 					type: 'colorpicker',
-					label: 'Background color (complete)',
-					id: 'bg_complete',
-					default: rgb(0, 0, 168),
+					label: 'Background color (live)',
+					id: 'bg_live',
+					default: rgb(222, 0, 0),
 				},
 				{
 					type: 'colorpicker',
-					label: 'Background color (ready)',
-					id: 'bg_ready',
-					default: rgb(209, 209, 0),
+					label: 'Background color (complete)',
+					id: 'bg_complete',
+					default: rgb(0, 0, 168),
 				},
 				{
 					type: 'dropdown',
@@ -68,19 +68,19 @@ export function listFeedbacks(broadcasts: BroadcastMap, rgb: RGBFunction): Compa
 					type: 'colorpicker',
 					label: 'Background color (good)',
 					id: 'bg_good',
-					default: rgb(124, 252, 0),
+					default: rgb(0, 204, 0),
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (ok)',
 					id: 'bg_ok',
-					default: rgb(0, 100, 0),
+					default: rgb(204, 204, 0),
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (bad)',
 					id: 'bg_bad',
-					default: rgb(255, 255, 0),
+					default: rgb(255, 102, 0),
 				},
 				{
 					type: 'colorpicker',
@@ -152,9 +152,9 @@ export function handleFeedback(
 		if (streamId == null || !(streamId in memory.Streams)) return {};
 
 		// handle missing fields
-		feedback.options.bg_good = feedback.options.bg_good ?? rgb(124, 252, 0);
-		feedback.options.bg_ok = feedback.options.bg_ok ?? rgb(0, 100, 0);
-		feedback.options.bg_bad = feedback.options.bg_bad ?? rgb(255, 255, 0);
+		feedback.options.bg_good = feedback.options.bg_good ?? rgb(0, 204, 0);
+		feedback.options.bg_ok = feedback.options.bg_ok ?? rgb(204, 204, 0);
+		feedback.options.bg_bad = feedback.options.bg_bad ?? rgb(255, 102, 0);
 		feedback.options.bg_no_data = feedback.options.bg_no_data ?? rgb(255, 0, 0);
 
 		switch (memory.Streams[streamId].Health) {
