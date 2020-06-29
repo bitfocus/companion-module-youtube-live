@@ -51,9 +51,9 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 			.then((googleAuth) => {
 				this.saveToken(JSON.stringify(googleAuth.credentials));
 
-				const api = new YoutubeConnector(googleAuth, loadRefreshInterval(this.config));
+				const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(this.config));
 
-				this.Core = new Core(this, api, loadMaxBroadcastCount(this.config));
+				this.Core = new Core(this, api, loadRefreshInterval(this.config));
 				return this.Core.init()
 					.then(() => {
 						this.log('info', 'YT Module initialized successfully');
