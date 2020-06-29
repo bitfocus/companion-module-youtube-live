@@ -1,0 +1,37 @@
+name: Build + test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Download Node.js 8.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 8.x
+
+    - name: Checkout Companion
+      uses: actions/checkout@v2
+      with:
+        repository: bitfocus/companion
+        path: ./
+        submodules: false
+
+    - name: Checkout this commit
+      uses: actions/checkout@v2
+      with:
+        path: ./lib/module/youtube-live
+
+    - name: Compile module
+      run: yarn install --frozen-lockfile
+      working-directory: ./lib/module/youtube-live
+
+    - name: Run unit tests
+      run: yarn test
+      working-directory: ./lib/module/youtube-live
