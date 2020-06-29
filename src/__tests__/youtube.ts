@@ -1,0 +1,237 @@
+import { OAuth2Client } from 'google-auth-library';
+import { YoutubeConnector, Transition } from '../youtube';
+import { FakeYouTube } from '../__mocks__/googleapis';
+import { StateMemory, BroadcastLifecycle, StreamHealth } from '../cache';
+jest.mock('googleapis');
+
+const instance: YoutubeConnector = new YoutubeConnector((null as unknown) as OAuth2Client, 10);
+const mock: FakeYouTube = (instance.ApiClient as unknown) as FakeYouTube;
+const memory: StateMemory = {
+	Broadcasts: {
+		bA: {
+			Id: 'bA',
+			Name: 'Broadcast A',
+			Status: BroadcastLifecycle.Testing,
+			MonitorStreamEnabled: true,
+			BoundStreamId: 'sA',
+		},
+		bB: {
+			Id: 'bB',
+			Name: 'Broadcast B',
+			Status: BroadcastLifecycle.Live,
+			MonitorStreamEnabled: true,
+			BoundStreamId: 'sB',
+		},
+		bC: {
+			Id: 'bC',
+			Name: 'Broadcast C',
+			Status: BroadcastLifecycle.Ready,
+			MonitorStreamEnabled: false,
+			BoundStreamId: 'sB',
+		},
+	},
+	Streams: {
+		sA: {
+			Id: 'sA',
+			Health: StreamHealth.Good,
+		},
+		sB: {
+			Id: 'sB',
+			Health: StreamHealth.Bad,
+		},
+	},
+};
+
+const memoryUpdated: StateMemory = {
+	Broadcasts: {
+		bB: {
+			Id: 'bB',
+			Name: 'Broadcast B',
+			Status: BroadcastLifecycle.Complete,
+			MonitorStreamEnabled: true,
+			BoundStreamId: 'sB',
+		},
+		bC: {
+			Id: 'bC',
+			Name: 'Broadcast C',
+			Status: BroadcastLifecycle.TestStarting,
+			MonitorStreamEnabled: false,
+			BoundStreamId: 'sB',
+		},
+	},
+	Streams: {},
+};
+
+describe('Queries', () => {
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
+	test('load all', async () => {
+		mock.liveBroadcasts.list.mockImplementation(({ part, mine }) => {
+			expect(part).toMatch(/.*status.*/);
+			expect(part).toMatch(/.*snippet.*/);
+			expect(part).toMatch(/.*contentDetails.*/);
+			expect(mine).toBe(true);
+			return Promise.resolve({
+				data: {
+					items: [
+						{
+							id: 'bA',
+							status: { lifeCycleStatus: 'testing' },
+							snippet: { title: 'Broadcast A' },
+							contentDetails: {
+								monitorStream: { enableMonitorStream: true },
+								boundStreamId: 'sA',
+							},
+						},
+						{
+							id: 'bB',
+							status: { lifeCycleStatus: 'live' },
+							snippet: { title: 'Broadcast B' },
+							contentDetails: {
+								monitorStream: { enableMonitorStream: true },
+								boundStreamId: 'sB',
+							},
+						},
+						{
+							id: 'bC',
+							status: { lifeCycleStatus: 'ready' },
+							snippet: { title: 'Broadcast C' },
+							contentDetails: {
+								monitorStream: { enableMonitorStream: false },
+								boundStreamId: 'sB',
+							},
+						},
+					],
+				},
+			});
+		});
+		await expect(instance.listBroadcasts()).resolves.toStrictEqual(memory.Broadcasts);
+		expect(mock.liveBroadcasts.list).toHaveBeenCalledTimes(1);
+	});
+
+	test('refresh many', async () => {
+		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
+			expect(part).toMatch(/.*status.*/);
+			Object.values(memory.Broadcasts).forEach((item) => {
+				expect(localID).toMatch(new RegExp(`.*${item.Id}.*`));
+			});
+			return Promise.resolve({
+				data: {
+					items: [
+						{
+							id: 'bB',
+							status: { lifeCycleStatus: 'complete' },
+						},
+						{
+							id: 'bC',
+							status: { lifeCycleStatus: 'testStarting' },
+						},
+					],
+				},
+			});
+		});
+		await expect(instance.refreshBroadcastStatus(memory.Broadcasts)).resolves.toStrictEqual(memoryUpdated.Broadcasts);
+		expect(mock.liveBroadcasts.list).toHaveBeenCalledTimes(1);
+	});
+
+	test('refresh one - does not exist', async () => {
+		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
+			expect(part).toMatch(/.*status.*/);
+			expect(localID).toBe('bA');
+			return Promise.resolve({
+				data: { items: [] },
+			});
+		});
+		await expect(instance.refreshBroadcastStatus1(memory.Broadcasts.bA)).rejects.toBeInstanceOf(Error);
+		expect(mock.liveBroadcasts.list).toHaveBeenCalledTimes(1);
+	});
+
+	test('refresh one - exists', async () => {
+		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
+			expect(part).toMatch(/.*status.*/);
+			expect(localID).toBe('bB');
+			return Promise.resolve({
+				data: {
+					items: [
+						{
+							id: 'bB',
+							status: { lifeCycleStatus: 'complete' },
+						},
+					],
+				},
+			});
+		});
+		await expect(instance.refreshBroadcastStatus1(memory.Broadcasts.bB)).resolves.toStrictEqual(
+			memoryUpdated.Broadcasts.bB
+		);
+		expect(mock.liveBroadcasts.list).toHaveBeenCalledTimes(1);
+	});
+
+	test('get bound streams', async () => {
+		mock.liveStreams.list.mockImplementation(({ part, id: localID }) => {
+			expect(part).toMatch(/.*status.*/);
+			expect(localID.split(',')).toHaveLength(2);
+			Object.values(memory.Streams).forEach((item) => {
+				expect(localID).toMatch(new RegExp(`.*${item.Id}.*`));
+			});
+			return Promise.resolve({
+				data: {
+					items: [
+						{ id: 'sA', status: { healthStatus: { status: 'good' } } },
+						{ id: 'sB', status: { healthStatus: { status: 'bad' } } },
+					],
+				},
+			});
+		});
+		await expect(instance.listBoundStreams(memory.Broadcasts)).resolves.toStrictEqual(memory.Streams);
+		expect(mock.liveStreams.list).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('Transition', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	test('to testing state', async () => {
+		mock.liveBroadcasts.transition.mockImplementation(({ id: localID, broadcastStatus }) => {
+			expect(localID).toBe('abcd1234');
+			expect(broadcastStatus).toBe('testing');
+			return Promise.resolve();
+		});
+		await expect(instance.transitionBroadcast('abcd1234', Transition.ToTesting)).resolves.toBeUndefined();
+		expect(mock.liveBroadcasts.transition).toHaveBeenCalledTimes(1);
+	});
+
+	test('to live state', async () => {
+		mock.liveBroadcasts.transition.mockImplementation(({ id: localID, broadcastStatus }) => {
+			expect(localID).toBe('abcd1234');
+			expect(broadcastStatus).toBe('live');
+			return Promise.resolve();
+		});
+		await expect(instance.transitionBroadcast('abcd1234', Transition.ToLive)).resolves.toBeUndefined();
+		expect(mock.liveBroadcasts.transition).toHaveBeenCalledTimes(1);
+	});
+
+	test('to finished state', async () => {
+		mock.liveBroadcasts.transition.mockImplementation(({ id: localID, broadcastStatus }) => {
+			expect(localID).toBe('abcd1234');
+			expect(broadcastStatus).toBe('complete');
+			return Promise.resolve();
+		});
+		await expect(instance.transitionBroadcast('abcd1234', Transition.ToComplete)).resolves.toBeUndefined();
+		expect(mock.liveBroadcasts.transition).toHaveBeenCalledTimes(1);
+	});
+
+	test('failure', async () => {
+		mock.liveBroadcasts.transition.mockImplementation(({ id: localID, broadcastStatus }) => {
+			expect(localID).toBe('abcd1234');
+			expect(broadcastStatus).toBe('live');
+			return Promise.reject(new Error('mock error'));
+		});
+		await expect(instance.transitionBroadcast('abcd1234', Transition.ToLive)).rejects.toBeInstanceOf(Error);
+		expect(mock.liveBroadcasts.transition).toHaveBeenCalledTimes(1);
+	});
+});
