@@ -20,6 +20,7 @@ describe('Action list', () => {
 		expect(result).toHaveProperty('stop_broadcast');
 		expect(result).toHaveProperty('toggle_broadcast');
 		expect(result).toHaveProperty('refresh_status');
+		expect(result).toHaveProperty('refresh_feedbacks');
 	});
 });
 
@@ -29,7 +30,8 @@ describe('Action handler', () => {
 		makeBroadcastLive: jest.fn((_: BroadcastID): Promise<void> => Promise.resolve()),
 		finishBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.resolve()),
 		toggleBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.resolve()),
-		refreshCache: jest.fn((): Promise<void> => Promise.resolve()),
+		reloadEverything: jest.fn((): Promise<void> => Promise.resolve()),
+		refreshFeedbacks: jest.fn((): Promise<void> => Promise.resolve()),
 	};
 
 	const allKO: ActionHandler = {
@@ -37,7 +39,8 @@ describe('Action handler', () => {
 		makeBroadcastLive: jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('live'))),
 		finishBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('finish'))),
 		toggleBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('toggle'))),
-		refreshCache: jest.fn((): Promise<void> => Promise.reject(new Error('refresh'))),
+		reloadEverything: jest.fn((): Promise<void> => Promise.reject(new Error('refresh'))),
+		refreshFeedbacks: jest.fn((): Promise<void> => Promise.reject(new Error('refresh'))),
 	};
 
 	const memory: StateMemory = {
@@ -107,14 +110,26 @@ describe('Action handler', () => {
 		expect(allKO.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
 
-	test('Refresh success', async () => {
+	test('Reload all success', async () => {
 		await expect(handleAction({ action: 'refresh_status', options: {} }, memory, allOK)).resolves.toBeFalsy();
-		expect(allOK.refreshCache).toHaveBeenCalledTimes(1);
+		expect(allOK.reloadEverything).toHaveBeenCalledTimes(1);
 	});
-	test('Refresh failure', async () => {
+	test('Reload all failure', async () => {
 		await expect(handleAction({ action: 'refresh_status', options: {} }, memory, allKO)).rejects.toBeInstanceOf(Error);
-		expect(allKO.refreshCache).toHaveBeenCalledTimes(1);
+		expect(allKO.reloadEverything).toHaveBeenCalledTimes(1);
 	});
+
+	test('Feedback refresh success', async () => {
+		await expect(handleAction({ action: 'refresh_feedbacks', options: {} }, memory, allOK)).resolves.toBeFalsy();
+		expect(allOK.refreshFeedbacks).toHaveBeenCalledTimes(1);
+	});
+	test('Feedback refresh failure', async () => {
+		await expect(handleAction({ action: 'refresh_feedbacks', options: {} }, memory, allKO)).rejects.toBeInstanceOf(
+			Error
+		);
+		expect(allKO.refreshFeedbacks).toHaveBeenCalledTimes(1);
+	});
+
 	test('Unknown action', async () => {
 		await expect(
 			handleAction({ action: 'blag', options: { broadcast_id: 'test' } }, memory, allOK)
@@ -123,7 +138,7 @@ describe('Action handler', () => {
 		expect(allOK.makeBroadcastLive).toHaveBeenCalledTimes(0);
 		expect(allOK.finishBroadcast).toHaveBeenCalledTimes(0);
 		expect(allOK.toggleBroadcast).toHaveBeenCalledTimes(0);
-		expect(allOK.refreshCache).toHaveBeenCalledTimes(0);
+		expect(allOK.reloadEverything).toHaveBeenCalledTimes(0);
 	});
 	test('Missing broadcast ID', async () => {
 		await expect(handleAction({ action: 'init_broadcast', options: {} }, memory, allOK)).rejects.toBeInstanceOf(Error);
