@@ -29,9 +29,9 @@ export function listFeedbacks(broadcasts: BroadcastMap, rgb: RGBFunction): Compa
 			options: [
 				{
 					type: 'colorpicker',
-					label: 'Background color (live)',
-					id: 'bg_live',
-					default: rgb(222, 0, 0),
+					label: 'Background color (ready)',
+					id: 'bg_ready',
+					default: rgb(209, 209, 0),
 				},
 				{
 					type: 'colorpicker',
@@ -41,15 +41,15 @@ export function listFeedbacks(broadcasts: BroadcastMap, rgb: RGBFunction): Compa
 				},
 				{
 					type: 'colorpicker',
-					label: 'Background color (complete)',
-					id: 'bg_complete',
-					default: rgb(0, 0, 168),
+					label: 'Background color (live)',
+					id: 'bg_live',
+					default: rgb(222, 0, 0),
 				},
 				{
 					type: 'colorpicker',
-					label: 'Background color (ready)',
-					id: 'bg_ready',
-					default: rgb(209, 209, 0),
+					label: 'Background color (complete)',
+					id: 'bg_complete',
+					default: rgb(0, 0, 168),
 				},
 				{
 					type: 'dropdown',
