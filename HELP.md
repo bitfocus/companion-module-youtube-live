@@ -35,7 +35,7 @@ This is done via the Google API console:
 4. Go back by clicking the Google APIs logo. Then, click on _OAuth consent screen_ on the sidebar and fill in the following information:
     - User Type: _External_ (do not worry, there is no need to submit the app for verification)
     - Application name: _YouTube Live_ (the exact name does not matter)
-    - Scopes for Google APIs: add `../auth/youtube.force-ssl`
+    - Scopes for Google APIs: add `https://www.googleapis.com/auth/youtube.force-ssl
 
 5. Head to _Credentials_ page. Select _Create credentials_ on the top bar and pick _OAuth client ID_.
 
