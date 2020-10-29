@@ -60,79 +60,85 @@ describe('Action handler', () => {
 
 	test('Start test success', async () => {
 		await expect(
-			handleAction({ action: 'init_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
+			handleAction({ id: 'action0', action: 'init_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
 		).resolves.toBeFalsy();
 		expect(allOK.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
 	test('Start test failure', async () => {
 		await expect(
-			handleAction({ action: 'init_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
+			handleAction({ id: 'action0', action: 'init_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
 		).rejects.toBeInstanceOf(Error);
 		expect(allKO.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
 
 	test('Go live success', async () => {
 		await expect(
-			handleAction({ action: 'start_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
+			handleAction({ id: 'action0', action: 'start_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
 		).resolves.toBeFalsy();
 		expect(allOK.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
 	test('Go live failure', async () => {
 		await expect(
-			handleAction({ action: 'start_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
+			handleAction({ id: 'action0', action: 'start_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
 		).rejects.toBeInstanceOf(Error);
 		expect(allKO.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
 
 	test('Finish success', async () => {
 		await expect(
-			handleAction({ action: 'stop_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
+			handleAction({ id: 'action0', action: 'stop_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
 		).resolves.toBeFalsy();
 		expect(allOK.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
 	test('Finish failure', async () => {
 		await expect(
-			handleAction({ action: 'stop_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
+			handleAction({ id: 'action0', action: 'stop_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
 		).rejects.toBeInstanceOf(Error);
 		expect(allKO.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
 
 	test('Toggle success', async () => {
 		await expect(
-			handleAction({ action: 'toggle_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
+			handleAction({ id: 'action0', action: 'toggle_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
 		).resolves.toBeFalsy();
 		expect(allOK.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
 	test('Toggle failure', async () => {
 		await expect(
-			handleAction({ action: 'toggle_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
+			handleAction({ id: 'action0', action: 'toggle_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
 		).rejects.toBeInstanceOf(Error);
 		expect(allKO.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
 
 	test('Reload all success', async () => {
-		await expect(handleAction({ action: 'refresh_status', options: {} }, memory, allOK)).resolves.toBeFalsy();
+		await expect(
+			handleAction({ id: 'action0', action: 'refresh_status', options: {} }, memory, allOK)
+		).resolves.toBeFalsy();
 		expect(allOK.reloadEverything).toHaveBeenCalledTimes(1);
 	});
 	test('Reload all failure', async () => {
-		await expect(handleAction({ action: 'refresh_status', options: {} }, memory, allKO)).rejects.toBeInstanceOf(Error);
+		await expect(
+			handleAction({ id: 'action0', action: 'refresh_status', options: {} }, memory, allKO)
+		).rejects.toBeInstanceOf(Error);
 		expect(allKO.reloadEverything).toHaveBeenCalledTimes(1);
 	});
 
 	test('Feedback refresh success', async () => {
-		await expect(handleAction({ action: 'refresh_feedbacks', options: {} }, memory, allOK)).resolves.toBeFalsy();
+		await expect(
+			handleAction({ id: 'action0', action: 'refresh_feedbacks', options: {} }, memory, allOK)
+		).resolves.toBeFalsy();
 		expect(allOK.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 	test('Feedback refresh failure', async () => {
-		await expect(handleAction({ action: 'refresh_feedbacks', options: {} }, memory, allKO)).rejects.toBeInstanceOf(
-			Error
-		);
+		await expect(
+			handleAction({ id: 'action0', action: 'refresh_feedbacks', options: {} }, memory, allKO)
+		).rejects.toBeInstanceOf(Error);
 		expect(allKO.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 
 	test('Unknown action', async () => {
 		await expect(
-			handleAction({ action: 'blag', options: { broadcast_id: 'test' } }, memory, allOK)
+			handleAction({ id: 'action0', action: 'blag', options: { broadcast_id: 'test' } }, memory, allOK)
 		).rejects.toBeInstanceOf(Error);
 		expect(allOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 		expect(allOK.makeBroadcastLive).toHaveBeenCalledTimes(0);
@@ -141,12 +147,14 @@ describe('Action handler', () => {
 		expect(allOK.reloadEverything).toHaveBeenCalledTimes(0);
 	});
 	test('Missing broadcast ID', async () => {
-		await expect(handleAction({ action: 'init_broadcast', options: {} }, memory, allOK)).rejects.toBeInstanceOf(Error);
+		await expect(
+			handleAction({ id: 'action0', action: 'init_broadcast', options: {} }, memory, allOK)
+		).rejects.toBeInstanceOf(Error);
 		expect(allOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
 	test('Unknown broadcast ID', async () => {
 		await expect(
-			handleAction({ action: 'init_broadcast', options: { broadcast_id: 'random' } }, memory, allOK)
+			handleAction({ id: 'action0', action: 'init_broadcast', options: { broadcast_id: 'random' } }, memory, allOK)
 		).rejects.toBeInstanceOf(Error);
 		expect(allOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
