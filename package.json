@@ -14,7 +14,7 @@
 	"license": "MIT",
 	"scripts": {
 		"dev": "yarn build:watch",
-		"build": "rimraf dist && yarn build:main",
+		"build": "npx rimraf dist && npx typescript@~3.9.5 -p tsconfig.build.json",
 		"build:main": "tsc -p tsconfig.build.json",
 		"build:watch": "tsc -p tsconfig.build.json --watch",
 		"lint": "eslint . --ext .ts",
@@ -39,14 +39,14 @@
 		]
 	},
 	"dependencies": {
+		"@types/jest": "^25.2.3",
+		"@types/node": "^12.19.3",
+		"@types/server-destroy": "^1.0.0",
 		"googleapis": "^48.0.0",
 		"open": "^7.0.4",
 		"server-destroy": "^1.0.1"
 	},
 	"devDependencies": {
-		"@types/jest": "^25.2.3",
-		"@types/node": "^12.19.3",
-		"@types/server-destroy": "^1.0.0",
 		"@typescript-eslint/eslint-plugin": "~2.31.0",
 		"@typescript-eslint/parser": "~2.31.0",
 		"eslint": "^6.8.0",
