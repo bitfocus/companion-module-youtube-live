@@ -1,3 +1,5 @@
+import { differenceInMinutes, parseISO } from 'date-fns';
+
 /** YouTube broadcast ID, e.g. dQw4w9WgXcQ */
 export type BroadcastID = string;
 
@@ -74,6 +76,9 @@ export interface Broadcast {
 
 	/** Whether the YouTube Studio monitor stream is enabled or not. */
 	MonitorStreamEnabled: boolean;
+
+	/** The date and time that the broadcast actually ended. . */
+	ActualEndTime: string | null;
 }
 
 /**
@@ -96,4 +101,19 @@ export interface StateMemory {
 
 	/** All fetched streams */
 	Streams: Record<StreamID, Stream>;
+}
+
+/** Filter only unfinished broadcasts */
+export function FilterUnfinishedBroadcast(broadcast: Broadcast): boolean {
+	// filter also for actualEndTime diff
+	let endedSomeTimeAgo = false;
+
+	if (broadcast.ActualEndTime) {
+		const ended = parseISO(broadcast.ActualEndTime);
+		endedSomeTimeAgo = differenceInMinutes(new Date(), ended) < 20;
+	}
+	return (
+		(broadcast.Status != BroadcastLifecycle.Complete && broadcast.Status != BroadcastLifecycle.Revoked) ||
+		endedSomeTimeAgo
+	);
 }

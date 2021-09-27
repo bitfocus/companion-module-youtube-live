@@ -138,12 +138,13 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	 * @param memory Known streams and broadcasts
 	 */
 	reloadAll(memory: StateMemory): void {
-		this.setVariableDefinitions(declareVars(memory));
-		for (const item of exportVars(memory)) {
+		const unfinishedCnt = 3;
+		this.setVariableDefinitions(declareVars(memory, unfinishedCnt));
+		for (const item of exportVars(memory, unfinishedCnt)) {
 			this.setVariable(item.name, item.value);
 		}
-		this.setPresetDefinitions(listPresets(memory.Broadcasts, this.rgb.bind(this)));
-		this.setFeedbackDefinitions(listFeedbacks(memory.Broadcasts, this.rgb.bind(this)));
+		this.setPresetDefinitions(listPresets(memory.Broadcasts, this.rgb.bind(this), unfinishedCnt));
+		this.setFeedbackDefinitions(listFeedbacks(memory.Broadcasts, this.rgb.bind(this), unfinishedCnt));
 		this.setActions(listActions(memory.Broadcasts));
 		this.checkFeedbacks();
 	}
@@ -153,7 +154,7 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	 * @param memory Known streams and broadcasts
 	 */
 	reloadStates(memory: StateMemory): void {
-		for (const item of exportVars(memory)) {
+		for (const item of exportVars(memory, 3)) {
 			this.setVariable(item.name, item.value);
 		}
 		this.checkFeedbacks();
@@ -168,6 +169,7 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 			this.setVariable(item.name, item.value);
 		}
 		this.checkFeedbacks('broadcast_status');
+		this.checkFeedbacks('unfinished_broadcast_status');
 	}
 }
 

@@ -1,5 +1,5 @@
 import { CompanionVariable } from '../../../instance_skel_types';
-import { StateMemory, BroadcastLifecycle, StreamHealth, Broadcast, Stream } from './cache';
+import { StateMemory, BroadcastLifecycle, StreamHealth, Broadcast, Stream, FilterUnfinishedBroadcast } from './cache';
 
 /**
  * Structure for representing contents of one variable
@@ -16,7 +16,7 @@ export interface VariableContent {
  * Generate variable declarations for this module
  * @param memory Known broadcasts and streams
  */
-export function declareVars(memory: StateMemory): CompanionVariable[] {
+export function declareVars(memory: StateMemory, unfinishedCnt: number): CompanionVariable[] {
 	const result: CompanionVariable[] = [];
 
 	Object.values(memory.Broadcasts).forEach((item) => {
@@ -30,6 +30,14 @@ export function declareVars(memory: StateMemory): CompanionVariable[] {
 		});
 	});
 
+	[...Array(unfinishedCnt).keys()].forEach((i) => {
+		result.push({ name: `unfinished_${i}`, label: `Unfinished/planned broadcast name #${i}` });
+		result.push({ name: `unfinished_short_${i}`, label: `Unfinished/planned broadcast name shortened #${i}` });
+		result.push({ name: `unfinished_id_${i}`, label: `Unfinished/planned broadcast ID #${i}` });
+		result.push({ name: `unfinished_state_${i}`, label: `Unfinished/planned broadcast state #${i}` });
+		result.push({ name: `unfinished_health_${i}`, label: `Unfinished/planned broadcast's stream health #${i}` });
+	});
+
 	return result;
 }
 
@@ -37,7 +45,7 @@ export function declareVars(memory: StateMemory): CompanionVariable[] {
  * Generate variable contents for this module
  * @param memory Known broadcasts and streams
  */
-export function exportVars(memory: StateMemory): VariableContent[] {
+export function exportVars(memory: StateMemory, unfinishedCnt: number): VariableContent[] {
 	const result: VariableContent[] = [];
 
 	Object.values(memory.Broadcasts).forEach((broadcast) => {
@@ -45,10 +53,36 @@ export function exportVars(memory: StateMemory): VariableContent[] {
 
 		if (!broadcast.BoundStreamId) return;
 		if (!(broadcast.BoundStreamId in memory.Streams)) return;
+
 		const stream = memory.Streams[broadcast.BoundStreamId];
 
 		result.push(...getStreamVars(broadcast, stream));
 	});
+
+	let loop = 0;
+	Object.values(memory.Broadcasts)
+		.filter(FilterUnfinishedBroadcast)
+		.forEach((broadcast, i) => {
+			if (i <= unfinishedCnt) {
+				result.push(...getUnfinishedBroadcastVars(i, broadcast));
+
+				if (!broadcast.BoundStreamId || (broadcast.BoundStreamId && !(broadcast.BoundStreamId in memory.Streams))) {
+					result.push(...getStreamHealthVarsForUnfinishedBroadcastDefault(i));
+					return;
+				}
+				const stream = memory.Streams[broadcast.BoundStreamId];
+
+				result.push(...getStreamHealthVarsForUnfinishedBroadcast(i, stream));
+				loop++;
+			}
+		});
+
+	if (loop < unfinishedCnt) {
+		[...Array(unfinishedCnt - loop).keys()].forEach((i) => {
+			result.push(...getUnfinishedDefaultVars(loop + i));
+			result.push(...getStreamHealthVarsForUnfinishedBroadcastDefault(loop + i));
+		});
+	}
 
 	return result;
 }
@@ -118,6 +152,121 @@ export function getStreamVars(broadcast: Broadcast, stream: Stream): VariableCon
 			content.value = 'NODATA';
 			break;
 	}
+
+	return [content];
+}
+
+/**
+ * Generate variable contents for a given broadcast
+ * @param index Index number of unfinished Broadcast
+ * @param broadcast Broadcast to generate variables for
+ */
+export function getUnfinishedBroadcastVars(index: number, broadcast: Broadcast): VariableContent[] {
+	const contentName: VariableContent = {
+		name: `unfinished_${index}`,
+		value: broadcast.Name,
+	};
+	const contentShort: VariableContent = {
+		name: `unfinished_short_${index}`,
+		value: broadcast.Name.substr(0, 19),
+	};
+	const id: VariableContent = {
+		name: `unfinished_id_${index}`,
+		value: broadcast.Id,
+	};
+	const content: VariableContent = {
+		name: `unfinished_state_${index}`,
+		value: 'unknown',
+	};
+
+	switch (broadcast.Status) {
+		case BroadcastLifecycle.Created:
+			content.value = 'Created';
+			break;
+		case BroadcastLifecycle.Ready:
+			content.value = 'Ready';
+			break;
+		case BroadcastLifecycle.TestStarting:
+			content.value = 'Test start';
+			break;
+		case BroadcastLifecycle.Testing:
+			content.value = 'Testing';
+			break;
+		case BroadcastLifecycle.LiveStarting:
+			content.value = 'Live start';
+			break;
+		case BroadcastLifecycle.Live:
+			content.value = 'Live';
+			break;
+		case BroadcastLifecycle.Complete:
+			content.value = 'Completed';
+			break;
+	}
+	return [contentName, contentShort, id, content];
+}
+
+/**
+ * Generate variable contents for a given broadcast
+ * @param index Index number of unfinished Broadcast
+ */
+export function getUnfinishedDefaultVars(index: number): VariableContent[] {
+	const content: VariableContent = {
+		name: `unfinished_${index}`,
+		value: 'n/a',
+	};
+	const contentShort: VariableContent = {
+		name: `unfinished_short_${index}`,
+		value: 'n/a',
+	};
+	const id: VariableContent = {
+		name: `unfinished_id_${index}`,
+		value: 'n/a',
+	};
+	const health: VariableContent = {
+		name: `unfinished_state_${index}`,
+		value: 'n/a',
+	};
+	return [content, contentShort, id, health];
+}
+
+/**
+ * Generate variable contents for a given stream
+ * @param index Index number of unfinished Broadcast
+ * @param stream Stream to generate variables for
+ */
+export function getStreamHealthVarsForUnfinishedBroadcast(index: number, stream: Stream): VariableContent[] {
+	const content: VariableContent = {
+		name: `unfinished_health_${index}`,
+		value: 'unknown',
+	};
+
+	switch (stream.Health) {
+		case StreamHealth.Good:
+			content.value = 'Good';
+			break;
+		case StreamHealth.OK:
+			content.value = 'OK';
+			break;
+		case StreamHealth.Bad:
+			content.value = 'Bad';
+			break;
+		case StreamHealth.NoData:
+			content.value = 'No data';
+			break;
+	}
+
+	return [content];
+}
+
+/**
+ * Generate variable contents for a given stream
+ * @param index Index number of unfinished Broadcast
+ */
+export function getStreamHealthVarsForUnfinishedBroadcastDefault(index: number): VariableContent[] {
+	const content: VariableContent = {
+		name: `unfinished_health_${index}`,
+		value: 'n/a',
+	};
 
 	return [content];
 }

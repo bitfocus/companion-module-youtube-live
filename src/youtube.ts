@@ -98,6 +98,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				Status: status,
 				BoundStreamId: item.contentDetails!.boundStreamId || null,
 				MonitorStreamEnabled: monitor,
+				ActualEndTime: item.snippet!.actualEndTime!,
 			};
 		});
 
@@ -109,7 +110,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async refreshBroadcastStatus1(broadcast: Broadcast): Promise<Broadcast> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: 'status',
+			part: 'status, snippet',
 			id: broadcast.Id,
 			maxResults: 1,
 		});
@@ -126,6 +127,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			Status: status,
 			BoundStreamId: broadcast.BoundStreamId,
 			MonitorStreamEnabled: broadcast.MonitorStreamEnabled,
+			ActualEndTime: item.snippet!.actualEndTime!,
 		};
 	}
 
@@ -134,7 +136,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async refreshBroadcastStatus(current: BroadcastMap): Promise<BroadcastMap> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: 'status',
+			part: 'status, snippet',
 			id: Object.keys(current).join(','),
 			maxResults: this.MaxBroadcasts,
 		});
@@ -151,6 +153,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				Status: status,
 				BoundStreamId: current[id].BoundStreamId,
 				MonitorStreamEnabled: current[id].MonitorStreamEnabled,
+				ActualEndTime: item.snippet!.actualEndTime!,
 			};
 		});
 

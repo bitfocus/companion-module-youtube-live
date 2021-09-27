@@ -8,7 +8,7 @@ import { RGBFunction } from './common';
  * @param broadcasts Map of known broadcasts
  * @param rgb Function for generating RGB color codes
  */
-export function listPresets(broadcasts: BroadcastMap, rgb: RGBFunction): CompanionPreset[] {
+export function listPresets(broadcasts: BroadcastMap, rgb: RGBFunction, unfinishedCnt: number): CompanionPreset[] {
 	const presets: CompanionPreset[] = [];
 
 	Object.values(broadcasts).forEach((item) => {
@@ -140,6 +140,65 @@ export function listPresets(broadcasts: BroadcastMap, rgb: RGBFunction): Compani
 			],
 		};
 		presets.push(start, stop, toggle, init);
+	});
+
+	[...Array(unfinishedCnt).keys()].forEach((i) => {
+		if (i < unfinishedCnt) {
+			const unfinished: CompanionPreset = {
+				category: 'Unfinished/planned broadcasts',
+				label: `Unfinished broadcast state/name #${i}`,
+				bank: {
+					style: 'text',
+					text: `$(YT:unfinished_state_${i})\\n$(yt:unfinished_short_${i})`,
+					size: 'auto',
+					color: rgb(125, 125, 125),
+					bgcolor: 0,
+				},
+				feedbacks: [
+					{
+						type: 'unfinished_broadcast_status',
+						options: {
+							bg_live: rgb(222, 0, 0),
+							bg_testing: rgb(0, 172, 0),
+							bg_complete: rgb(87, 0, 87),
+							text_complete: rgb(182, 155, 182),
+							bg_ready: rgb(209, 209, 0),
+							broadcast: i + 1,
+						},
+					},
+				],
+				actions: [],
+			};
+			const stream: CompanionPreset = {
+				category: 'Unfinished/planned broadcasts',
+				label: `Unfinished broadcast's stream health #${i}`,
+				bank: {
+					style: 'text',
+					text: `Stream #${i}\\n$(YT:unfinished_health_${i})`,
+					size: 'auto',
+					color: rgb(125, 125, 125),
+					bgcolor: 0,
+				},
+				feedbacks: [
+					{
+						type: 'unfinished_broadcast_bound_stream_health',
+						options: {
+							bg_good: rgb(0, 204, 0),
+							text_good: rgb(255, 255, 255),
+							bg_ok: rgb(204, 204, 0),
+							text_ok: rgb(255, 255, 255),
+							bg_bad: rgb(255, 102, 0),
+							text_bad: rgb(255, 255, 255),
+							bg_no_data: rgb(255, 0, 0),
+							text_no_data: rgb(255, 255, 255),
+							broadcast: i + 1,
+						},
+					},
+				],
+				actions: [],
+			};
+			presets.push(unfinished, stream);
+		}
 	});
 
 	return presets;
