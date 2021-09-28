@@ -65,6 +65,7 @@ describe('Miscellaneous', () => {
 					Health: StreamHealth.Good,
 				},
 			},
+			UnfinishedBroadcasts: [],
 		};
 		mockYT = mocked(makeMockYT(memory));
 		mockModule = mocked(makeMockModule());
@@ -174,6 +175,7 @@ describe('Starting tests on broadcasts', () => {
 					Health: StreamHealth.Good,
 				},
 			},
+			UnfinishedBroadcasts: [],
 		};
 		mockYT = mocked(makeMockYT(memory));
 		mockModule = mocked(makeMockModule());
@@ -255,6 +257,7 @@ describe('Going live with broadcasts', () => {
 					Health: StreamHealth.Good,
 				},
 			},
+			UnfinishedBroadcasts: [],
 		};
 		mockYT = mocked(makeMockYT(memory));
 		mockModule = mocked(makeMockModule());
@@ -342,6 +345,7 @@ describe('Finishing live broadcasts', () => {
 					Health: StreamHealth.Good,
 				},
 			},
+			UnfinishedBroadcasts: [],
 		};
 		mockYT = mocked(makeMockYT(memory));
 		mockModule = mocked(makeMockModule());
@@ -392,6 +396,7 @@ describe('Toggling live broadcasts', () => {
 					Health: StreamHealth.Good,
 				},
 			},
+			UnfinishedBroadcasts: [],
 		};
 		mockYT = mocked(makeMockYT(memory));
 		mockModule = mocked(makeMockModule());

@@ -156,14 +156,14 @@ export function listPresets(broadcasts: BroadcastMap, rgb: RGBFunction, unfinish
 				},
 				feedbacks: [
 					{
-						type: 'unfinished_broadcast_status',
+						type: 'broadcast_status',
 						options: {
 							bg_live: rgb(222, 0, 0),
 							bg_testing: rgb(0, 172, 0),
 							bg_complete: rgb(87, 0, 87),
 							text_complete: rgb(182, 155, 182),
 							bg_ready: rgb(209, 209, 0),
-							broadcast: i + 1,
+							broadcast: `unfinished_${i}`,
 						},
 					},
 				],
@@ -181,7 +181,7 @@ export function listPresets(broadcasts: BroadcastMap, rgb: RGBFunction, unfinish
 				},
 				feedbacks: [
 					{
-						type: 'unfinished_broadcast_bound_stream_health',
+						type: 'broadcast_bound_stream_health',
 						options: {
 							bg_good: rgb(0, 204, 0),
 							text_good: rgb(255, 255, 255),
@@ -191,7 +191,7 @@ export function listPresets(broadcasts: BroadcastMap, rgb: RGBFunction, unfinish
 							text_bad: rgb(255, 255, 255),
 							bg_no_data: rgb(255, 0, 0),
 							text_no_data: rgb(255, 255, 255),
-							broadcast: i + 1,
+							broadcast: `unfinished_${i}`,
 						},
 					},
 				],

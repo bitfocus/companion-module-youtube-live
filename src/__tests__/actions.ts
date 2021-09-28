@@ -14,7 +14,7 @@ describe('Action list', () => {
 			},
 		};
 
-		const result = listActions(broadcasts);
+		const result = listActions(broadcasts, 3);
 		expect(result).toHaveProperty('init_broadcast');
 		expect(result).toHaveProperty('start_broadcast');
 		expect(result).toHaveProperty('stop_broadcast');

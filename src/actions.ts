@@ -29,10 +29,16 @@ export interface ActionHandler {
  * Generate list of Companion actions for this module
  * @param broadcasts Known broadcasts
  */
-export function listActions(broadcasts: BroadcastMap): CompanionActions {
+export function listActions(broadcasts: BroadcastMap, unfinishedCnt: number): CompanionActions {
 	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map(
 		(item): DropdownChoice => {
 			return { id: item.Id, label: item.Name };
+		}
+	);
+
+	const broadcastUnfinishedEntries: DropdownChoice[] = [...Array(unfinishedCnt).keys()].map(
+		(i): DropdownChoice => {
+			return { id: `unfinished_${i}`, label: `Unfinished/planned #${i}` };
 		}
 	);
 
@@ -46,7 +52,7 @@ export function listActions(broadcasts: BroadcastMap): CompanionActions {
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
-					choices: broadcastEntries,
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
 			],
@@ -58,7 +64,7 @@ export function listActions(broadcasts: BroadcastMap): CompanionActions {
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
-					choices: broadcastEntries,
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
 			],
@@ -70,7 +76,7 @@ export function listActions(broadcasts: BroadcastMap): CompanionActions {
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
-					choices: broadcastEntries,
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
 			],
@@ -82,7 +88,7 @@ export function listActions(broadcasts: BroadcastMap): CompanionActions {
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
-					choices: broadcastEntries,
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
 			],
@@ -110,9 +116,15 @@ export async function handleAction(
 	memory: StateMemory,
 	handler: ActionHandler
 ): Promise<void> {
+	let broadcast_id: BroadcastID = event.options.broadcast_id as BroadcastID;
 	if (event.options.broadcast_id) {
-		if (!(event.options.broadcast_id in memory.Broadcasts)) {
-			throw new Error('Action has unknown broadcast ID');
+		if (!(broadcast_id in memory.Broadcasts)) {
+			const hit = memory.UnfinishedBroadcasts.find((a) => `unfinished_${a.Id}` === broadcast_id);
+			if (hit) {
+				broadcast_id = hit.Id;
+			} else {
+				throw new Error('Action has unknown broadcast ID - not found or invalid');
+			}
 		}
 	} else {
 		if (event.action != 'refresh_status' && event.action != 'refresh_feedbacks') {
@@ -121,13 +133,13 @@ export async function handleAction(
 	}
 
 	if (event.action == 'init_broadcast') {
-		return handler.startBroadcastTest(event.options.broadcast_id as BroadcastID);
+		return handler.startBroadcastTest(broadcast_id);
 	} else if (event.action == 'start_broadcast') {
-		return handler.makeBroadcastLive(event.options.broadcast_id as BroadcastID);
+		return handler.makeBroadcastLive(broadcast_id);
 	} else if (event.action == 'stop_broadcast') {
-		return handler.finishBroadcast(event.options.broadcast_id as BroadcastID);
+		return handler.finishBroadcast(broadcast_id);
 	} else if (event.action == 'toggle_broadcast') {
-		return handler.toggleBroadcast(event.options.broadcast_id as BroadcastID);
+		return handler.toggleBroadcast(broadcast_id);
 	} else if (event.action == 'refresh_status') {
 		return handler.reloadEverything();
 	} else if (event.action == 'refresh_feedbacks') {

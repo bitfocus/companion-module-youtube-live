@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import InstanceSkel = require('../../../instance_skel');
-import { YoutubeConfig, listConfigFields, loadMaxBroadcastCount, loadRefreshInterval } from './config';
+import {
+	YoutubeConfig,
+	listConfigFields,
+	loadMaxBroadcastCount,
+	loadRefreshInterval,
+	loadMaxUnfinishedBroadcastCount,
+} from './config';
 import {
 	CompanionFeedbackEvent,
 	CompanionFeedbackResult,
@@ -11,7 +17,7 @@ import {
 import { Core, ModuleBase } from './core';
 import { handleFeedback, listFeedbacks } from './feedbacks';
 import { StateMemory, Broadcast } from './cache';
-import { getBroadcastVars, exportVars, declareVars } from './vars';
+import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateVars } from './vars';
 import { listPresets } from './presets';
 import { listActions, handleAction } from './actions';
 import { YoutubeConnector } from './youtube';
@@ -138,14 +144,14 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	 * @param memory Known streams and broadcasts
 	 */
 	reloadAll(memory: StateMemory): void {
-		const unfinishedCnt = 3;
+		const unfinishedCnt = loadMaxUnfinishedBroadcastCount(this.config);
 		this.setVariableDefinitions(declareVars(memory, unfinishedCnt));
 		for (const item of exportVars(memory, unfinishedCnt)) {
 			this.setVariable(item.name, item.value);
 		}
 		this.setPresetDefinitions(listPresets(memory.Broadcasts, this.rgb.bind(this), unfinishedCnt));
 		this.setFeedbackDefinitions(listFeedbacks(memory.Broadcasts, this.rgb.bind(this), unfinishedCnt));
-		this.setActions(listActions(memory.Broadcasts));
+		this.setActions(listActions(memory.Broadcasts, unfinishedCnt));
 		this.checkFeedbacks();
 	}
 
@@ -154,7 +160,7 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	 * @param memory Known streams and broadcasts
 	 */
 	reloadStates(memory: StateMemory): void {
-		for (const item of exportVars(memory, 3)) {
+		for (const item of exportVars(memory, loadMaxUnfinishedBroadcastCount(this.config))) {
 			this.setVariable(item.name, item.value);
 		}
 		this.checkFeedbacks();
@@ -164,12 +170,19 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	 * Reload variables and feedbacks related to one broadcast
 	 * @param broadcast Broadcast to reload for
 	 */
-	reloadBroadcast(broadcast: Broadcast): void {
-		for (const item of getBroadcastVars(broadcast)) {
-			this.setVariable(item.name, item.value);
+	reloadBroadcast(broadcast: Broadcast, memory: StateMemory): void {
+		if (broadcast.Id in memory.Broadcasts) {
+			for (const item of getBroadcastVars(broadcast)) {
+				this.setVariable(item.name, item.value);
+			}
+		}
+		const hit = memory.UnfinishedBroadcasts.findIndex((a) => a.Id == broadcast.Id);
+		if (hit > -1) {
+			for (const item of getUnfinishedBroadcastStateVars(hit, broadcast)) {
+				this.setVariable(item.name, item.value);
+			}
 		}
 		this.checkFeedbacks('broadcast_status');
-		this.checkFeedbacks('unfinished_broadcast_status');
 	}
 }
 

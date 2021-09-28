@@ -14,7 +14,7 @@ export interface ModuleBase {
 	reloadStates(memory: StateMemory): void;
 
 	/** Reload variables and feedbacks for a given broadcast */
-	reloadBroadcast(broadcast: Broadcast): void;
+	reloadBroadcast(broadcast: Broadcast, memory: StateMemory): void;
 
 	/** Logging sink */
 	log: Logger;
@@ -55,7 +55,7 @@ export class Core implements ActionHandler {
 	constructor(mod: ModuleBase, api: YoutubeAPI, refreshInterval: number, pollInterval = 1000) {
 		this.Module = mod;
 		this.YouTube = api;
-		this.Cache = { Broadcasts: {}, Streams: {} };
+		this.Cache = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
 		this.RefreshInterval = refreshInterval;
 		this.TransitionPollInterval = pollInterval;
 		this.RunningTransitions = {};
@@ -67,8 +67,16 @@ export class Core implements ActionHandler {
 	async init(): Promise<void> {
 		this.Cache.Broadcasts = await this.YouTube.listBroadcasts();
 		this.Cache.Streams = await this.YouTube.listBoundStreams(this.Cache.Broadcasts);
+		this.Cache.UnfinishedBroadcasts = Object.values(this.Cache.Broadcasts).filter(this.filterUnfinishedBroadcast);
 		this.Module.reloadAll(this.Cache);
 		this.RefreshTimer = global.setInterval(this.refresher.bind(this), this.RefreshInterval);
+	}
+
+	/**
+	 * Filter only unfinished broadcasts
+	 */
+	filterUnfinishedBroadcast(broadcast: Broadcast): boolean {
+		return broadcast.Status != BroadcastLifecycle.Complete && broadcast.Status != BroadcastLifecycle.Revoked;
 	}
 
 	/**
@@ -90,6 +98,10 @@ export class Core implements ActionHandler {
 		try {
 			this.Cache.Broadcasts = await this.YouTube.refreshBroadcastStatus(this.Cache.Broadcasts);
 			this.Cache.Streams = await this.YouTube.listBoundStreams(this.Cache.Broadcasts);
+			// update existing unfinished broadcasts store
+			this.Cache.UnfinishedBroadcasts = this.Cache.UnfinishedBroadcasts.map((a) => {
+				return a.Id in this.Cache.Broadcasts ? this.Cache.Broadcasts[a.Id] : a;
+			});
 			this.Module.reloadStates(this.Cache);
 		} catch (err) {
 			this.Module.log('warn', `Periodic refresh failed: ${err}`);
@@ -206,13 +218,28 @@ export class Core implements ActionHandler {
 	 * @param id Broadcast ID to check.
 	 */
 	async checkOneBroadcast(id: BroadcastID): Promise<BroadcastLifecycle> {
-		if (!(id in this.Cache.Broadcasts)) throw new Error(`Broadcast does not exist: ${id}`);
+		let oldBroadcast: Broadcast;
+		const unfinishedHit = this.Cache.UnfinishedBroadcasts.find((a) => a.Id == id);
+		if (id in this.Cache.Broadcasts) {
+			oldBroadcast = this.Cache.Broadcasts[id];
+		} else if (unfinishedHit) {
+			oldBroadcast = unfinishedHit;
+		} else {
+			throw new Error(`Broadcast does not exist: ${id}`);
+		}
 
-		const oldBroadcast = this.Cache.Broadcasts[id];
 		const newBroadcast = await this.YouTube.refreshBroadcastStatus1(oldBroadcast);
-		this.Cache.Broadcasts[id] = newBroadcast;
 
-		this.Module.reloadBroadcast(newBroadcast);
+		if (id in this.Cache.Broadcasts) {
+			this.Cache.Broadcasts[id] = newBroadcast;
+		}
+		if (unfinishedHit) {
+			this.Cache.UnfinishedBroadcasts = this.Cache.UnfinishedBroadcasts.map((a) => {
+				return id == a.Id ? newBroadcast : a;
+			});
+		}
+
+		this.Module.reloadBroadcast(newBroadcast, this.Cache);
 		return newBroadcast.Status;
 	}
 

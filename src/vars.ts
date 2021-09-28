@@ -1,5 +1,5 @@
 import { CompanionVariable } from '../../../instance_skel_types';
-import { StateMemory, BroadcastLifecycle, StreamHealth, Broadcast, Stream, FilterUnfinishedBroadcast } from './cache';
+import { StateMemory, BroadcastLifecycle, StreamHealth, Broadcast, Stream } from './cache';
 
 /**
  * Structure for representing contents of one variable
@@ -33,7 +33,6 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 	[...Array(unfinishedCnt).keys()].forEach((i) => {
 		result.push({ name: `unfinished_${i}`, label: `Unfinished/planned broadcast name #${i}` });
 		result.push({ name: `unfinished_short_${i}`, label: `Unfinished/planned broadcast name shortened #${i}` });
-		result.push({ name: `unfinished_id_${i}`, label: `Unfinished/planned broadcast ID #${i}` });
 		result.push({ name: `unfinished_state_${i}`, label: `Unfinished/planned broadcast state #${i}` });
 		result.push({ name: `unfinished_health_${i}`, label: `Unfinished/planned broadcast's stream health #${i}` });
 	});
@@ -60,22 +59,21 @@ export function exportVars(memory: StateMemory, unfinishedCnt: number): Variable
 	});
 
 	let loop = 0;
-	Object.values(memory.Broadcasts)
-		.filter(FilterUnfinishedBroadcast)
-		.forEach((broadcast, i) => {
-			if (i <= unfinishedCnt) {
-				result.push(...getUnfinishedBroadcastVars(i, broadcast));
+	memory.UnfinishedBroadcasts.forEach((broadcast, i) => {
+		if (i < unfinishedCnt) {
+			result.push(...getUnfinishedBroadcastVars(i, broadcast));
+			result.push(...getUnfinishedBroadcastStateVars(i, broadcast));
 
-				if (!broadcast.BoundStreamId || (broadcast.BoundStreamId && !(broadcast.BoundStreamId in memory.Streams))) {
-					result.push(...getStreamHealthVarsForUnfinishedBroadcastDefault(i));
-					return;
-				}
-				const stream = memory.Streams[broadcast.BoundStreamId];
-
-				result.push(...getStreamHealthVarsForUnfinishedBroadcast(i, stream));
-				loop++;
+			if (!broadcast.BoundStreamId || (broadcast.BoundStreamId && !(broadcast.BoundStreamId in memory.Streams))) {
+				result.push(...getStreamHealthVarsForUnfinishedBroadcastDefault(i));
+				return;
 			}
-		});
+			const stream = memory.Streams[broadcast.BoundStreamId];
+
+			result.push(...getStreamHealthVarsForUnfinishedBroadcast(i, stream));
+			loop++;
+		}
+	});
 
 	if (loop < unfinishedCnt) {
 		[...Array(unfinishedCnt - loop).keys()].forEach((i) => {
@@ -170,10 +168,15 @@ export function getUnfinishedBroadcastVars(index: number, broadcast: Broadcast):
 		name: `unfinished_short_${index}`,
 		value: broadcast.Name.substr(0, 19),
 	};
-	const id: VariableContent = {
-		name: `unfinished_id_${index}`,
-		value: broadcast.Id,
-	};
+	return [contentName, contentShort];
+}
+
+/**
+ * Generate variable contents for a given broadcast
+ * @param index Index number of unfinished Broadcast
+ * @param broadcast Broadcast to generate variables for
+ */
+export function getUnfinishedBroadcastStateVars(index: number, broadcast: Broadcast): VariableContent[] {
 	const content: VariableContent = {
 		name: `unfinished_state_${index}`,
 		value: 'unknown',
@@ -202,7 +205,7 @@ export function getUnfinishedBroadcastVars(index: number, broadcast: Broadcast):
 			content.value = 'Completed';
 			break;
 	}
-	return [contentName, contentShort, id, content];
+	return [content];
 }
 
 /**
@@ -218,15 +221,11 @@ export function getUnfinishedDefaultVars(index: number): VariableContent[] {
 		name: `unfinished_short_${index}`,
 		value: 'n/a',
 	};
-	const id: VariableContent = {
-		name: `unfinished_id_${index}`,
-		value: 'n/a',
-	};
 	const health: VariableContent = {
 		name: `unfinished_state_${index}`,
 		value: 'n/a',
 	};
-	return [content, contentShort, id, health];
+	return [content, contentShort, health];
 }
 
 /**
