@@ -21,6 +21,9 @@ export interface YoutubeConfig {
 
 	/** How often (in seconds) to refresh status of broadcasts & streams */
 	refresh_interval?: number;
+
+	/** How many unfinished broadcasts store into variables */
+	unfinished_max_cnt?: number;
 }
 
 /**
@@ -50,6 +53,21 @@ export function loadMaxBroadcastCount(config: YoutubeConfig): number {
 }
 
 /**
+ * Load broadcast limit from the module configuration.
+ * @param config Module configuration
+ * @returns How many unfinished broadcasts store into variables.
+ */
+export function loadMaxUnfinishedBroadcastCount(config: YoutubeConfig): number {
+	let items = config.unfinished_max_cnt ?? 3;
+
+	if (items < 0) items = 0;
+	const max = loadMaxBroadcastCount(config);
+	if (items > max) items = max;
+
+	return items;
+}
+
+/**
  * Generate a list of configuration fields of this module.
  */
 export function listConfigFields(): SomeCompanionConfigField[] {
@@ -71,6 +89,16 @@ export function listConfigFields(): SomeCompanionConfigField[] {
 			min: 1,
 			max: 300,
 			default: 60,
+			required: true,
+			width: 6,
+		},
+		{
+			type: 'number',
+			label: 'How many unfinished/planned broadcasts store into unfinished_* variables',
+			id: 'unfinished_max_cnt',
+			min: 0,
+			max: 50,
+			default: 3,
 			required: true,
 			width: 6,
 		},

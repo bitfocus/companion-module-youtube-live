@@ -96,4 +96,7 @@ export interface StateMemory {
 
 	/** All fetched streams */
 	Streams: Record<StreamID, Stream>;
+
+	/** Unfinished broadcasts */
+	UnfinishedBroadcasts: Array<Broadcast>;
 }
