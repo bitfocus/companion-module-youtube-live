@@ -98,6 +98,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				Status: status,
 				BoundStreamId: item.contentDetails!.boundStreamId || null,
 				MonitorStreamEnabled: monitor,
+				ScheduledStartTime: item.snippet!.scheduledStartTime!,
 			};
 		});
 
@@ -126,6 +127,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			Status: status,
 			BoundStreamId: broadcast.BoundStreamId,
 			MonitorStreamEnabled: broadcast.MonitorStreamEnabled,
+			ScheduledStartTime: broadcast.ScheduledStartTime,
 		};
 	}
 
@@ -151,6 +153,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				Status: status,
 				BoundStreamId: current[id].BoundStreamId,
 				MonitorStreamEnabled: current[id].MonitorStreamEnabled,
+				ScheduledStartTime: current[id].ScheduledStartTime,
 			};
 		});
 

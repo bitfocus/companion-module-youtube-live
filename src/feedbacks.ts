@@ -162,7 +162,7 @@ export function handleFeedback(
 		if (id in memory.Broadcasts) {
 			broadcastStatus = memory.Broadcasts[id].Status;
 		} else {
-			const hit = memory.UnfinishedBroadcasts.find((a) => `unfinished_${a.Id}` === id);
+			const hit = memory.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
 			if (hit) {
 				broadcastStatus = hit.Status;
 			} else {
@@ -208,7 +208,7 @@ export function handleFeedback(
 			streamId = memory.Broadcasts[id].BoundStreamId;
 			broadcastStatus = memory.Broadcasts[id].Status;
 		} else {
-			const hit = memory.UnfinishedBroadcasts.find((a) => `unfinished_${a.Id}` === id);
+			const hit = memory.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
 			if (hit) {
 				streamId = hit.BoundStreamId;
 				broadcastStatus = hit.Status;

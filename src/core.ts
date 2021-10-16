@@ -67,7 +67,9 @@ export class Core implements ActionHandler {
 	async init(): Promise<void> {
 		this.Cache.Broadcasts = await this.YouTube.listBroadcasts();
 		this.Cache.Streams = await this.YouTube.listBoundStreams(this.Cache.Broadcasts);
-		this.Cache.UnfinishedBroadcasts = Object.values(this.Cache.Broadcasts).filter(this.filterUnfinishedBroadcast);
+		const unfinished = Object.values(this.Cache.Broadcasts).filter(this.filterUnfinishedBroadcast);
+		unfinished.sort(this.sortByScheduledStartTime);
+		this.Cache.UnfinishedBroadcasts = unfinished;
 		this.Module.reloadAll(this.Cache);
 		this.RefreshTimer = global.setInterval(this.refresher.bind(this), this.RefreshInterval);
 	}
@@ -77,6 +79,13 @@ export class Core implements ActionHandler {
 	 */
 	filterUnfinishedBroadcast(broadcast: Broadcast): boolean {
 		return broadcast.Status != BroadcastLifecycle.Complete && broadcast.Status != BroadcastLifecycle.Revoked;
+	}
+
+	/**
+	 * Sort by date
+	 */
+	sortByScheduledStartTime(a: Broadcast, b: Broadcast): number {
+		return new Date(a.ScheduledStartTime).valueOf() - new Date(b.ScheduledStartTime).valueOf();
 	}
 
 	/**
