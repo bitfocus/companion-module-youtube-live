@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Download Node.js 8.x
+    - name: Download Node.js 14.x
       uses: actions/setup-node@v1
       with:
-        node-version: 8.x
+        node-version: 14.x
 
     - name: Checkout Companion
       uses: actions/checkout@v2
@@ -26,12 +26,12 @@ jobs:
     - name: Checkout this commit
       uses: actions/checkout@v2
       with:
-        path: ./lib/module/youtube-live
+        path: ./module-local-dev/youtube-live
 
     - name: Compile module
       run: yarn install --frozen-lockfile
-      working-directory: ./lib/module/youtube-live
+      working-directory: ./module-local-dev/youtube-live
 
     - name: Run unit tests
       run: yarn test
-      working-directory: ./lib/module/youtube-live
+      working-directory: ./module-local-dev/youtube-live
