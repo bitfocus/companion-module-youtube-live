@@ -20,6 +20,7 @@ const SampleMemory: StateMemory = {
 			MonitorStreamEnabled: true,
 			Status: BroadcastLifecycle.Live,
 			BoundStreamId: 'abcd',
+			ScheduledStartTime: '2021-11-30T20:00:00',
 		},
 	},
 	Streams: {
@@ -28,6 +29,7 @@ const SampleMemory: StateMemory = {
 			Health: StreamHealth.Good,
 		},
 	},
+	UnfinishedBroadcasts: [],
 };
 
 const SampleBroadcastCheck: CompanionFeedbackEvent = {
@@ -60,7 +62,7 @@ const SampleStreamCheck: CompanionFeedbackEvent = {
 
 describe('Common tests', () => {
 	test('Module has required feedbacks', () => {
-		const feedbacks = listFeedbacks(SampleMemory.Broadcasts, rgb);
+		const feedbacks = listFeedbacks(SampleMemory.Broadcasts, rgb, 1);
 
 		expect(feedbacks).toHaveProperty('broadcast_status');
 		expect(feedbacks).toHaveProperty('broadcast_bound_stream_health');
@@ -152,7 +154,7 @@ describe('Broadcast lifecycle feedback', () => {
 	});
 
 	test('Unknown broadcasts', () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {} };
+		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
 
 		const event: CompanionFeedbackEvent = {
 			id: 'abcd1234',
@@ -171,7 +173,7 @@ describe('Broadcast lifecycle feedback', () => {
 	});
 
 	test('Events without ID', () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {} };
+		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
 
 		const event: CompanionFeedbackEvent = {
 			id: 'abcd1234',
@@ -233,7 +235,7 @@ describe('Stream health feedback', () => {
 	});
 
 	test('Unknown broadcasts', () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {} };
+		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
 
 		const event: CompanionFeedbackEvent = {
 			id: 'abcd1234',
@@ -260,9 +262,11 @@ describe('Stream health feedback', () => {
 					MonitorStreamEnabled: true,
 					Status: BroadcastLifecycle.Live,
 					BoundStreamId: 'abcd',
+					ScheduledStartTime: '2021-11-30T20:00:00',
 				},
 			},
 			Streams: {},
+			UnfinishedBroadcasts: [],
 		};
 
 		const event: CompanionFeedbackEvent = {
@@ -282,7 +286,7 @@ describe('Stream health feedback', () => {
 	});
 
 	test('Events without ID', () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {} };
+		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
 
 		const event: CompanionFeedbackEvent = {
 			id: 'abcd1234',

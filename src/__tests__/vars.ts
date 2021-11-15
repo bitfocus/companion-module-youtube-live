@@ -11,6 +11,7 @@ const SampleMemory: StateMemory = {
 			MonitorStreamEnabled: true,
 			Status: BroadcastLifecycle.Live,
 			BoundStreamId: 'streamID',
+			ScheduledStartTime: '2021-11-30T20:00:00',
 		},
 	},
 	Streams: {
@@ -19,6 +20,7 @@ const SampleMemory: StateMemory = {
 			Health: StreamHealth.Good,
 		},
 	},
+	UnfinishedBroadcasts: [],
 };
 
 function hasAny(vars: CompanionVariable[] | VariableContent[], name: string): boolean {
@@ -33,13 +35,13 @@ function hasAny(vars: CompanionVariable[] | VariableContent[], name: string): bo
 
 describe('Variable declarations', () => {
 	test('No variables without broadcasts', () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {} };
-		const result = declareVars(data);
+		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
+		const result = declareVars(data, 0);
 		expect(result).toHaveLength(0);
 	});
 
 	test('Lifecycle and health added for each broadcast', () => {
-		const result = declareVars(SampleMemory);
+		const result = declareVars(SampleMemory, 2);
 
 		expect(hasAny(result, 'lifecycle:broadcastID')).toBeTruthy();
 		expect(hasAny(result, 'health:broadcastID')).toBeTruthy();
@@ -48,13 +50,13 @@ describe('Variable declarations', () => {
 
 describe('Variable values', () => {
 	test('No variables without broadcasts', () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {} };
-		const result = exportVars(data);
+		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
+		const result = exportVars(data, 0);
 		expect(result).toHaveLength(0);
 	});
 
 	test('Lifecycle and health added for each broadcast', () => {
-		const result = exportVars(SampleMemory);
+		const result = exportVars(SampleMemory, 1);
 
 		expect(hasAny(result, 'lifecycle:broadcastID')).toBeTruthy();
 		expect(hasAny(result, 'health:broadcastID')).toBeTruthy();
@@ -64,7 +66,7 @@ describe('Variable values', () => {
 		const data = clone(SampleMemory);
 		data.Broadcasts.broadcastID.BoundStreamId = '';
 
-		const result = exportVars(data);
+		const result = exportVars(data, 1);
 
 		expect(hasAny(result, 'health:broadcastID')).toBeFalsy();
 	});
@@ -73,7 +75,7 @@ describe('Variable values', () => {
 		const data = clone(SampleMemory);
 		data.Broadcasts.broadcastID.BoundStreamId = 'hello';
 
-		const result = exportVars(data);
+		const result = exportVars(data, 1);
 
 		expect(hasAny(result, 'health:broadcastID')).toBeFalsy();
 	});

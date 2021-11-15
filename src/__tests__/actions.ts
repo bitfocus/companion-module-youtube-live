@@ -11,6 +11,7 @@ describe('Action list', () => {
 				Status: BroadcastLifecycle.Live,
 				BoundStreamId: 'abcd',
 				MonitorStreamEnabled: true,
+				ScheduledStartTime: '2021-11-30T20:00:00',
 			},
 		};
 
@@ -51,9 +52,11 @@ describe('Action handler', () => {
 				MonitorStreamEnabled: true,
 				Status: BroadcastLifecycle.Live,
 				BoundStreamId: 'abcd',
+				ScheduledStartTime: '2021-11-30T20:00:00',
 			},
 		},
 		Streams: {},
+		UnfinishedBroadcasts: [],
 	};
 
 	afterEach(() => jest.clearAllMocks());
