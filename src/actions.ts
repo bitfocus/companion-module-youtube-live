@@ -119,7 +119,7 @@ export async function handleAction(
 	let broadcast_id: BroadcastID = event.options.broadcast_id as BroadcastID;
 	if (event.options.broadcast_id) {
 		if (!(broadcast_id in memory.Broadcasts)) {
-			const hit = memory.UnfinishedBroadcasts.find((a) => `unfinished_${a.Id}` === broadcast_id);
+			const hit = memory.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcast_id);
 			if (hit) {
 				broadcast_id = hit.Id;
 			} else {

@@ -57,6 +57,7 @@ describe('Miscellaneous', () => {
 					Status: BroadcastLifecycle.Testing,
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
+					ScheduledStartTime: '2020-11-30T08:08:00',
 				},
 			},
 			Streams: {
@@ -65,7 +66,16 @@ describe('Miscellaneous', () => {
 					Health: StreamHealth.Good,
 				},
 			},
-			UnfinishedBroadcasts: [],
+			UnfinishedBroadcasts: [
+				{
+					Id: 'bA',
+					Name: 'Broadcast A',
+					Status: BroadcastLifecycle.Testing,
+					MonitorStreamEnabled: true,
+					BoundStreamId: 'sA',
+					ScheduledStartTime: '2020-11-30T08:08:00',
+				},
+			],
 		};
 		mockYT = mocked(makeMockYT(memory));
 		mockModule = mocked(makeMockModule());
@@ -167,6 +177,7 @@ describe('Starting tests on broadcasts', () => {
 					Status: BroadcastLifecycle.Testing,
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
+					ScheduledStartTime: '2021-11-30T22:00:00',
 				},
 			},
 			Streams: {
@@ -249,6 +260,7 @@ describe('Going live with broadcasts', () => {
 					Status: BroadcastLifecycle.Testing,
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
+					ScheduledStartTime: '2021-11-30T20:00:00',
 				},
 			},
 			Streams: {
@@ -337,6 +349,7 @@ describe('Finishing live broadcasts', () => {
 					Status: BroadcastLifecycle.Testing,
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
+					ScheduledStartTime: '2021-11-30T20:00:00',
 				},
 			},
 			Streams: {
@@ -388,6 +401,7 @@ describe('Toggling live broadcasts', () => {
 					Status: BroadcastLifecycle.Testing,
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
+					ScheduledStartTime: '2021-11-30T20:00:00',
 				},
 			},
 			Streams: {

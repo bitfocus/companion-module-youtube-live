@@ -14,6 +14,7 @@ const memory: StateMemory = {
 			Status: BroadcastLifecycle.Testing,
 			MonitorStreamEnabled: true,
 			BoundStreamId: 'sA',
+			ScheduledStartTime: '2011-11-11T11:11:11',
 		},
 		bB: {
 			Id: 'bB',
@@ -21,6 +22,7 @@ const memory: StateMemory = {
 			Status: BroadcastLifecycle.Live,
 			MonitorStreamEnabled: true,
 			BoundStreamId: 'sB',
+			ScheduledStartTime: '2022-22-22T22:22:22',
 		},
 		bC: {
 			Id: 'bC',
@@ -28,6 +30,7 @@ const memory: StateMemory = {
 			Status: BroadcastLifecycle.Ready,
 			MonitorStreamEnabled: false,
 			BoundStreamId: 'sB',
+			ScheduledStartTime: '2033-33-33T33:33:33',
 		},
 	},
 	Streams: {
@@ -40,6 +43,7 @@ const memory: StateMemory = {
 			Health: StreamHealth.Bad,
 		},
 	},
+	UnfinishedBroadcasts: [],
 };
 
 const memoryUpdated: StateMemory = {
@@ -50,6 +54,7 @@ const memoryUpdated: StateMemory = {
 			Status: BroadcastLifecycle.Complete,
 			MonitorStreamEnabled: true,
 			BoundStreamId: 'sB',
+			ScheduledStartTime: '2022-22-22T22:22:22',
 		},
 		bC: {
 			Id: 'bC',
@@ -57,9 +62,11 @@ const memoryUpdated: StateMemory = {
 			Status: BroadcastLifecycle.TestStarting,
 			MonitorStreamEnabled: false,
 			BoundStreamId: 'sB',
+			ScheduledStartTime: '2033-33-33T33:33:33',
 		},
 	},
 	Streams: {},
+	UnfinishedBroadcasts: [],
 };
 
 describe('Queries', () => {
@@ -79,7 +86,7 @@ describe('Queries', () => {
 						{
 							id: 'bA',
 							status: { lifeCycleStatus: 'testing' },
-							snippet: { title: 'Broadcast A' },
+							snippet: { title: 'Broadcast A', scheduledStartTime: '2011-11-11T11:11:11' },
 							contentDetails: {
 								monitorStream: { enableMonitorStream: true },
 								boundStreamId: 'sA',
@@ -88,7 +95,7 @@ describe('Queries', () => {
 						{
 							id: 'bB',
 							status: { lifeCycleStatus: 'live' },
-							snippet: { title: 'Broadcast B' },
+							snippet: { title: 'Broadcast B', scheduledStartTime: '2022-22-22T22:22:22' },
 							contentDetails: {
 								monitorStream: { enableMonitorStream: true },
 								boundStreamId: 'sB',
@@ -97,7 +104,7 @@ describe('Queries', () => {
 						{
 							id: 'bC',
 							status: { lifeCycleStatus: 'ready' },
-							snippet: { title: 'Broadcast C' },
+							snippet: { title: 'Broadcast C', scheduledStartTime: '2033-33-33T33:33:33' },
 							contentDetails: {
 								monitorStream: { enableMonitorStream: false },
 								boundStreamId: 'sB',

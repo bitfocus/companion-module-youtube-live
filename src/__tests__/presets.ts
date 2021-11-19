@@ -8,7 +8,7 @@ function rgb(red: number, green: number, blue: number): number {
 describe('Preset presence', () => {
 	test('There are no broadcast-independent presets', () => {
 		const broadcasts: BroadcastMap = {};
-		const result = listPresets(broadcasts, rgb);
+		const result = listPresets(broadcasts, rgb, 0);
 		expect(result.length).toBe(0);
 	});
 
@@ -20,9 +20,10 @@ describe('Preset presence', () => {
 				Status: BroadcastLifecycle.Ready,
 				BoundStreamId: 'abcd1234',
 				MonitorStreamEnabled: true,
+				ScheduledStartTime: '2021-11-30T20:00:00',
 			},
 		};
-		const result = listPresets(broadcasts, rgb);
+		const result = listPresets(broadcasts, rgb, 1);
 		expect(result.length).toBeGreaterThanOrEqual(4);
 	});
 });
