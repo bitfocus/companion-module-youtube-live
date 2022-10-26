@@ -99,7 +99,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				BoundStreamId: item.contentDetails!.boundStreamId || null,
 				MonitorStreamEnabled: monitor,
 				ScheduledStartTime: item.snippet!.scheduledStartTime!,
-				LiveChatID: item.snippet!.liveChatID!,
+				LiveChatID: item.snippet!.liveChatId!,
 			};
 		});
 
