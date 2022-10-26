@@ -77,6 +77,9 @@ export interface Broadcast {
 
 	/** The date and time that the broadcast is scheduled to start. */
 	ScheduledStartTime: string;
+
+	/** ID of the broadcast live chat */
+	LiveChatID: string | null;
 }
 
 /**

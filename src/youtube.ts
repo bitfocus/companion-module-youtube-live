@@ -99,6 +99,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				BoundStreamId: item.contentDetails!.boundStreamId || null,
 				MonitorStreamEnabled: monitor,
 				ScheduledStartTime: item.snippet!.scheduledStartTime!,
+				LiveChatID: item.snippet!.liveChatID!,
 			};
 		});
 
@@ -128,6 +129,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			BoundStreamId: broadcast.BoundStreamId,
 			MonitorStreamEnabled: broadcast.MonitorStreamEnabled,
 			ScheduledStartTime: broadcast.ScheduledStartTime,
+			LiveChatID: broadcast.LiveChatID!,
 		};
 	}
 
@@ -154,6 +156,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				BoundStreamId: current[id].BoundStreamId,
 				MonitorStreamEnabled: current[id].MonitorStreamEnabled,
 				ScheduledStartTime: current[id].ScheduledStartTime,
+				LiveChatID: current[id].LiveChatID,
 			};
 		});
 
