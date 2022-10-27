@@ -213,7 +213,6 @@ export class YoutubeConnector implements YoutubeAPI {
 	 * @inheritdoc 
 	 */
 	async sendMessageToLiveChat(id: string, message: string): Promise<void> {
-		youtube_v3.YouTube.liveChatMessages.insert
 		await this.ApiClient.liveChatMessages.insert({
 			part: 'snippet',
 			resource: {
