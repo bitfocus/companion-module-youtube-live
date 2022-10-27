@@ -49,6 +49,13 @@ export interface YoutubeAPI {
 	 * @param to Target lifecycle phase/state
 	 */
 	transitionBroadcast(id: BroadcastID, to: Transition): Promise<void>;
+
+	/**
+	 * Send a message to broadcast live chat
+	 * @param id Live chat ID
+	 * @param message Content of the message (max. 200 characters)
+	 */
+	sendMessageToLiveChat(id: String, message: String): Promise<void>;
 }
 
 /**
@@ -99,7 +106,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				BoundStreamId: item.contentDetails!.boundStreamId || null,
 				MonitorStreamEnabled: monitor,
 				ScheduledStartTime: item.snippet!.scheduledStartTime!,
-				LiveChatID: item.snippet!.liveChatId!,
+				LiveChatId: item.snippet!.liveChatId!,
 			};
 		});
 
@@ -129,7 +136,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			BoundStreamId: broadcast.BoundStreamId,
 			MonitorStreamEnabled: broadcast.MonitorStreamEnabled,
 			ScheduledStartTime: broadcast.ScheduledStartTime,
-			LiveChatID: broadcast.LiveChatID!,
+			LiveChatId: broadcast.LiveChatId!,
 		};
 	}
 
@@ -156,7 +163,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				BoundStreamId: current[id].BoundStreamId,
 				MonitorStreamEnabled: current[id].MonitorStreamEnabled,
 				ScheduledStartTime: current[id].ScheduledStartTime,
-				LiveChatID: current[id].LiveChatID,
+				LiveChatId: current[id].LiveChatId,
 			};
 		});
 
@@ -199,5 +206,25 @@ export class YoutubeConnector implements YoutubeAPI {
 			id: id,
 			broadcastStatus: to,
 		});
+	}
+
+	/**
+	 * 
+	 * @inheritdoc 
+	 */
+	async sendMessageToLiveChat(id: string, message: string): Promise<void> {
+		youtube_v3.YouTube.liveChatMessages.insert
+		await this.ApiClient.liveChatMessages.insert({
+			part: 'snippet',
+			resource: {
+				snippet: {
+					liveChatId: id,
+					type: 'textMessageEvent',
+					textMessageDetails: {
+						messageText: message
+					}
+				}
+			}
+		})
 	}
 }

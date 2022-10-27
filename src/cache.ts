@@ -78,8 +78,8 @@ export interface Broadcast {
 	/** The date and time that the broadcast is scheduled to start. */
 	ScheduledStartTime: string;
 
-	/** ID of the broadcast live chat */
-	LiveChatID: string | null;
+	/** Broadcast live chat ID, e.g. KicKGFVDSXoxX3ZKLWdmd2QyNlEzY4l2RHhQZxILWVZ5OGhfNC1GZ0k */
+	LiveChatId: string;
 }
 
 /**
