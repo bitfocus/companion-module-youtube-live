@@ -215,15 +215,13 @@ export class YoutubeConnector implements YoutubeAPI {
 	async sendMessageToLiveChat(id: string, message: string): Promise<void> {
 		await this.ApiClient.liveChatMessages.insert({
 			part: 'snippet',
-			resource: {
-				snippet: {
-					liveChatId: id,
-					type: 'textMessageEvent',
-					textMessageDetails: {
-						messageText: message
-					}
-				}
+			snippet: {
+				liveChatId: id,
+				type: 'textMessageEvent',
+				textMessageDetails: {
+					messageText: message,
+				},
 			}
-		})
+		});
 	}
 }
