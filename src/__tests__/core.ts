@@ -30,6 +30,9 @@ function makeMockYT(memory: StateMemory): YoutubeAPI {
 		transitionBroadcast: jest.fn<Promise<void>, [BroadcastID, Transition]>().mockImplementation(() => {
 			return Promise.resolve();
 		}),
+		sendMessageToLiveChat: jest.fn<Promise<void>, [string, string]>().mockImplementation(() => {
+			return Promise.resolve();
+		}),
 	};
 }
 
@@ -58,6 +61,7 @@ describe('Miscellaneous', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2020-11-30T08:08:00',
+					LiveChatId: 'lcA',
 				},
 			},
 			Streams: {
@@ -74,6 +78,7 @@ describe('Miscellaneous', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2020-11-30T08:08:00',
+					LiveChatId: 'lcA',
 				},
 			],
 		};

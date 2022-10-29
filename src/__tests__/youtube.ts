@@ -15,6 +15,7 @@ const memory: StateMemory = {
 			MonitorStreamEnabled: true,
 			BoundStreamId: 'sA',
 			ScheduledStartTime: '2011-11-11T11:11:11',
+			LiveChatId: 'lcA',
 		},
 		bB: {
 			Id: 'bB',
@@ -23,6 +24,7 @@ const memory: StateMemory = {
 			MonitorStreamEnabled: true,
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2022-22-22T22:22:22',
+			LiveChatId: 'lcB',
 		},
 		bC: {
 			Id: 'bC',
@@ -31,6 +33,7 @@ const memory: StateMemory = {
 			MonitorStreamEnabled: false,
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2033-33-33T33:33:33',
+			LiveChatId: 'lcC',
 		},
 	},
 	Streams: {
@@ -55,6 +58,7 @@ const memoryUpdated: StateMemory = {
 			MonitorStreamEnabled: true,
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2022-22-22T22:22:22',
+			LiveChatId: 'lcB',
 		},
 		bC: {
 			Id: 'bC',
@@ -63,6 +67,7 @@ const memoryUpdated: StateMemory = {
 			MonitorStreamEnabled: false,
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2033-33-33T33:33:33',
+			LiveChatId: 'lcC',
 		},
 	},
 	Streams: {},

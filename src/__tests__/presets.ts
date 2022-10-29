@@ -21,6 +21,7 @@ describe('Preset presence', () => {
 				BoundStreamId: 'abcd1234',
 				MonitorStreamEnabled: true,
 				ScheduledStartTime: '2021-11-30T20:00:00',
+				LiveChatId: 'lcTest',
 			},
 		};
 		const result = listPresets(broadcasts, rgb, 1);

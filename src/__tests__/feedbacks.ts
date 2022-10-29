@@ -21,6 +21,7 @@ const SampleMemory: StateMemory = {
 			Status: BroadcastLifecycle.Live,
 			BoundStreamId: 'abcd',
 			ScheduledStartTime: '2021-11-30T20:00:00',
+			LiveChatId: 'lcTest',
 		},
 	},
 	Streams: {
@@ -263,6 +264,7 @@ describe('Stream health feedback', () => {
 					Status: BroadcastLifecycle.Live,
 					BoundStreamId: 'abcd',
 					ScheduledStartTime: '2021-11-30T20:00:00',
+					LiveChatId: 'lcTest',
 				},
 			},
 			Streams: {},

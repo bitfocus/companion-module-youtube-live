@@ -12,6 +12,7 @@ describe('Action list', () => {
 				BoundStreamId: 'abcd',
 				MonitorStreamEnabled: true,
 				ScheduledStartTime: '2021-11-30T20:00:00',
+				LiveChatId: 'lcTest',
 			},
 		};
 
@@ -56,6 +57,7 @@ describe('Action handler', () => {
 				Status: BroadcastLifecycle.Live,
 				BoundStreamId: 'abcd',
 				ScheduledStartTime: '2021-11-30T20:00:00',
+				LiveChatId: 'lcTest',
 			},
 		},
 		Streams: {},
