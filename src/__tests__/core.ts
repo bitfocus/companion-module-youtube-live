@@ -267,6 +267,7 @@ describe('Going live with broadcasts', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T20:00:00',
+					LiveChatId: 'lcA',
 				},
 			},
 			Streams: {
@@ -356,6 +357,7 @@ describe('Finishing live broadcasts', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T20:00:00',
+					LiveChatId: 'lcA',
 				},
 			},
 			Streams: {
@@ -408,6 +410,7 @@ describe('Toggling live broadcasts', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T20:00:00',
+					LiveChatId: 'lcA',
 				},
 			},
 			Streams: {
