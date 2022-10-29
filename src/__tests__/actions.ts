@@ -12,6 +12,7 @@ describe('Action list', () => {
 				BoundStreamId: 'abcd',
 				MonitorStreamEnabled: true,
 				ScheduledStartTime: '2021-11-30T20:00:00',
+				LiveChatId: 'lcTest',
 			},
 		};
 
@@ -22,6 +23,7 @@ describe('Action list', () => {
 		expect(result).toHaveProperty('toggle_broadcast');
 		expect(result).toHaveProperty('refresh_status');
 		expect(result).toHaveProperty('refresh_feedbacks');
+		expect(result).toHaveProperty('send_livechat_message');
 	});
 });
 
@@ -33,6 +35,7 @@ describe('Action handler', () => {
 		toggleBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.resolve()),
 		reloadEverything: jest.fn((): Promise<void> => Promise.resolve()),
 		refreshFeedbacks: jest.fn((): Promise<void> => Promise.resolve()),
+		sendLiveChatMessage: jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve()),
 	};
 
 	const allKO: ActionHandler = {
@@ -42,6 +45,7 @@ describe('Action handler', () => {
 		toggleBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('toggle'))),
 		reloadEverything: jest.fn((): Promise<void> => Promise.reject(new Error('refresh'))),
 		refreshFeedbacks: jest.fn((): Promise<void> => Promise.reject(new Error('refresh'))),
+		sendLiveChatMessage: jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('sendmsg')))
 	};
 
 	const memory: StateMemory = {
@@ -53,6 +57,7 @@ describe('Action handler', () => {
 				Status: BroadcastLifecycle.Live,
 				BoundStreamId: 'abcd',
 				ScheduledStartTime: '2021-11-30T20:00:00',
+				LiveChatId: 'lcTest',
 			},
 		},
 		Streams: {},
@@ -139,6 +144,19 @@ describe('Action handler', () => {
 		expect(allKO.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 
+	test('Send message success', async () => {
+		await expect(
+			handleAction({ id: 'action0', action: 'send_livechat_message', options: { broadcast_id: 'test', message_content: 'testing message' } }, memory, allOK)
+		).resolves.toBeFalsy();
+		expect(allOK.sendLiveChatMessage).toHaveBeenCalledTimes(1);
+	});
+	test('Send message failure', async () => {
+		await expect(
+			handleAction({ id: 'action0', action: 'send_livechat_message', options: { broadcast_id: 'test', message_content: 'testing message' } }, memory, allKO)
+		).rejects.toBeInstanceOf(Error);
+		expect(allKO.sendLiveChatMessage).toHaveBeenCalledTimes(1);
+	});
+
 	test('Unknown action', async () => {
 		await expect(
 			handleAction({ id: 'action0', action: 'blag', options: { broadcast_id: 'test' } }, memory, allOK)
@@ -148,6 +166,7 @@ describe('Action handler', () => {
 		expect(allOK.finishBroadcast).toHaveBeenCalledTimes(0);
 		expect(allOK.toggleBroadcast).toHaveBeenCalledTimes(0);
 		expect(allOK.reloadEverything).toHaveBeenCalledTimes(0);
+		expect(allOK.sendLiveChatMessage).toHaveBeenCalledTimes(0);
 	});
 	test('Missing broadcast ID', async () => {
 		await expect(

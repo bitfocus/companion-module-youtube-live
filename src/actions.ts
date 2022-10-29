@@ -23,6 +23,9 @@ export interface ActionHandler {
 
 	/** Refresh broadcast status + stream health */
 	refreshFeedbacks(): Promise<void>;
+
+	/** Send a message to broadcast live chat */
+	sendLiveChatMessage(id: BroadcastID, content: string): Promise<void>;
 }
 
 /**
@@ -101,6 +104,23 @@ export function listActions(broadcasts: BroadcastMap, unfinishedCnt: number): Co
 			label: 'Reload everything from YouTube',
 			options: [],
 		},
+		send_livechat_message: {
+			label: 'Send message to live chat',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastUnfinishedEntries],
+					default: defaultBroadcast,
+				},
+				{
+					type: 'textinput',
+					label: 'Message (max. 200 chars):',
+					id: 'message_content',
+				},
+			],
+		}
 	};
 }
 
@@ -117,6 +137,8 @@ export async function handleAction(
 	handler: ActionHandler
 ): Promise<void> {
 	let broadcast_id: BroadcastID = event.options.broadcast_id as BroadcastID;
+	let message_content: string = event.options.message_content as string;
+
 	if (event.options.broadcast_id) {
 		if (!(broadcast_id in memory.Broadcasts)) {
 			const hit = memory.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcast_id);
@@ -144,6 +166,8 @@ export async function handleAction(
 		return handler.reloadEverything();
 	} else if (event.action == 'refresh_feedbacks') {
 		return handler.refreshFeedbacks();
+	} else if (event.action == 'send_livechat_message') {
+		return handler.sendLiveChatMessage(broadcast_id, message_content);
 	} else {
 		throw new Error(`unknown action called: ${event.action}`);
 	}

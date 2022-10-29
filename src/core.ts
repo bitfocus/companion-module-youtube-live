@@ -297,6 +297,32 @@ export class Core implements ActionHandler {
 		}
 		return this.refresher();
 	}
+
+	/**
+	 * Send a message to broadcast live chat.
+	 * @param id Broadcast ID to send message to
+	 * @param content Text of the message
+	 */
+	async sendLiveChatMessage(id: BroadcastID, content: string): Promise<void> {
+		const currentState = await this.checkOneBroadcast(id);
+		const requiredState = BroadcastLifecycle.Live;
+		const messageMaxLength = 200;
+
+		if (currentState != requiredState) {
+			const currentStateName = nameLifecyclePhase(currentState);
+			const requiredStateName = nameLifecyclePhase(requiredState);
+			throw new Error(
+				`Cannot send message to live chat; required state is '${requiredStateName}', but current state is '${currentStateName}'`
+			);
+		} else if (content.length > messageMaxLength) {
+			throw new Error(
+				`Cannot send message to live chat; required length is '${messageMaxLength}', but current length is '${content.length}'`
+			);
+		} else {
+			const liveChatID = this.Cache.Broadcasts[id].LiveChatId;
+			return this.YouTube.sendMessageToLiveChat(liveChatID, content)
+		}
+	}
 }
 
 /**

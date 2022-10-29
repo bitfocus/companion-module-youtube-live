@@ -12,6 +12,7 @@ const SampleMemory: StateMemory = {
 			Status: BroadcastLifecycle.Live,
 			BoundStreamId: 'streamID',
 			ScheduledStartTime: '2021-11-30T20:00:00',
+			LiveChatId: 'livechatID',
 		},
 	},
 	Streams: {
