@@ -183,6 +183,7 @@ describe('Starting tests on broadcasts', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T22:00:00',
+					LiveChatId: 'lcA',
 				},
 			},
 			Streams: {
