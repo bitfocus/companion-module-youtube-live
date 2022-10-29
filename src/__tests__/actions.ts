@@ -148,13 +148,13 @@ describe('Action handler', () => {
 		await expect(
 			handleAction({ id: 'action0', action: 'send_livechat_message', options: { broadcast_id: 'test', message_content: 'testing message' } }, memory, allOK)
 		).resolves.toBeFalsy();
-		expect(allOK.makeBroadcastLive).toHaveBeenCalledTimes(1);
+		expect(allOK.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
 	test('Send message failure', async () => {
 		await expect(
 			handleAction({ id: 'action0', action: 'send_livechat_message', options: { broadcast_id: 'test', message_content: 'testing message' } }, memory, allKO)
 		).rejects.toBeInstanceOf(Error);
-		expect(allKO.makeBroadcastLive).toHaveBeenCalledTimes(1);
+		expect(allKO.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
 
 	test('Unknown action', async () => {
