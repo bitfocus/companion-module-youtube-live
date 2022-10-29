@@ -298,6 +298,11 @@ export class Core implements ActionHandler {
 		return this.refresher();
 	}
 
+	/**
+	 * Send a message to broadcast live chat.
+	 * @param id Broadcast ID to send message to
+	 * @param content Text of the message
+	 */
 	async sendLiveChatMessage(id: BroadcastID, content: string): Promise<void> {
 		const currentState = await this.checkOneBroadcast(id);
 		const requiredState = BroadcastLifecycle.Live;
