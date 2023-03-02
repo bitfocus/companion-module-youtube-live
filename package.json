@@ -1,32 +1,19 @@
 {
 	"name": "youtube-live",
-	"version": "1.1.6",
-	"api_version": "1.0.0",
-	"description": "Simple module for controlling YouTube live broadcasts",
+	"version": "2.0.0",
 	"main": "dist/index.js",
-	"keywords": [
-		"Stream"
-	],
-	"manufacturer": "Google",
-	"product": "YouTube",
-	"shortname": "YT",
-	"author": "Matěj Melichna",
 	"license": "MIT",
 	"scripts": {
 		"dev": "yarn build:watch",
-		"build": "npx rimraf dist && npx --package=typescript@~3.9.5 -c 'tsc -p tsconfig.build.json'",
+		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
 		"build:watch": "tsc -p tsconfig.build.json --watch",
 		"lint": "eslint . --ext .ts",
-		"postinstall": "yarn build",
 		"test": "jest"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-youtube-live.git"
-	},
-	"bugs": {
-		"url": "https://github.com/bitfocus/companion-module-youtube-live/issues"
 	},
 	"lint-staged": {
 		"*.{js,json,md}": [
@@ -39,6 +26,7 @@
 		]
 	},
 	"dependencies": {
+		"@companion-module/base": "~1.2.1",
 		"@types/jest": "^25.2.3",
 		"@types/node": "^12.19.3",
 		"@types/server-destroy": "^1.0.0",
@@ -47,6 +35,7 @@
 		"server-destroy": "^1.0.1"
 	},
 	"devDependencies": {
+		"@companion-module/tools": "^1.1.0",
 		"@typescript-eslint/eslint-plugin": "~2.31.0",
 		"@typescript-eslint/parser": "~2.31.0",
 		"eslint": "^6.8.0",
@@ -61,6 +50,5 @@
 	},
 	"resolutions": {
 		"eslint/inquirer": "~7.2.0"
-	},
-	"homepage": "https://github.com/bitfocus/companion-module-youtube-live#readme"
+	}
 }

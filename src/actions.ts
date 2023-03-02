@@ -1,45 +1,44 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { CompanionActions, CompanionActionEvent, DropdownChoice } from '../../../instance_skel_types';
-import { BroadcastMap, BroadcastID, StateMemory } from './cache';
+import {
+	CompanionActionDefinitions,
+	CompanionActionDefinition,
+	CompanionActionEvent,
+	DropdownChoice,
+} from '@companion-module/base';
+import { BroadcastMap, BroadcastID } from './cache';
+import { Core } from './core';
 
-/**
- * Interface for implementing module actions
- */
-export interface ActionHandler {
-	/** Transition broadcast to the "testing" state (from "ready") */
-	startBroadcastTest(id: BroadcastID): Promise<void>;
-
-	/** Transition broadcast to the "live" state (from "testing" or "ready") */
-	makeBroadcastLive(id: BroadcastID): Promise<void>;
-
-	/** Transition broadcast to the "complete" state (from "live") */
-	finishBroadcast(id: BroadcastID): Promise<void>;
-
-	/** Transition broadcast to next state (ready -> testing -> live -> complete) */
-	toggleBroadcast(id: BroadcastID): Promise<void>;
-
-	/** Reload broadcast list */
-	reloadEverything(): Promise<void>;
-
-	/** Refresh broadcast status + stream health */
-	refreshFeedbacks(): Promise<void>;
-
-	/** Send a message to broadcast live chat */
-	sendLiveChatMessage(id: BroadcastID, content: string): Promise<void>;
+export enum ActionId {
+	InitBroadcast = 'init_broadcast',
+	StartBroadcast = 'start_broadcast',
+	StopBroadcast = 'stop_broadcast',
+	ToggleBroadcast = 'toggle_broadcast',
+	RefreshFeedbacks = 'refresh_feedbacks',
+	RefreshStatus = 'refresh_status',
+	SendMessage = 'send_livechat_message',
 }
 
 /**
- * Generate list of Companion actions for this module
- * @param broadcasts Known broadcasts
+ * Get a list of actions for this module
+ * @param broadcasts Map of known broadcasts
+ * @param unfinishedCount Number of unfinished broadcast
+ * @param core Module core
+ * @returns 
  */
-export function listActions(broadcasts: BroadcastMap, unfinishedCnt: number): CompanionActions {
+export function listActions(
+	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined; }
+): CompanionActionDefinitions {
+	const { broadcasts } = getProps();
+	const { unfinishedCount } = getProps();
+	const { core } = getProps();
+
 	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map(
 		(item): DropdownChoice => {
 			return { id: item.Id, label: item.Name };
 		}
 	);
 
-	const broadcastUnfinishedEntries: DropdownChoice[] = [...Array(unfinishedCnt).keys()].map(
+	const broadcastUnfinishedEntries: DropdownChoice[] = [...Array(unfinishedCount).keys()].map(
 		(i): DropdownChoice => {
 			return { id: `unfinished_${i}`, label: `Unfinished/planned #${i}` };
 		}
@@ -47,9 +46,41 @@ export function listActions(broadcasts: BroadcastMap, unfinishedCnt: number): Co
 
 	const defaultBroadcast = broadcastEntries.length == 0 ? '' : broadcastEntries[0].id;
 
-	return {
-		init_broadcast: {
-			label: 'Start broadcast test',
+	const checkCore = (): boolean => {
+		if (!core) {
+			return false;
+		}
+		return true
+	}
+
+	const checkBroadcastId = (options: CompanionActionEvent['options']): BroadcastID | undefined => {
+		let broadcastId: BroadcastID = options.broadcast_id as BroadcastID;
+
+		if (!checkCore()) {
+			return undefined;
+		}
+
+		if (options.broadcast_id) {
+			if (!(broadcastId in core!.Cache.Broadcasts)) {
+				const hit = core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcastId);
+				if (hit) {
+					broadcastId = hit.Id;
+				} else {
+					core!.Module.log('warn', 'Action failed: unknown broadcast ID - not found or invalid');
+					return undefined;
+				}
+			}
+		} else {
+			core!.Module.log('warn', 'Action failed: undefined broadcast ID');
+			return undefined;
+		}
+
+		return broadcastId;
+	}
+
+	const actions: { [id in ActionId]: CompanionActionDefinition | undefined } = {
+		[ActionId.InitBroadcast]: {
+			name: 'Start broadcast test',
 			options: [
 				{
 					type: 'dropdown',
@@ -59,9 +90,18 @@ export function listActions(broadcasts: BroadcastMap, unfinishedCnt: number): Co
 					default: defaultBroadcast,
 				},
 			],
+			callback: (event): void => {
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId) {
+					core!.startBroadcastTest(broadcastId as BroadcastID).catch((err: Error) => {
+						core!.Module.log('warn', 'Action failed: ' + err);
+					});
+				}
+			},
 		},
-		start_broadcast: {
-			label: 'Go live',
+		[ActionId.StartBroadcast]: {
+			name: 'Go live',
 			options: [
 				{
 					type: 'dropdown',
@@ -71,9 +111,18 @@ export function listActions(broadcasts: BroadcastMap, unfinishedCnt: number): Co
 					default: defaultBroadcast,
 				},
 			],
+			callback: (event): void => {
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId) {
+					core!.makeBroadcastLive(broadcastId as BroadcastID).catch((err: Error) => {
+						core!.Module.log('warn', 'Action failed: ' + err);
+					});
+				}
+			},
 		},
-		stop_broadcast: {
-			label: 'Finish broadcast',
+		[ActionId.StopBroadcast]: {
+			name: 'Finish broadcast',
 			options: [
 				{
 					type: 'dropdown',
@@ -83,9 +132,18 @@ export function listActions(broadcasts: BroadcastMap, unfinishedCnt: number): Co
 					default: defaultBroadcast,
 				},
 			],
+			callback: (event): void => {
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId) {
+					core!.finishBroadcast(broadcastId as BroadcastID).catch((err: Error) => {
+						core!.Module.log('warn', 'Action failed: ' + err);
+					});
+				}
+			},
 		},
-		toggle_broadcast: {
-			label: 'Advance broadcast to next phase',
+		[ActionId.ToggleBroadcast]: {
+			name: 'Advance broadcast to next phase',
 			options: [
 				{
 					type: 'dropdown',
@@ -95,17 +153,40 @@ export function listActions(broadcasts: BroadcastMap, unfinishedCnt: number): Co
 					default: defaultBroadcast,
 				},
 			],
+			callback: (event): void => {
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId) {
+					core!.toggleBroadcast(broadcastId as BroadcastID).catch((err: Error) => {
+						core!.Module.log('warn', 'Action failed: ' + err);
+					});
+				}
+			},
 		},
-		refresh_feedbacks: {
-			label: 'Refresh broadcast/stream feedbacks',
+		[ActionId.RefreshFeedbacks]: {
+			name: 'Refresh broadcast/stream feedbacks',
 			options: [],
+			callback: (): void => {
+				if (checkCore()) {
+					core!.refreshFeedbacks().catch((err: Error) => {
+						core!.Module.log('warn', 'Action failed: ' + err);
+					});
+				}
+			},
 		},
-		refresh_status: {
-			label: 'Reload everything from YouTube',
+		[ActionId.RefreshStatus]: {
+			name: 'Reload everything from YouTube',
 			options: [],
+			callback: (): void => {
+				if (checkCore()) {
+					core!.reloadEverything().catch((err: Error) => {
+						core!.Module.log('warn', 'Action failed: ' + err);
+					});
+				}	
+			},
 		},
-		send_livechat_message: {
-			label: 'Send message to live chat',
+		[ActionId.SendMessage]: {
+			name: 'Send message to live chat',
 			options: [
 				{
 					type: 'dropdown',
@@ -120,55 +201,19 @@ export function listActions(broadcasts: BroadcastMap, unfinishedCnt: number): Co
 					id: 'message_content',
 				},
 			],
-		}
-	};
-}
+			callback: (event): void => {
+				let message = event.options.message_content as string;
+				const broadcastId = checkBroadcastId(event.options);
 
-/**
- * Redirect Companion action event to the appropriate implementation
- * @param event Companion event metadata
- * @param memory Known broadcasts and streams
- * @param handler Implementation of actions
- * @param log Logging function
- */
-export async function handleAction(
-	event: CompanionActionEvent,
-	memory: StateMemory,
-	handler: ActionHandler
-): Promise<void> {
-	let broadcast_id: BroadcastID = event.options.broadcast_id as BroadcastID;
-	let message_content: string = event.options.message_content as string;
-
-	if (event.options.broadcast_id) {
-		if (!(broadcast_id in memory.Broadcasts)) {
-			const hit = memory.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcast_id);
-			if (hit) {
-				broadcast_id = hit.Id;
-			} else {
-				throw new Error('Action has unknown broadcast ID - not found or invalid');
-			}
-		}
-	} else {
-		if (event.action != 'refresh_status' && event.action != 'refresh_feedbacks') {
-			throw new Error('Action has undefined broadcast ID');
-		}
+				if (broadcastId && event.options.message_content
+					&& message.length > 0 && message.length <= 200) {
+						core!.sendLiveChatMessage(broadcastId as BroadcastID, message).catch((err: Error) => {
+							core!.Module.log('warn', 'Action failed: ' + err);
+						});
+				}
+			},
+		},
 	}
 
-	if (event.action == 'init_broadcast') {
-		return handler.startBroadcastTest(broadcast_id);
-	} else if (event.action == 'start_broadcast') {
-		return handler.makeBroadcastLive(broadcast_id);
-	} else if (event.action == 'stop_broadcast') {
-		return handler.finishBroadcast(broadcast_id);
-	} else if (event.action == 'toggle_broadcast') {
-		return handler.toggleBroadcast(broadcast_id);
-	} else if (event.action == 'refresh_status') {
-		return handler.reloadEverything();
-	} else if (event.action == 'refresh_feedbacks') {
-		return handler.refreshFeedbacks();
-	} else if (event.action == 'send_livechat_message') {
-		return handler.sendLiveChatMessage(broadcast_id, message_content);
-	} else {
-		throw new Error(`unknown action called: ${event.action}`);
-	}
+	return actions
 }

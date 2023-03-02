@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { listFeedbacks, handleFeedback } from '../feedbacks';
 import { BroadcastLifecycle, StreamHealth, StateMemory } from '../cache';
-import { CompanionFeedbackEvent, CompanionFeedbackResult } from '../../../../instance_skel_types';
+import { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult } from '@companion-module/base';
 import { clone } from '../common';
 
 function rgb(red: number, green: number, blue: number): number {
@@ -33,7 +33,7 @@ const SampleMemory: StateMemory = {
 	UnfinishedBroadcasts: [],
 };
 
-const SampleBroadcastCheck: CompanionFeedbackEvent = {
+const SampleBroadcastCheck: CompanionFeedbackAdvancedEvent = {
 	id: 'abcd1234',
 	type: 'broadcast_status',
 	options: {
@@ -45,7 +45,7 @@ const SampleBroadcastCheck: CompanionFeedbackEvent = {
 	},
 };
 
-const SampleStreamCheck: CompanionFeedbackEvent = {
+const SampleStreamCheck: CompanionFeedbackAdvancedEvent = {
 	id: 'abcd1234',
 	type: 'broadcast_bound_stream_health',
 	options: {
@@ -74,13 +74,13 @@ describe('Common tests', () => {
 // BROADCAST TESTS
 //
 
-function tryBroadcast(phase: BroadcastLifecycle, isAlternate = false): CompanionFeedbackResult {
+function tryBroadcast(phase: BroadcastLifecycle, isAlternate = false): CompanionAdvancedFeedbackResult {
 	const data = clone(SampleMemory);
 	data.Broadcasts.test.Status = phase;
 	return handleFeedback(SampleBroadcastCheck, data, rgb, isAlternate);
 }
 
-function tryStream(health: StreamHealth): CompanionFeedbackResult {
+function tryStream(health: StreamHealth): CompanionAdvancedFeedbackResult {
 	const data = clone(SampleMemory);
 	data.Streams.abcd.Health = health;
 	return handleFeedback(SampleStreamCheck, data, rgb, false);
@@ -140,7 +140,7 @@ describe('Broadcast lifecycle feedback', () => {
 	});
 
 	test('Missing colors', () => {
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'broadcast_status',
 			options: {
@@ -157,7 +157,7 @@ describe('Broadcast lifecycle feedback', () => {
 	test('Unknown broadcasts', () => {
 		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
 
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'broadcast_status',
 			options: {
@@ -176,7 +176,7 @@ describe('Broadcast lifecycle feedback', () => {
 	test('Events without ID', () => {
 		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
 
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'broadcast_status',
 			options: {
@@ -222,7 +222,7 @@ describe('Stream health feedback', () => {
 	});
 
 	test('Missing colors', () => {
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'broadcast_bound_stream_health',
 			options: {
@@ -238,7 +238,7 @@ describe('Stream health feedback', () => {
 	test('Unknown broadcasts', () => {
 		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
 
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'broadcast_bound_stream_health',
 			options: {
@@ -271,7 +271,7 @@ describe('Stream health feedback', () => {
 			UnfinishedBroadcasts: [],
 		};
 
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'broadcast_bound_stream_health',
 			options: {
@@ -290,7 +290,7 @@ describe('Stream health feedback', () => {
 	test('Events without ID', () => {
 		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
 
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'broadcast_bound_stream_health',
 			options: {

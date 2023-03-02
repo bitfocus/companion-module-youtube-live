@@ -1,6 +1,6 @@
 import { declareVars, getBroadcastVars, getStreamVars, exportVars, VariableContent } from '../vars';
 import { StateMemory, BroadcastLifecycle, StreamHealth, Broadcast } from '../cache';
-import { CompanionVariable } from '../../../../instance_skel_types';
+import { CompanionVariableDefinition } from '@companion-module/base';
 import { clone } from '../common';
 
 const SampleMemory: StateMemory = {
@@ -24,7 +24,7 @@ const SampleMemory: StateMemory = {
 	UnfinishedBroadcasts: [],
 };
 
-function hasAny(vars: CompanionVariable[] | VariableContent[], name: string): boolean {
+function hasAny(vars: CompanionVariableDefinition[] | VariableContent[], name: string): boolean {
 	let found = false;
 
 	vars.forEach((variable: { name: string }) => {
