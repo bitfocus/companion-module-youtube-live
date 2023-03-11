@@ -13,7 +13,7 @@ import {
 import { mocked } from 'ts-jest/utils';
 import { MaybeMocked } from 'ts-jest/dist/util/testing';
 
-function makeMockYT(memory: StateMemory): YoutubeAPI {
+export function makeMockYT(memory: StateMemory): YoutubeAPI {
 	return {
 		listBroadcasts: jest.fn<Promise<BroadcastMap>, []>().mockImplementation(() => {
 			return Promise.resolve(memory.Broadcasts);
@@ -36,7 +36,7 @@ function makeMockYT(memory: StateMemory): YoutubeAPI {
 	};
 }
 
-function makeMockModule(): ModuleBase {
+export function makeMockModule(): ModuleBase {
 	return {
 		reloadAll: jest.fn<void, [StateMemory]>(),
 		reloadStates: jest.fn<void, [StateMemory]>(),
