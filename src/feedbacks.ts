@@ -41,8 +41,6 @@ export function listFeedbacks(
 
 	const defaultBroadcast = broadcastEntries.length == 0 ? '' : broadcastEntries[0].id;
 
-	const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
-
 	const checkCore = (): boolean => {
 		if (!core) {
 			return false;
@@ -104,8 +102,9 @@ export function listFeedbacks(
 				if (!checkCore) return {};
 				if (!event.options.broadcast) return {};
 				const id = event.options.broadcast as BroadcastID;
+				const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
 		
-				let broadcastStatus;
+				let broadcastStatus: BroadcastLifecycle;
 				if (id in core!.Cache.Broadcasts) {
 					broadcastStatus = core!.Cache.Broadcasts[id].Status;
 				} else {
@@ -213,8 +212,8 @@ export function listFeedbacks(
 				if (!event.options.broadcast) return {};
 				const id = event.options.broadcast as BroadcastID;
 
-				let streamId;
-				let broadcastStatus;
+				let streamId: string | null;
+				let broadcastStatus: BroadcastLifecycle;
 				if (id in core!.Cache.Broadcasts) {
 					streamId = core!.Cache.Broadcasts[id].BoundStreamId;
 					broadcastStatus = core!.Cache.Broadcasts[id].Status;
