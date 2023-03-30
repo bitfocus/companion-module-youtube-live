@@ -1,183 +1,232 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { ActionHandler, listActions, handleAction } from '../actions';
-import { BroadcastMap, BroadcastLifecycle, BroadcastID, StateMemory } from '../cache';
+//import { ActionHandler, listActions, handleAction } from '../actions';
+import {
+	CompanionFeedbackContext,
+	CompanionActionDefinitions,
+	CompanionActionEvent,
+	CompanionOptionValues
+} from '@companion-module/base';
+import { MaybeMocked, mocked } from 'ts-jest/dist/util/testing';
+import { makeMockModule, makeMockYT } from './core';
+import { listActions, ActionId } from '../actions';
+import { BroadcastLifecycle, BroadcastID, StateMemory } from '../cache';
+import { clone } from '../common';
+import { ModuleBase, Core } from '../core';
+import { YoutubeAPI } from '../youtube';
+
+//
+// SAMPLE CONTEXT
+//
+
+const SampleContext: CompanionFeedbackContext = {
+	parseVariablesInString: function (text: string): Promise<string> {
+		throw new Error('Function not implemented. Parameter was: ' + text);
+	}
+}
+
+const SampleMemory: StateMemory = {
+	Broadcasts: {
+		test: {
+			Id: 'test',
+			Name: 'Test Broadcast',
+			MonitorStreamEnabled: true,
+			Status: BroadcastLifecycle.Live,
+			BoundStreamId: 'abcd',
+			ScheduledStartTime: '2021-11-30T20:00:00',
+			LiveChatId: 'lcTest',
+		},
+	},
+	Streams: {},
+	UnfinishedBroadcasts: [],
+}
+
+//
+// TEST IF ACTIONS ARE PRESENT
+//
 
 describe('Action list', () => {
 	test('Module has required actions', () => {
-		const broadcasts: BroadcastMap = {
-			test: {
-				Id: 'test',
-				Name: 'Test Broadcast',
-				Status: BroadcastLifecycle.Live,
-				BoundStreamId: 'abcd',
-				MonitorStreamEnabled: true,
-				ScheduledStartTime: '2021-11-30T20:00:00',
-				LiveChatId: 'lcTest',
-			},
-		};
-
-		const result = listActions(broadcasts, 3);
-		expect(result).toHaveProperty('init_broadcast');
-		expect(result).toHaveProperty('start_broadcast');
-		expect(result).toHaveProperty('stop_broadcast');
-		expect(result).toHaveProperty('toggle_broadcast');
-		expect(result).toHaveProperty('refresh_status');
-		expect(result).toHaveProperty('refresh_feedbacks');
-		expect(result).toHaveProperty('send_livechat_message');
+		const result = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 3, core: undefined }));
+		expect(result).toHaveProperty(ActionId.InitBroadcast);
+		expect(result).toHaveProperty(ActionId.StartBroadcast);
+		expect(result).toHaveProperty(ActionId.StopBroadcast);
+		expect(result).toHaveProperty(ActionId.ToggleBroadcast);
+		expect(result).toHaveProperty(ActionId.RefreshStatus);
+		expect(result).toHaveProperty(ActionId.RefreshFeedbacks);
+		expect(result).toHaveProperty(ActionId.SendMessage);
 	});
 });
 
-describe('Action handler', () => {
-	const allOK: ActionHandler = {
-		startBroadcastTest: jest.fn((_: BroadcastID): Promise<void> => Promise.resolve()),
-		makeBroadcastLive: jest.fn((_: BroadcastID): Promise<void> => Promise.resolve()),
-		finishBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.resolve()),
-		toggleBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.resolve()),
-		reloadEverything: jest.fn((): Promise<void> => Promise.resolve()),
-		refreshFeedbacks: jest.fn((): Promise<void> => Promise.resolve()),
-		sendLiveChatMessage: jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve()),
-	};
+describe('Action callback', () => {
+	// Create cores for testing
+	let coreOK: Core;
+	let coreKO: Core;
+	const memory: StateMemory = clone(SampleMemory);
+	const mockYT: MaybeMocked<YoutubeAPI> = mocked(makeMockYT(memory));
+	const mockModule: MaybeMocked<ModuleBase> = mocked(makeMockModule());
+	coreOK = new Core(mockModule, mockYT, 100, 100);
+	coreKO = new Core(mockModule, mockYT, 100, 100);
 
-	const allKO: ActionHandler = {
-		startBroadcastTest: jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('test'))),
-		makeBroadcastLive: jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('live'))),
-		finishBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('finish'))),
-		toggleBroadcast: jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('toggle'))),
-		reloadEverything: jest.fn((): Promise<void> => Promise.reject(new Error('refresh'))),
-		refreshFeedbacks: jest.fn((): Promise<void> => Promise.reject(new Error('refresh'))),
-		sendLiveChatMessage: jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('sendmsg')))
-	};
+	// Moking OK functions
+	coreOK.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.makeBroadcastLive = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.finishBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.toggleBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.reloadEverything = jest.fn((): Promise<void> => Promise.resolve());
+	coreOK.refreshFeedbacks = jest.fn((): Promise<void> => Promise.resolve());
+	coreOK.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 
-	const memory: StateMemory = {
-		Broadcasts: {
-			test: {
-				Id: 'test',
-				Name: 'Test Broadcast',
-				MonitorStreamEnabled: true,
-				Status: BroadcastLifecycle.Live,
-				BoundStreamId: 'abcd',
-				ScheduledStartTime: '2021-11-30T20:00:00',
-				LiveChatId: 'lcTest',
-			},
-		},
-		Streams: {},
-		UnfinishedBroadcasts: [],
-	};
+	// Mocking KO functions
+	coreKO.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('test')));
+	coreKO.makeBroadcastLive = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('live')));
+	coreKO.finishBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('finish')));
+	coreKO.toggleBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('toggle')));
+	coreKO.reloadEverything = jest.fn((): Promise<void> => Promise.reject(new Error('refreshstatus')));
+	coreKO.refreshFeedbacks = jest.fn((): Promise<void> => Promise.reject(new Error('refreshfbcks')));
+	coreKO.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('sendmsg')));
+
+	// Init cores
+	coreOK.init();
+	coreKO.init();
+
+	// List actions
+	const actionsOK: CompanionActionDefinitions = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreOK }));
+	const actionsKO: CompanionActionDefinitions = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreKO }));
+
+	// Make event
+	function makeEvent(actionId: string, options: CompanionOptionValues): CompanionActionEvent {
+		const event: CompanionActionEvent = {
+			surfaceId: 'surface0',
+			_deviceId: 'device0',
+			_page: 0,
+			_bank: 0,
+			id: 'action0',
+			controlId: 'control0',
+			actionId: actionId,
+			options: options
+		}
+		return event
+	}
 
 	afterEach(() => jest.clearAllMocks());
 
 	test('Start test success', async () => {
+		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'test' });
 		await expect(
-			handleAction({ id: 'action0', action: 'init_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
+			actionsOK.init_broadcast!.callback(event, SampleContext)
 		).resolves.toBeFalsy();
-		expect(allOK.startBroadcastTest).toHaveBeenCalledTimes(1);
+		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
 	test('Start test failure', async () => {
+		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'test' });
 		await expect(
-			handleAction({ id: 'action0', action: 'init_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
+			actionsKO.init_broadcast!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(allKO.startBroadcastTest).toHaveBeenCalledTimes(1);
+		expect(coreKO.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
 
 	test('Go live success', async () => {
+		const event = makeEvent(ActionId.StartBroadcast, { broadcast_id: 'test' });
 		await expect(
-			handleAction({ id: 'action0', action: 'start_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
+			actionsOK.start_broadcast!.callback(event, SampleContext)
 		).resolves.toBeFalsy();
-		expect(allOK.makeBroadcastLive).toHaveBeenCalledTimes(1);
+		expect(coreOK.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
 	test('Go live failure', async () => {
+		const event = makeEvent(ActionId.StartBroadcast, { broadcast_id: 'test' });
 		await expect(
-			handleAction({ id: 'action0', action: 'start_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
+			actionsKO.start_broadcast!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(allKO.makeBroadcastLive).toHaveBeenCalledTimes(1);
+		expect(coreKO.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
 
 	test('Finish success', async () => {
+		const event = makeEvent(ActionId.StopBroadcast, { broadcast_id: 'test' });
 		await expect(
-			handleAction({ id: 'action0', action: 'stop_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
+			actionsOK.stop_broadcast!.callback(event, SampleContext)
 		).resolves.toBeFalsy();
-		expect(allOK.finishBroadcast).toHaveBeenCalledTimes(1);
+		expect(coreOK.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
 	test('Finish failure', async () => {
+		const event = makeEvent(ActionId.StopBroadcast, { broadcast_id: 'test' });
 		await expect(
-			handleAction({ id: 'action0', action: 'stop_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
+			actionsKO.stop_broadcast!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(allKO.finishBroadcast).toHaveBeenCalledTimes(1);
+		expect(coreKO.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
 
 	test('Toggle success', async () => {
+		const event = makeEvent(ActionId.ToggleBroadcast, { broadcast_id: 'test' });
 		await expect(
-			handleAction({ id: 'action0', action: 'toggle_broadcast', options: { broadcast_id: 'test' } }, memory, allOK)
+			actionsOK.toggle_broadcast!.callback(event, SampleContext)
 		).resolves.toBeFalsy();
-		expect(allOK.toggleBroadcast).toHaveBeenCalledTimes(1);
+		expect(coreOK.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
 	test('Toggle failure', async () => {
+		const event = makeEvent(ActionId.ToggleBroadcast, { broadcast_id: 'test' });
 		await expect(
-			handleAction({ id: 'action0', action: 'toggle_broadcast', options: { broadcast_id: 'test' } }, memory, allKO)
+			actionsKO.toggle_broadcast!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(allKO.toggleBroadcast).toHaveBeenCalledTimes(1);
+		expect(coreKO.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
 
 	test('Reload all success', async () => {
+		const event = makeEvent(ActionId.RefreshStatus, {});
 		await expect(
-			handleAction({ id: 'action0', action: 'refresh_status', options: {} }, memory, allOK)
+			actionsOK.refresh_status!.callback(event, SampleContext)
 		).resolves.toBeFalsy();
-		expect(allOK.reloadEverything).toHaveBeenCalledTimes(1);
+		expect(coreOK.reloadEverything).toHaveBeenCalledTimes(1);
 	});
 	test('Reload all failure', async () => {
+		const event = makeEvent(ActionId.RefreshStatus, {});
 		await expect(
-			handleAction({ id: 'action0', action: 'refresh_status', options: {} }, memory, allKO)
+			actionsKO.refresh_status!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(allKO.reloadEverything).toHaveBeenCalledTimes(1);
+		expect(coreKO.reloadEverything).toHaveBeenCalledTimes(1);
 	});
 
 	test('Feedback refresh success', async () => {
+		const event = makeEvent(ActionId.RefreshFeedbacks, {});
 		await expect(
-			handleAction({ id: 'action0', action: 'refresh_feedbacks', options: {} }, memory, allOK)
+			actionsOK.refresh_feedbacks!.callback(event, SampleContext)
 		).resolves.toBeFalsy();
-		expect(allOK.refreshFeedbacks).toHaveBeenCalledTimes(1);
+		expect(coreOK.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 	test('Feedback refresh failure', async () => {
+		const event = makeEvent(ActionId.RefreshFeedbacks, {});
 		await expect(
-			handleAction({ id: 'action0', action: 'refresh_feedbacks', options: {} }, memory, allKO)
+			actionsKO.refresh_feedbacks!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(allKO.refreshFeedbacks).toHaveBeenCalledTimes(1);
+		expect(coreKO.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 
 	test('Send message success', async () => {
+		const event = makeEvent(ActionId.SendMessage, { broadcast_id: 'test', message_content: 'testing message' });
 		await expect(
-			handleAction({ id: 'action0', action: 'send_livechat_message', options: { broadcast_id: 'test', message_content: 'testing message' } }, memory, allOK)
+			actionsOK.send_livechat_message!.callback(event, SampleContext)
 		).resolves.toBeFalsy();
-		expect(allOK.sendLiveChatMessage).toHaveBeenCalledTimes(1);
+		expect(coreOK.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
 	test('Send message failure', async () => {
+		const event = makeEvent(ActionId.SendMessage, { broadcast_id: 'test', message_content: 'testing message' });
 		await expect(
-			handleAction({ id: 'action0', action: 'send_livechat_message', options: { broadcast_id: 'test', message_content: 'testing message' } }, memory, allKO)
+			actionsKO.send_livechat_message!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(allKO.sendLiveChatMessage).toHaveBeenCalledTimes(1);
+		expect(coreKO.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
 
-	test('Unknown action', async () => {
-		await expect(
-			handleAction({ id: 'action0', action: 'blag', options: { broadcast_id: 'test' } }, memory, allOK)
-		).rejects.toBeInstanceOf(Error);
-		expect(allOK.startBroadcastTest).toHaveBeenCalledTimes(0);
-		expect(allOK.makeBroadcastLive).toHaveBeenCalledTimes(0);
-		expect(allOK.finishBroadcast).toHaveBeenCalledTimes(0);
-		expect(allOK.toggleBroadcast).toHaveBeenCalledTimes(0);
-		expect(allOK.reloadEverything).toHaveBeenCalledTimes(0);
-		expect(allOK.sendLiveChatMessage).toHaveBeenCalledTimes(0);
-	});
 	test('Missing broadcast ID', async () => {
+		const event = makeEvent(ActionId.InitBroadcast, {});
 		await expect(
-			handleAction({ id: 'action0', action: 'init_broadcast', options: {} }, memory, allOK)
+			actionsOK.init_broadcast!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(allOK.startBroadcastTest).toHaveBeenCalledTimes(0);
+		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
 	test('Unknown broadcast ID', async () => {
+		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'random' });
 		await expect(
-			handleAction({ id: 'action0', action: 'init_broadcast', options: { broadcast_id: 'random' } }, memory, allOK)
+			actionsOK.init_broadcast!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(allOK.startBroadcastTest).toHaveBeenCalledTimes(0);
+		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
 });

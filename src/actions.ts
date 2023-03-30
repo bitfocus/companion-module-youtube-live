@@ -90,13 +90,13 @@ export function listActions(
 					default: defaultBroadcast,
 				},
 			],
-			callback: (event): void => {
+			callback: async (event): Promise<void> => {
 				const broadcastId = checkBroadcastId(event.options);
 
 				if (broadcastId) {
-					core!.startBroadcastTest(broadcastId as BroadcastID).catch((err: Error) => {
-						core!.Module.log('warn', 'Action failed: ' + err);
-					});
+					return await core!.startBroadcastTest(broadcastId as BroadcastID);
+				} else {
+					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
 				}
 			},
 		},
@@ -111,13 +111,13 @@ export function listActions(
 					default: defaultBroadcast,
 				},
 			],
-			callback: (event): void => {
+			callback: async (event): Promise<void> => {
 				const broadcastId = checkBroadcastId(event.options);
 
 				if (broadcastId) {
-					core!.makeBroadcastLive(broadcastId as BroadcastID).catch((err: Error) => {
-						core!.Module.log('warn', 'Action failed: ' + err);
-					});
+					return core!.makeBroadcastLive(broadcastId as BroadcastID);
+				} else {
+					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
 				}
 			},
 		},
@@ -132,13 +132,13 @@ export function listActions(
 					default: defaultBroadcast,
 				},
 			],
-			callback: (event): void => {
+			callback: async (event): Promise<void> => {
 				const broadcastId = checkBroadcastId(event.options);
 
 				if (broadcastId) {
-					core!.finishBroadcast(broadcastId as BroadcastID).catch((err: Error) => {
-						core!.Module.log('warn', 'Action failed: ' + err);
-					});
+					return core!.finishBroadcast(broadcastId as BroadcastID);
+				} else {
+					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
 				}
 			},
 		},
@@ -153,36 +153,36 @@ export function listActions(
 					default: defaultBroadcast,
 				},
 			],
-			callback: (event): void => {
+			callback: async (event): Promise<void> => {
 				const broadcastId = checkBroadcastId(event.options);
 
 				if (broadcastId) {
-					core!.toggleBroadcast(broadcastId as BroadcastID).catch((err: Error) => {
-						core!.Module.log('warn', 'Action failed: ' + err);
-					});
+					return core!.toggleBroadcast(broadcastId as BroadcastID);
+				} else {
+					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
 				}
 			},
 		},
 		[ActionId.RefreshFeedbacks]: {
 			name: 'Refresh broadcast/stream feedbacks',
 			options: [],
-			callback: (): void => {
+			callback: async (): Promise<void> => {
 				if (checkCore()) {
-					core!.refreshFeedbacks().catch((err: Error) => {
-						core!.Module.log('warn', 'Action failed: ' + err);
-					});
+					return core!.refreshFeedbacks();
+				} else {
+					throw new Error('Error: module core undefined.');
 				}
 			},
 		},
 		[ActionId.RefreshStatus]: {
 			name: 'Reload everything from YouTube',
 			options: [],
-			callback: (): void => {
+			callback: async (): Promise<void> => {
 				if (checkCore()) {
-					core!.reloadEverything().catch((err: Error) => {
-						core!.Module.log('warn', 'Action failed: ' + err);
-					});
-				}	
+					return core!.reloadEverything();
+				} else {
+					throw new Error('Error: module core undefined.');
+				}
 			},
 		},
 		[ActionId.SendMessage]: {
@@ -201,15 +201,15 @@ export function listActions(
 					id: 'message_content',
 				},
 			],
-			callback: (event): void => {
+			callback: async (event): Promise<void> => {
 				let message = event.options.message_content as string;
 				const broadcastId = checkBroadcastId(event.options);
 
 				if (broadcastId && event.options.message_content
 					&& message.length > 0 && message.length <= 200) {
-						core!.sendLiveChatMessage(broadcastId as BroadcastID, message).catch((err: Error) => {
-							core!.Module.log('warn', 'Action failed: ' + err);
-						});
+						return core!.sendLiveChatMessage(broadcastId as BroadcastID, message);
+				} else {
+					throw new Error('Error with given parameters.');
 				}
 			},
 		},
