@@ -21,11 +21,11 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 
 	Object.values(memory.Broadcasts).forEach((item) => {
 		result.push({
-			variableId: `lifecycle:${item.Id}`,
+			variableId: `broadcast_${item.Id}_lifecycle`,
 			name: `Lifecycle state of broadcast titled '${item.Name}'`,
 		});
 		result.push({
-			variableId: `health:${item.Id}`,
+			variableId: `broadcast_${item.Id}_health`,
 			name: `Health of the stream bound to broadcast titled '${item.Name}'`,
 		});
 	});
@@ -91,7 +91,7 @@ export function exportVars(memory: StateMemory, unfinishedCnt: number): Variable
  */
 export function getBroadcastVars(broadcast: Broadcast): VariableContent[] {
 	const content: VariableContent = {
-		name: `lifecycle:${broadcast.Id}`,
+		name: `broadcast_${broadcast.Id}_lifecycle`,
 		value: 'unknown',
 	};
 
@@ -132,7 +132,7 @@ export function getBroadcastVars(broadcast: Broadcast): VariableContent[] {
  */
 export function getStreamVars(broadcast: Broadcast, stream: Stream): VariableContent[] {
 	const content: VariableContent = {
-		name: `health:${broadcast.Id}`,
+		name: `broadcast_${broadcast.Id}_health`,
 		value: 'unknown',
 	};
 
