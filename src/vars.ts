@@ -1,4 +1,4 @@
-import { CompanionVariable } from '../../../instance_skel_types';
+import { CompanionVariableDefinition } from '@companion-module/base';
 import { StateMemory, BroadcastLifecycle, StreamHealth, Broadcast, Stream } from './cache';
 
 /**
@@ -16,25 +16,25 @@ export interface VariableContent {
  * Generate variable declarations for this module
  * @param memory Known broadcasts and streams
  */
-export function declareVars(memory: StateMemory, unfinishedCnt: number): CompanionVariable[] {
-	const result: CompanionVariable[] = [];
+export function declareVars(memory: StateMemory, unfinishedCnt: number): CompanionVariableDefinition[] {
+	const result: CompanionVariableDefinition[] = [];
 
 	Object.values(memory.Broadcasts).forEach((item) => {
 		result.push({
-			name: `lifecycle:${item.Id}`,
-			label: `Lifecycle state of broadcast titled '${item.Name}'`,
+			variableId: `broadcast_${item.Id}_lifecycle`,
+			name: `Lifecycle state of broadcast titled '${item.Name}'`,
 		});
 		result.push({
-			name: `health:${item.Id}`,
-			label: `Health of the stream bound to broadcast titled '${item.Name}'`,
+			variableId: `broadcast_${item.Id}_health`,
+			name: `Health of the stream bound to broadcast titled '${item.Name}'`,
 		});
 	});
 
 	[...Array(unfinishedCnt).keys()].forEach((i) => {
-		result.push({ name: `unfinished_${i}`, label: `Unfinished/planned broadcast name #${i}` });
-		result.push({ name: `unfinished_short_${i}`, label: `Unfinished/planned broadcast name shortened #${i}` });
-		result.push({ name: `unfinished_state_${i}`, label: `Unfinished/planned broadcast state #${i}` });
-		result.push({ name: `unfinished_health_${i}`, label: `Unfinished/planned broadcast's stream health #${i}` });
+		result.push({ variableId: `unfinished_${i}`, name: `Unfinished/planned broadcast name #${i}` });
+		result.push({ variableId: `unfinished_short_${i}`, name: `Unfinished/planned broadcast name shortened #${i}` });
+		result.push({ variableId: `unfinished_state_${i}`, name: `Unfinished/planned broadcast state #${i}` });
+		result.push({ variableId: `unfinished_health_${i}`, name: `Unfinished/planned broadcast's stream health #${i}` });
 	});
 
 	return result;
@@ -91,7 +91,7 @@ export function exportVars(memory: StateMemory, unfinishedCnt: number): Variable
  */
 export function getBroadcastVars(broadcast: Broadcast): VariableContent[] {
 	const content: VariableContent = {
-		name: `lifecycle:${broadcast.Id}`,
+		name: `broadcast_${broadcast.Id}_lifecycle`,
 		value: 'unknown',
 	};
 
@@ -132,7 +132,7 @@ export function getBroadcastVars(broadcast: Broadcast): VariableContent[] {
  */
 export function getStreamVars(broadcast: Broadcast, stream: Stream): VariableContent[] {
 	const content: VariableContent = {
-		name: `health:${broadcast.Id}`,
+		name: `broadcast_${broadcast.Id}_health`,
 		value: 'unknown',
 	};
 

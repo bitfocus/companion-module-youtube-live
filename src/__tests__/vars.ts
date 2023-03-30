@@ -1,6 +1,6 @@
 import { declareVars, getBroadcastVars, getStreamVars, exportVars, VariableContent } from '../vars';
 import { StateMemory, BroadcastLifecycle, StreamHealth, Broadcast } from '../cache';
-import { CompanionVariable } from '../../../../instance_skel_types';
+import { CompanionVariableDefinition } from '@companion-module/base';
 import { clone } from '../common';
 
 const SampleMemory: StateMemory = {
@@ -24,7 +24,7 @@ const SampleMemory: StateMemory = {
 	UnfinishedBroadcasts: [],
 };
 
-function hasAny(vars: CompanionVariable[] | VariableContent[], name: string): boolean {
+function hasAny(vars: CompanionVariableDefinition[] | VariableContent[], name: string): boolean {
 	let found = false;
 
 	vars.forEach((variable: { name: string }) => {
@@ -42,10 +42,23 @@ describe('Variable declarations', () => {
 	});
 
 	test('Lifecycle and health added for each broadcast', () => {
-		const result = declareVars(SampleMemory, 2);
+		const result = declareVars(SampleMemory, 1);
 
-		expect(hasAny(result, 'lifecycle:broadcastID')).toBeTruthy();
-		expect(hasAny(result, 'health:broadcastID')).toBeTruthy();
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'broadcast_broadcastID_lifecycle'
+				})
+			])
+		);
+
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'broadcast_broadcastID_health'
+				})
+			])
+		);
 	});
 });
 
@@ -58,27 +71,22 @@ describe('Variable values', () => {
 
 	test('Lifecycle and health added for each broadcast', () => {
 		const result = exportVars(SampleMemory, 1);
-
-		expect(hasAny(result, 'lifecycle:broadcastID')).toBeTruthy();
-		expect(hasAny(result, 'health:broadcastID')).toBeTruthy();
+		expect(hasAny(result, 'broadcast_broadcastID_lifecycle')).toBeTruthy();
+		expect(hasAny(result, 'broadcast_broadcastID_health')).toBeTruthy();
 	});
 
 	test('Broadcasts without bound stream are handled', () => {
 		const data = clone(SampleMemory);
 		data.Broadcasts.broadcastID.BoundStreamId = '';
-
 		const result = exportVars(data, 1);
-
-		expect(hasAny(result, 'health:broadcastID')).toBeFalsy();
+		expect(hasAny(result, 'broadcast_broadcastID_health')).toBeFalsy();
 	});
 
 	test('Broadcasts with unknown bound stream are handled', () => {
 		const data = clone(SampleMemory);
 		data.Broadcasts.broadcastID.BoundStreamId = 'hello';
-
 		const result = exportVars(data, 1);
-
-		expect(hasAny(result, 'health:broadcastID')).toBeFalsy();
+		expect(hasAny(result, 'broadcast_broadcastID_health')).toBeFalsy();
 	});
 
 	test('All lifecycle strings have nonzero length', () => {

@@ -10,14 +10,15 @@ So all broadcasts to be controlled by the module have to be created in the YouTu
 - **Start broadcast test** - this action initializes a YouTube broadcast. You'll need to explicitly use this only if you want
   to launch the so called "monitor stream" of a broadcast. The same goal can be achieved by visiting the Live Control Room
   of the broadcast when the associated input stream is active.
-- **Go live**  - this action starts a YouTube broadcast and makes it available for the public.
-- **Finish broadcast**   - this action ends a published YouTube broadcast.
+- **Go live** - this action starts a YouTube broadcast and makes it available for the public.
+- **Finish broadcast** - this action ends a published YouTube broadcast.
 - **Advance broadcast to next phase** - this action combines the above actions into one action (off → testing → live → finished).
 - **Refresh broadcast/stream feedbacks** - this triggers immediate refresh of broadcast lifecycle status/
   stream health and their feedbacks/variables. This can typically be useful for quickly checking if your RTMP
   stream data has successfully reached the corresponding YouTube endpoint.
 - **Reload everything from YouTube** - this forces all cached data to be reloaded from YouTube. This can be
   used to make broadcasts created after Companion startup appear in the Companion UI.
+- **Send message to live chat** - this action send a message (200 chars max.) to a Youtube broadcast's live chat.
 
 [ytapi]: https://developers.google.com/youtube/v3/live/docs/liveBroadcasts/transition
 
