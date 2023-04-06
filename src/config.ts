@@ -1,4 +1,4 @@
-import { SomeCompanionConfigField } from '../../../instance_skel_types';
+import { SomeCompanionConfigField } from '@companion-module/base';
 
 /**
  * Module configuration structure.
@@ -103,7 +103,7 @@ export function listConfigFields(): SomeCompanionConfigField[] {
 			width: 6,
 		},
 		{
-			type: 'text',
+			type: 'static-text',
 			id: 'api_key_info',
 			label: 'OAuth application parameters',
 			value:
@@ -130,7 +130,7 @@ export function listConfigFields(): SomeCompanionConfigField[] {
 			width: 12,
 		},
 		{
-			type: 'text',
+			type: 'static-text',
 			id: 'token_info',
 			label: 'Cached YouTube OAuth2 token',
 			value:

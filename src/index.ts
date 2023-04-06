@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import InstanceSkel = require('../../../instance_skel');
 import {
 	YoutubeConfig,
 	listConfigFields,
@@ -8,74 +7,68 @@ import {
 	loadMaxUnfinishedBroadcastCount,
 } from './config';
 import {
-	CompanionFeedbackEvent,
-	CompanionFeedbackResult,
-	CompanionSystem,
-	CompanionInputField,
-	CompanionActionEvent,
-} from '../../../instance_skel_types';
+	InstanceBase,
+	InstanceStatus,
+	SomeCompanionConfigField,
+	runEntrypoint,
+} from '@companion-module/base';
 import { Core, ModuleBase } from './core';
-import { handleFeedback, listFeedbacks } from './feedbacks';
 import { StateMemory, Broadcast } from './cache';
 import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateVars } from './vars';
+import { listActions } from './actions';
+import { listFeedbacks } from './feedbacks';
 import { listPresets } from './presets';
-import { listActions, handleAction } from './actions';
 import { YoutubeConnector } from './youtube';
 import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow';
 
 /**
  * Main Companion integration class of this module
  */
-class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase, AuthorizationEnvironment {
-	// let's go
+export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements ModuleBase, AuthorizationEnvironment {
 
 	/** Executive core of the module */
-	private Core?: Core;
+	private core?: Core;
 	/** YouTube authorization flow */
-	private Auth: YoutubeAuthorization;
+	private auth: YoutubeAuthorization;
+	/** Configuration */
+	config;
 
 	/**
 	 * Create a new instance of this module
-	 * @param system Companion internals
-	 * @param id Module ID
-	 * @param config Module configuration
 	 */
-	constructor(system: CompanionSystem, id: string, config: YoutubeConfig) {
-		super(system, id, config);
-		this.Auth = new YoutubeAuthorization(this);
+	constructor(internal: unknown) {
+		super(internal);
+		this.auth = new YoutubeAuthorization(this);
 	}
 
-	/**
-	 * Initialize this module (i.e. authorize to YT, fetch data from it and initialize actions, feedbacks, etc.)
-	 * @param isReconfig Whether the initialization is done as part of module reconfiguration
-	 */
-	init(isReconfig = false): void {
+	async init(config): Promise<void> {
 		this.log('debug', 'Initializing YT module');
-		this.status(this.STATUS_WARNING, 'Initializing');
+		this.updateStatus(InstanceStatus.UnknownWarning, 'Initializing');
+		this.config = config
 
-		this.Auth.authorize(isReconfig)
+		this.auth.authorize(this.config)
 			.then((googleAuth) => {
 				this.saveToken(JSON.stringify(googleAuth.credentials));
 
 				const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(this.config));
 
-				this.Core = new Core(this, api, loadRefreshInterval(this.config));
-				return this.Core.init()
+				this.core = new Core(this, api, loadRefreshInterval(this.config));
+				return this.core.init()
 					.then(() => {
 						this.log('info', 'YT Module initialized successfully');
-						this.status(this.STATUS_OK);
+						this.updateStatus(InstanceStatus.Ok);
 					})
 					.catch((err) => {
 						this.log('warn', `YT Broadcast query failed: ${err}`);
-						this.status(this.STATUS_ERROR, `YT Broadcast query failed: ${err}`);
-						this.Core?.destroy();
-						this.Core = undefined;
+						this.updateStatus(InstanceStatus.UnknownError, `YT Broadcast query failed: ${err}`);
+						this.core?.destroy();
+						this.core = undefined;
 					});
 			})
 			.catch((reason) => {
 				this.saveToken('');
 				this.log('warn', `Authorization failed: ${reason}`);
-				this.status(this.STATUS_ERROR, `Authorization failed: ${reason}`);
+				this.updateStatus(InstanceStatus.UnknownError, `Authorization failed: ${reason}`);
 			});
 	}
 
@@ -85,23 +78,23 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	 */
 	saveToken(raw: string): void {
 		this.config.auth_token = raw;
-		this.saveConfig();
+		this.saveConfig(this.config);
 	}
 
 	/**
 	 * Deinitialize this module (i.e. cancel all pending asynchronous operations)
 	 */
-	destroy(): void {
-		this.Core?.destroy();
-		this.Core = undefined;
-		this.Auth.cancel();
+	async destroy(): Promise<void> {
+		this.core?.destroy();
+		this.core = undefined;
+		this.auth.cancel();
 	}
 
 	/**
 	 * Store new configuration from UI and reload the module
 	 * @param config New module configuration
 	 */
-	updateConfig(config: YoutubeConfig): void {
+	async configUpdated(config: YoutubeConfig): Promise<void> {
 		this.config = config;
 		this.log('debug', 'Restarting YT module after reconfiguration');
 		this.destroy();
@@ -111,32 +104,8 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	/**
 	 * Get a list of config fields that this module wants to store
 	 */
-	config_fields(): CompanionInputField[] {
+	getConfigFields(): SomeCompanionConfigField[] {
 		return listConfigFields();
-	}
-
-	/**
-	 * Invoke one of the defined actions
-	 * @param action Event metadata
-	 */
-	action(action: CompanionActionEvent): void {
-		if (!this.Core) return;
-
-		handleAction(action, this.Core.Cache, this.Core).catch((err: Error) => {
-			this.log('warn', 'Action failed: ' + err);
-		});
-	}
-
-	/**
-	 * Generate formatting for one of the defined feedbacks
-	 * @param feedback Event metadata
-	 */
-	feedback(feedback: CompanionFeedbackEvent): CompanionFeedbackResult {
-		if (!this.Core) return {};
-
-		const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
-
-		return handleFeedback(feedback, this.Core.Cache, this.rgb.bind(this), dimStarting);
 	}
 
 	/**
@@ -145,13 +114,22 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	 */
 	reloadAll(memory: StateMemory): void {
 		const unfinishedCnt = loadMaxUnfinishedBroadcastCount(this.config);
+		const vars = {};
+
 		this.setVariableDefinitions(declareVars(memory, unfinishedCnt));
 		for (const item of exportVars(memory, unfinishedCnt)) {
-			this.setVariable(item.name, item.value);
+			vars[`${item.name}`] = item.value;
 		}
-		this.setPresetDefinitions(listPresets(memory.Broadcasts, this.rgb.bind(this), unfinishedCnt));
-		this.setFeedbackDefinitions(listFeedbacks(memory.Broadcasts, this.rgb.bind(this), unfinishedCnt));
-		this.setActions(listActions(memory.Broadcasts, unfinishedCnt));
+		this.setVariableValues(vars);
+		this.setPresetDefinitions(
+			listPresets(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt }))
+		);
+		this.setFeedbackDefinitions(
+			listFeedbacks(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt, core: this.core }))
+		);
+		this.setActionDefinitions(
+			listActions(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt, core: this.core }))
+		);
 		this.checkFeedbacks();
 	}
 
@@ -160,9 +138,12 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	 * @param memory Known streams and broadcasts
 	 */
 	reloadStates(memory: StateMemory): void {
+		const vars = {};
+
 		for (const item of exportVars(memory, loadMaxUnfinishedBroadcastCount(this.config))) {
-			this.setVariable(item.name, item.value);
+			vars[`${item.name}`] = item.value;
 		}
+		this.setVariableValues(vars);
 		this.checkFeedbacks();
 	}
 
@@ -171,19 +152,22 @@ class YoutubeInstance extends InstanceSkel<YoutubeConfig> implements ModuleBase,
 	 * @param broadcast Broadcast to reload for
 	 */
 	reloadBroadcast(broadcast: Broadcast, memory: StateMemory): void {
+		const vars = {};
+
 		if (broadcast.Id in memory.Broadcasts) {
 			for (const item of getBroadcastVars(broadcast)) {
-				this.setVariable(item.name, item.value);
+				vars[`${item.name}`] = item.value;
 			}
 		}
 		const hit = memory.UnfinishedBroadcasts.findIndex((a) => a.Id == broadcast.Id);
 		if (hit > -1) {
 			for (const item of getUnfinishedBroadcastStateVars(hit, broadcast)) {
-				this.setVariable(item.name, item.value);
+				vars[`${item.name}`] = item.value;
 			}
 		}
+		this.setVariableValues(vars);
 		this.checkFeedbacks('broadcast_status');
 	}
 }
 
-export = YoutubeInstance;
+runEntrypoint(YoutubeInstance, []);

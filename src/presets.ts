@@ -1,203 +1,227 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { CompanionPreset } from '../../../instance_skel_types';
 import { BroadcastMap } from './cache';
-import { RGBFunction } from './common';
+import { CompanionPresetDefinitions, combineRgb } from '@companion-module/base';
+import { FeedbackId } from './feedbacks';
+import { ActionId } from './actions';
 
 /**
  * Get a list of presets for this module
  * @param broadcasts Map of known broadcasts
- * @param rgb Function for generating RGB color codes
+ * @param unfinishedCount Number of unfinished broadcast
  */
-export function listPresets(broadcasts: BroadcastMap, rgb: RGBFunction, unfinishedCnt: number): CompanionPreset[] {
-	const presets: CompanionPreset[] = [];
+export function listPresets(
+	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; }
+): CompanionPresetDefinitions {
+	const { broadcasts } = getProps();
+	const { unfinishedCount } = getProps();
+
+	const presets: CompanionPresetDefinitions = {};
 
 	Object.values(broadcasts).forEach((item) => {
-		const start: CompanionPreset = {
+		presets[`start_broadcast_${item.Id}`] = {
+			type: 'button',
 			category: 'Start broadcast',
-			label: `Start ${item.Name}`,
-			bank: {
-				style: 'text',
+			name: `Start ${item.Name}`,
+			style: {
 				text: `Start ${item.Name}`,
 				size: 'auto',
-				color: rgb(255, 255, 255),
+				color: combineRgb(255, 255, 255),
 				bgcolor: 0,
 			},
 			feedbacks: [
 				{
-					type: 'broadcast_status',
+					feedbackId: FeedbackId.BroadcastStatus,
 					options: {
-						bg_live: rgb(222, 0, 0),
-						bg_testing: rgb(0, 172, 0),
-						bg_complete: rgb(0, 0, 168),
-						bg_ready: rgb(209, 209, 0),
+						bg_live: combineRgb(222, 0, 0),
+						bg_testing: combineRgb(0, 172, 0),
+						bg_complete: combineRgb(0, 0, 168),
+						bg_ready: combineRgb(209, 209, 0),
 						broadcast: item.Id,
 					},
 				},
 			],
-			actions: [
+			steps: [
 				{
-					action: 'start_broadcast',
-					options: {
-						broadcast_id: item.Id,
-					},
+					down: [
+						{
+							actionId: ActionId.StartBroadcast,
+							options: {
+								broadcast_id: item.Id,
+							},
+						}
+					],
+					up: [],
 				},
 			],
 		};
 
-		const stop: CompanionPreset = {
+		presets[`stop_broadcast_${item.Id}`] = {
+			type: 'button',
 			category: 'Stop broadcast',
-			label: `Stop ${item.Name}`,
-			bank: {
-				style: 'text',
+			name: `Stop ${item.Name}`,
+			style: {
 				text: `Stop ${item.Name}`,
 				size: 'auto',
-				color: rgb(255, 255, 255),
+				color: combineRgb(255, 255, 255),
 				bgcolor: 0,
 			},
 			feedbacks: [
 				{
-					type: 'broadcast_status',
+					feedbackId: FeedbackId.BroadcastStatus,
 					options: {
-						bg_live: rgb(222, 0, 0),
-						bg_testing: rgb(0, 172, 0),
-						bg_complete: rgb(0, 0, 168),
-						bg_ready: rgb(209, 209, 0),
+						bg_live: combineRgb(222, 0, 0),
+						bg_testing: combineRgb(0, 172, 0),
+						bg_complete: combineRgb(0, 0, 168),
+						bg_ready: combineRgb(209, 209, 0),
 						broadcast: item.Id,
 					},
 				},
 			],
-			actions: [
+			steps: [
 				{
-					action: 'stop_broadcast',
-					options: {
-						broadcast_id: item.Id,
-					},
+					down: [
+						{
+							actionId: ActionId.StopBroadcast,
+							options: {
+								broadcast_id: item.Id,
+							},
+						},
+					],
+					up: [],
 				},
 			],
 		};
 
-		const toggle: CompanionPreset = {
+		presets[`toggle_broadcast_${item.Id}`] = {
+			type: 'button',
 			category: 'Toggle broadcast',
-			label: `Toggle ${item.Name}`,
-			bank: {
-				style: 'text',
+			name: `Toggle ${item.Name}`,
+			style: {
 				text: `Toggle ${item.Name}`,
 				size: 'auto',
-				color: rgb(255, 255, 255),
+				color: combineRgb(255, 255, 255),
 				bgcolor: 0,
 			},
 			feedbacks: [
 				{
-					type: 'broadcast_status',
+					feedbackId: FeedbackId.BroadcastStatus,
 					options: {
-						bg_live: rgb(222, 0, 0),
-						bg_testing: rgb(0, 172, 0),
-						bg_complete: rgb(0, 0, 168),
-						bg_ready: rgb(209, 209, 0),
+						bg_live: combineRgb(222, 0, 0),
+						bg_testing: combineRgb(0, 172, 0),
+						bg_complete: combineRgb(0, 0, 168),
+						bg_ready: combineRgb(209, 209, 0),
 						broadcast: item.Id,
 					},
 				},
 			],
-			actions: [
+			steps: [
 				{
-					action: 'toggle_broadcast',
-					options: {
-						broadcast_id: item.Id,
-					},
+					down: [
+						{
+							actionId: ActionId.ToggleBroadcast,
+							options: {
+								broadcast_id: item.Id,
+							},
+						},
+					],
+					up: [],
 				},
 			],
 		};
 
-		const init: CompanionPreset = {
+		presets[`init_broadcast_${item.Id}`] = {
+			type: 'button',
 			category: 'Init broadcast',
-			label: `Init ${item.Name}`,
-			bank: {
-				style: 'text',
+			name: `Init ${item.Name}`,
+			style: {
 				text: `Init ${item.Name}`,
 				size: 'auto',
-				color: rgb(255, 255, 255),
+				color: combineRgb(255, 255, 255),
 				bgcolor: 0,
 			},
 			feedbacks: [
 				{
-					type: 'broadcast_status',
+					feedbackId: FeedbackId.BroadcastStatus,
 					options: {
-						bg_live: rgb(222, 0, 0),
-						bg_testing: rgb(0, 172, 0),
-						bg_complete: rgb(0, 0, 168),
-						bg_ready: rgb(209, 209, 0),
+						bg_live: combineRgb(222, 0, 0),
+						bg_testing: combineRgb(0, 172, 0),
+						bg_complete: combineRgb(0, 0, 168),
+						bg_ready: combineRgb(209, 209, 0),
 						broadcast: item.Id,
 					},
 				},
 			],
-			actions: [
+			steps: [
 				{
-					action: 'init_broadcast',
-					options: {
-						broadcast_id: item.Id,
-					},
+					down: [
+						{
+							actionId: ActionId.InitBroadcast,
+							options: {
+								broadcast_id: item.Id,
+							},
+						},
+					],
+					up: [],
 				},
 			],
 		};
-		presets.push(start, stop, toggle, init);
 	});
 
-	[...Array(unfinishedCnt).keys()].forEach((i) => {
-		if (i < unfinishedCnt) {
-			const unfinished: CompanionPreset = {
+	[...Array(unfinishedCount).keys()].forEach((i) => {
+		if (i < unfinishedCount) {
+			presets[`unfinished_state_name_${i}`] = {
+				type: 'button',
 				category: 'Unfinished/planned broadcasts',
-				label: `Unfinished broadcast state/name #${i}`,
-				bank: {
-					style: 'text',
+				name: `Unfinished broadcast state/name #${i}`,
+				style: {
 					text: `$(YT:unfinished_state_${i})\\n$(yt:unfinished_short_${i})`,
 					size: 'auto',
-					color: rgb(125, 125, 125),
+					color: combineRgb(125, 125, 125),
 					bgcolor: 0,
 				},
 				feedbacks: [
 					{
-						type: 'broadcast_status',
+						feedbackId: FeedbackId.BroadcastStatus,
 						options: {
-							bg_live: rgb(222, 0, 0),
-							bg_testing: rgb(0, 172, 0),
-							bg_complete: rgb(87, 0, 87),
-							text_complete: rgb(182, 155, 182),
-							bg_ready: rgb(209, 209, 0),
+							bg_live: combineRgb(222, 0, 0),
+							bg_testing: combineRgb(0, 172, 0),
+							bg_complete: combineRgb(87, 0, 87),
+							text_complete: combineRgb(182, 155, 182),
+							bg_ready: combineRgb(209, 209, 0),
 							broadcast: `unfinished_${i}`,
 						},
 					},
 				],
-				actions: [],
+				steps: [],
 			};
-			const stream: CompanionPreset = {
+			presets[`unfinished_stream_health_${i}`] = {
+				type: 'button',
 				category: 'Unfinished/planned broadcasts',
-				label: `Unfinished broadcast's stream health #${i}`,
-				bank: {
-					style: 'text',
+				name: `Unfinished broadcast's stream health #${i}`,
+				style: {
 					text: `Stream #${i}\\n$(YT:unfinished_health_${i})`,
 					size: 'auto',
-					color: rgb(125, 125, 125),
+					color: combineRgb(125, 125, 125),
 					bgcolor: 0,
 				},
 				feedbacks: [
 					{
-						type: 'broadcast_bound_stream_health',
+						feedbackId: FeedbackId.StreamHealth,
 						options: {
-							bg_good: rgb(0, 204, 0),
-							text_good: rgb(255, 255, 255),
-							bg_ok: rgb(204, 204, 0),
-							text_ok: rgb(255, 255, 255),
-							bg_bad: rgb(255, 102, 0),
-							text_bad: rgb(255, 255, 255),
-							bg_no_data: rgb(255, 0, 0),
-							text_no_data: rgb(255, 255, 255),
+							bg_good: combineRgb(0, 204, 0),
+							text_good: combineRgb(255, 255, 255),
+							bg_ok: combineRgb(204, 204, 0),
+							text_ok: combineRgb(255, 255, 255),
+							bg_bad: combineRgb(255, 102, 0),
+							text_bad: combineRgb(255, 255, 255),
+							bg_no_data: combineRgb(255, 0, 0),
+							text_no_data: combineRgb(255, 255, 255),
 							broadcast: `unfinished_${i}`,
 						},
 					},
 				],
-				actions: [],
+				steps: [],
 			};
-			presets.push(unfinished, stream);
 		}
 	});
 

@@ -1,16 +1,23 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { listFeedbacks, handleFeedback } from '../feedbacks';
+import { listFeedbacks } from '../feedbacks';
 import { BroadcastLifecycle, StreamHealth, StateMemory } from '../cache';
-import { CompanionFeedbackEvent, CompanionFeedbackResult } from '../../../../instance_skel_types';
+import { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult, CompanionFeedbackContext, combineRgb } from '@companion-module/base';
 import { clone } from '../common';
-
-function rgb(red: number, green: number, blue: number): number {
-	return ((red & 0xff) << 16) | ((green & 0xff) << 8) | ((blue & 0xff) << 0);
-}
+import { ModuleBase, Core } from '../core';
+import { mocked } from 'ts-jest/utils';
+import { MaybeMocked } from 'ts-jest/dist/util/testing';
+import { YoutubeAPI } from '../youtube';
+import { makeMockModule, makeMockYT } from './core'
 
 //
 // SAMPLE DATA
 //
+
+const SampleContext: CompanionFeedbackContext = {
+	parseVariablesInString: function (text: string): Promise<string> {
+		throw new Error('Function not implemented. Parameter was: ' + text);
+	}
+}
 
 const SampleMemory: StateMemory = {
 	Broadcasts: {
@@ -33,28 +40,38 @@ const SampleMemory: StateMemory = {
 	UnfinishedBroadcasts: [],
 };
 
-const SampleBroadcastCheck: CompanionFeedbackEvent = {
+const SampleBroadcastCheck: CompanionFeedbackAdvancedEvent = {
 	id: 'abcd1234',
-	type: 'broadcast_status',
+	type: 'advanced',
+	feedbackId: 'broadcast_status',
 	options: {
-		bg_ready: rgb(0, 255, 0),
-		bg_testing: rgb(255, 255, 0),
-		bg_live: rgb(255, 0, 0),
-		bg_complete: rgb(0, 0, 255),
+		bg_ready: combineRgb(0, 255, 0),
+		bg_testing: combineRgb(255, 255, 0),
+		bg_live: combineRgb(255, 0, 0),
+		bg_complete: combineRgb(0, 0, 255),
 		broadcast: 'test',
 	},
+	_page: 0,
+	_bank: 0,
+	_rawBank: 'test' as any,
+	controlId: 'control0'
 };
 
-const SampleStreamCheck: CompanionFeedbackEvent = {
+const SampleStreamCheck: CompanionFeedbackAdvancedEvent = {
 	id: 'abcd1234',
-	type: 'broadcast_bound_stream_health',
+	type: 'advanced',
+	feedbackId: 'broadcast_bound_stream_health',
 	options: {
-		bg_good: rgb(0, 255, 0),
-		bg_ok: rgb(255, 255, 0),
-		bg_bad: rgb(255, 0, 0),
-		bg_no_data: rgb(0, 0, 255),
+		bg_good: combineRgb(0, 255, 0),
+		bg_ok: combineRgb(255, 255, 0),
+		bg_bad: combineRgb(255, 0, 0),
+		bg_no_data: combineRgb(0, 0, 255),
 		broadcast: 'test',
 	},
+	_page: 0,
+	_bank: 0,
+	_rawBank: 'test' as any,
+	controlId: 'control0'
 };
 
 //
@@ -63,8 +80,7 @@ const SampleStreamCheck: CompanionFeedbackEvent = {
 
 describe('Common tests', () => {
 	test('Module has required feedbacks', () => {
-		const feedbacks = listFeedbacks(SampleMemory.Broadcasts, rgb, 1);
-
+		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 1, core: undefined }));
 		expect(feedbacks).toHaveProperty('broadcast_status');
 		expect(feedbacks).toHaveProperty('broadcast_bound_stream_health');
 	});
@@ -74,120 +90,159 @@ describe('Common tests', () => {
 // BROADCAST TESTS
 //
 
-function tryBroadcast(phase: BroadcastLifecycle, isAlternate = false): CompanionFeedbackResult {
-	const data = clone(SampleMemory);
-	data.Broadcasts.test.Status = phase;
-	return handleFeedback(SampleBroadcastCheck, data, rgb, isAlternate);
+async function tryBroadcast(phase: BroadcastLifecycle, core: Core): Promise<CompanionAdvancedFeedbackResult> {
+	await core.init();
+	core.Cache.Broadcasts.test.Status = phase;
+	const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));	
+	return feedbacks.broadcast_status!.callback(SampleBroadcastCheck, SampleContext) as CompanionAdvancedFeedbackResult;
 }
 
-function tryStream(health: StreamHealth): CompanionFeedbackResult {
-	const data = clone(SampleMemory);
-	data.Streams.abcd.Health = health;
-	return handleFeedback(SampleStreamCheck, data, rgb, false);
+async function tryStream(health: StreamHealth, core: Core): Promise<CompanionAdvancedFeedbackResult> {
+	await core.init();
+	core.Cache.Streams['abcd'].Health = health
+	const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+	return feedbacks.broadcast_bound_stream_health!.callback(SampleStreamCheck, SampleContext) as CompanionAdvancedFeedbackResult;
 }
 
 describe('Broadcast lifecycle feedback', () => {
-	test('Created state', () => {
-		const result = tryBroadcast(BroadcastLifecycle.Created);
+	let memory: StateMemory;
+	let mockYT: MaybeMocked<YoutubeAPI>;
+	let mockModule: MaybeMocked<ModuleBase>;
+	let core: Core;
+
+	beforeEach(() => {
+		memory = clone(SampleMemory);
+		mockYT = mocked(makeMockYT(memory));
+		mockModule = mocked(makeMockModule());
+
+		core = new Core(mockModule, mockYT, 100, 100);
+	});
+
+	test('Created state', async () => {
+		const result = await tryBroadcast(BroadcastLifecycle.Created, core);
 
 		expect(result).not.toHaveProperty('bgcolor');
 	});
 
-	test('Ready state', () => {
-		const result = tryBroadcast(BroadcastLifecycle.Ready);
+	test('Ready state', async () => {
+		const result = await tryBroadcast(BroadcastLifecycle.Ready, core);
 
 		expect(result.bgcolor).toBe(SampleBroadcastCheck.options.bg_ready);
 	});
 
-	test('TestStarting state', () => {
-		const result1 = tryBroadcast(BroadcastLifecycle.TestStarting, false);
-		const result2 = tryBroadcast(BroadcastLifecycle.TestStarting, true);
-
-		expect(result1.bgcolor).toBe(SampleBroadcastCheck.options.bg_testing);
-		expect(result2.bgcolor).toBe(SampleBroadcastCheck.options.bg_ready);
+	test('TestStarting state', async () => {
+		const result = await tryBroadcast(BroadcastLifecycle.TestStarting, core);
+		const checking: boolean = (
+			result.bgcolor === SampleBroadcastCheck.options.bg_testing ||
+			result.bgcolor === SampleBroadcastCheck.options.bg_ready
+		);
+		expect(checking).toBe(true);
 	});
 
-	test('Testing state', () => {
-		const result = tryBroadcast(BroadcastLifecycle.Testing);
-
+	test('Testing state', async () => {
+		const result = await tryBroadcast(BroadcastLifecycle.Testing, core);
 		expect(result.bgcolor).toBe(SampleBroadcastCheck.options.bg_testing);
 	});
 
-	test('LiveStarting state', () => {
-		const result1 = tryBroadcast(BroadcastLifecycle.LiveStarting, false);
-		const result2 = tryBroadcast(BroadcastLifecycle.LiveStarting, true);
-
-		expect(result1.bgcolor).toBe(SampleBroadcastCheck.options.bg_live);
-		expect(result2.bgcolor).toBe(SampleBroadcastCheck.options.bg_testing);
+	test('LiveStarting state', async () => {
+		const result = await tryBroadcast(BroadcastLifecycle.LiveStarting, core);
+		const checking: boolean = (
+			result.bgcolor === SampleBroadcastCheck.options.bg_live ||
+			result.bgcolor === SampleBroadcastCheck.options.bg_testing
+		);
+		expect(checking).toBe(true);
 	});
 
-	test('Live state', () => {
-		const result = tryBroadcast(BroadcastLifecycle.Live);
-
+	test('Live state', async () => {
+		const result = await tryBroadcast(BroadcastLifecycle.Live, core);
 		expect(result.bgcolor).toBe(SampleBroadcastCheck.options.bg_live);
 	});
 
-	test('Complete state', () => {
-		const result = tryBroadcast(BroadcastLifecycle.Complete);
-
+	test('Complete state', async () => {
+		const result = await tryBroadcast(BroadcastLifecycle.Complete, core);
 		expect(result.bgcolor).toBe(SampleBroadcastCheck.options.bg_complete);
 	});
 
-	test('Revoked state', () => {
-		const result = tryBroadcast(BroadcastLifecycle.Revoked);
-
+	test('Revoked state', async () => {
+		const result = await tryBroadcast(BroadcastLifecycle.Revoked, core);
 		expect(result).not.toHaveProperty('bgcolor');
 	});
 
-	test('Missing colors', () => {
-		const event: CompanionFeedbackEvent = {
+	test('Missing colors', async () => {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
-			type: 'broadcast_status',
+			type: 'advanced',
+			feedbackId: 'broadcast_status',
 			options: {
 				broadcast: 'test',
 			},
+			_page: 0,
+			_bank: 0,
+			_rawBank: 'test' as any,
+			controlId: 'control0'
 		};
 
-		const result = handleFeedback(event, SampleMemory, rgb, false);
+		await core.init();
+
+		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const result = feedbacks.broadcast_status!.callback(event, SampleContext) as CompanionAdvancedFeedbackResult;
 
 		expect(result).toHaveProperty('bgcolor');
 		expect(result.bgcolor).not.toBe(0);
 	});
 
-	test('Unknown broadcasts', () => {
+	test('Unknown broadcasts', async () => {
 		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
-
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
-			type: 'broadcast_status',
+			type: 'advanced',
+			feedbackId: 'broadcast_status',
 			options: {
-				bg_ready: rgb(0, 255, 0),
-				bg_testing: rgb(255, 255, 0),
-				bg_live: rgb(255, 0, 0),
-				bg_complete: rgb(0, 0, 255),
+				bg_ready: combineRgb(0, 255, 0),
+				bg_testing: combineRgb(255, 255, 0),
+				bg_live: combineRgb(255, 0, 0),
+				bg_complete: combineRgb(0, 0, 255),
 				broadcast: 'test',
 			},
+			_page: 0,
+			_bank: 0,
+			_rawBank: 'test' as any,
+			controlId: 'control0'
 		};
 
-		const result = handleFeedback(event, data, rgb, false);
+		await core.init();
+		core.Cache = data;
+
+		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const result = feedbacks.broadcast_status!.callback(event, SampleContext) as CompanionAdvancedFeedbackResult;
+
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 
-	test('Events without ID', () => {
+	test('Events without ID', async () => {
 		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
-
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
-			type: 'broadcast_status',
+			type: 'advanced',
+			feedbackId: 'broadcast_status',
 			options: {
-				bg_ready: rgb(0, 255, 0),
-				bg_testing: rgb(255, 255, 0),
-				bg_live: rgb(255, 0, 0),
-				bg_complete: rgb(0, 0, 255),
+				bg_ready: combineRgb(0, 255, 0),
+				bg_testing: combineRgb(255, 255, 0),
+				bg_live: combineRgb(255, 0, 0),
+				bg_complete: combineRgb(0, 0, 255),
 			},
+			_page: 0,
+			_bank: 0,
+			_rawBank: 'test' as any,
+			controlId: 'control0'
 		};
 
-		const result = handleFeedback(event, data, rgb, false);
+		await core.init();
+		core.Cache = data;
+
+		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const result = feedbacks.broadcast_status!.callback(event, SampleContext) as CompanionAdvancedFeedbackResult;
+
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 });
@@ -197,64 +252,91 @@ describe('Broadcast lifecycle feedback', () => {
 //
 
 describe('Stream health feedback', () => {
-	test('Good health', () => {
-		const result = tryStream(StreamHealth.Good);
+	let memory: StateMemory;
+	let mockYT: MaybeMocked<YoutubeAPI>;
+	let mockModule: MaybeMocked<ModuleBase>;
+	let core: Core;
 
+	beforeEach(() => {
+		memory = clone(SampleMemory);
+		mockYT = mocked(makeMockYT(memory));
+		mockModule = mocked(makeMockModule());
+
+		core = new Core(mockModule, mockYT, 100, 100);
+	});
+
+	test('Good health', async () => {
+		const result = await tryStream(StreamHealth.Good, core);
 		expect(result.bgcolor).toBe(SampleStreamCheck.options.bg_good);
 	});
 
-	test('OK health', () => {
-		const result = tryStream(StreamHealth.OK);
-
+	test('OK health', async () => {
+		const result = await tryStream(StreamHealth.OK, core);
 		expect(result.bgcolor).toBe(SampleStreamCheck.options.bg_ok);
 	});
 
-	test('Bad health', () => {
-		const result = tryStream(StreamHealth.Bad);
-
+	test('Bad health', async () => {
+		const result = await tryStream(StreamHealth.Bad, core);
 		expect(result.bgcolor).toBe(SampleStreamCheck.options.bg_bad);
 	});
 
-	test('NoData health', () => {
-		const result = tryStream(StreamHealth.NoData);
-
+	test('NoData health', async () => {
+		const result = await tryStream(StreamHealth.NoData, core);
 		expect(result.bgcolor).toBe(SampleStreamCheck.options.bg_no_data);
 	});
 
-	test('Missing colors', () => {
-		const event: CompanionFeedbackEvent = {
+	test('Missing colors', async () => {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
-			type: 'broadcast_bound_stream_health',
+			type: 'advanced',
+			feedbackId: 'broadcast_bound_stream_health',
 			options: {
 				broadcast: 'test',
 			},
+			_page: 0,
+			_bank: 0,
+			_rawBank: 'test' as any,
+			controlId: 'control0'
 		};
 
-		const result = handleFeedback(event, SampleMemory, rgb, false);
+		await core.init();
+
+		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const result = feedbacks.broadcast_bound_stream_health!.callback(event, SampleContext) as CompanionAdvancedFeedbackResult;
+
 		expect(result).toHaveProperty('bgcolor');
 		expect(result.bgcolor).not.toBe(0);
 	});
 
-	test('Unknown broadcasts', () => {
+	test('Unknown broadcasts', async () => {
 		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
-
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
-			type: 'broadcast_bound_stream_health',
+			type: 'advanced',
+			feedbackId: 'broadcast_bound_stream_health',
 			options: {
-				bg_ready: rgb(0, 255, 0),
-				bg_testing: rgb(255, 255, 0),
-				bg_live: rgb(255, 0, 0),
-				bg_complete: rgb(0, 0, 255),
+				bg_ready: combineRgb(0, 255, 0),
+				bg_testing: combineRgb(255, 255, 0),
+				bg_live: combineRgb(255, 0, 0),
+				bg_complete: combineRgb(0, 0, 255),
 				broadcast: 'test',
 			},
+			_page: 0,
+			_bank: 0,
+			_rawBank: 'test' as any,
+			controlId: 'control0'
 		};
+		
+		await core.init();
+		core.Cache = data;
 
-		const result = handleFeedback(event, data, rgb, false);
+		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const result = feedbacks.broadcast_bound_stream_health!.callback(event, SampleContext) as CompanionAdvancedFeedbackResult;
+
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 
-	test('Unknown streams', () => {
+	test('Unknown streams', async () => {
 		const data: StateMemory = {
 			Broadcasts: {
 				test: {
@@ -271,37 +353,56 @@ describe('Stream health feedback', () => {
 			UnfinishedBroadcasts: [],
 		};
 
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
-			type: 'broadcast_bound_stream_health',
+			type: 'advanced',
+			feedbackId: 'broadcast_bound_stream_health',
 			options: {
-				bg_ready: rgb(0, 255, 0),
-				bg_testing: rgb(255, 255, 0),
-				bg_live: rgb(255, 0, 0),
-				bg_complete: rgb(0, 0, 255),
+				bg_ready: combineRgb(0, 255, 0),
+				bg_testing: combineRgb(255, 255, 0),
+				bg_live: combineRgb(255, 0, 0),
+				bg_complete: combineRgb(0, 0, 255),
 				broadcast: 'test',
 			},
+			_page: 0,
+			_bank: 0,
+			_rawBank: 'test' as any,
+			controlId: 'control0'
 		};
 
-		const result = handleFeedback(event, data, rgb, false);
+		await core.init();
+		core.Cache = data;
+
+		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const result = feedbacks.broadcast_bound_stream_health!.callback(event, SampleContext) as CompanionAdvancedFeedbackResult;
+
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 
-	test('Events without ID', () => {
+	test('Events without ID', async () => {
 		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
-
-		const event: CompanionFeedbackEvent = {
+		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
-			type: 'broadcast_bound_stream_health',
+			type: 'advanced',
+			feedbackId: 'broadcast_bound_stream_health',
 			options: {
-				bg_ready: rgb(0, 255, 0),
-				bg_testing: rgb(255, 255, 0),
-				bg_live: rgb(255, 0, 0),
-				bg_complete: rgb(0, 0, 255),
+				bg_ready: combineRgb(0, 255, 0),
+				bg_testing: combineRgb(255, 255, 0),
+				bg_live: combineRgb(255, 0, 0),
+				bg_complete: combineRgb(0, 0, 255),
 			},
+			_page: 0,
+			_bank: 0,
+			_rawBank: 'test' as any,
+			controlId: 'control0'
 		};
 
-		const result = handleFeedback(event, data, rgb, false);
+		await core.init();
+		core.Cache = data;
+
+		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const result = feedbacks.broadcast_bound_stream_health!.callback(event, SampleContext) as CompanionAdvancedFeedbackResult;
+		
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 });

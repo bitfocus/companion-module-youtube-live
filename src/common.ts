@@ -1,10 +1,9 @@
-import InstanceSkel = require('../../../instance_skel');
+import { InstanceBase } from '@companion-module/base'
+import { YoutubeConfig } from './config';
 
 /** Generic module skeleton for extracting function types. */
-type IModule = InstanceSkel<null>;
+type IModule = InstanceBase<YoutubeConfig>;
 
-/** Function for compiling 3 separate RGB intensities into one number. */
-export type RGBFunction = IModule['rgb'];
 /** Function for logging information to the Companion log buffer. */
 export type Logger = IModule['log'];
 

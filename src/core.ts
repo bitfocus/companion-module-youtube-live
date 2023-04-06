@@ -1,7 +1,6 @@
 import { StateMemory, BroadcastID, BroadcastLifecycle, Broadcast } from './cache';
 import { Transition, YoutubeAPI } from './youtube';
 import { DetachedPromise, Logger } from './common';
-import { ActionHandler } from './actions';
 
 /**
  * Interface between executive core and the Companion module glue
@@ -23,7 +22,7 @@ export interface ModuleBase {
 /**
  * Executive core of the module
  */
-export class Core implements ActionHandler {
+export class Core {
 	/** Known broadcasts & streams */
 	Cache: StateMemory;
 
@@ -229,6 +228,7 @@ export class Core implements ActionHandler {
 	async checkOneBroadcast(id: BroadcastID): Promise<BroadcastLifecycle> {
 		let oldBroadcast: Broadcast;
 		const unfinishedHit = this.Cache.UnfinishedBroadcasts.find((a) => a.Id == id);
+
 		if (id in this.Cache.Broadcasts) {
 			oldBroadcast = this.Cache.Broadcasts[id];
 		} else if (unfinishedHit) {
