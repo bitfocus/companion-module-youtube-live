@@ -1,3 +1,4 @@
+//require("leaked-handles");
 import { YoutubeAPI, Transition } from '../youtube';
 import { ModuleBase, Core } from '../core';
 import { sleep } from '../common';
@@ -86,6 +87,15 @@ describe('Miscellaneous', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Initialization succeeds', async () => {
 		await expect(core.init()).resolves.toBe(undefined);
@@ -199,6 +209,15 @@ describe('Starting tests on broadcasts', () => {
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
 
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
+
 	test('Starting test on unknown broadcast fails', async () => {
 		await core.init();
 		await expect(core.startBroadcastTest('virus')).rejects.toBeInstanceOf(Error);
@@ -282,6 +301,15 @@ describe('Going live with broadcasts', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Going live on broadcast in invalid state fails [monitor = on]', async () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;
@@ -373,6 +401,15 @@ describe('Finishing live broadcasts', () => {
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
 
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
+
 	test('Starting finish on broadcast in invalid state fails', async () => {
 		await core.init();
 		for (const key of Object.values(BroadcastLifecycle)) {
@@ -425,6 +462,15 @@ describe('Toggling live broadcasts', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Toggle works for ready stream [monitor = on]', async () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;

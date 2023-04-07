@@ -1,6 +1,6 @@
+//require("leaked-handles");
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/camelcase */
-
 jest.mock('../../auth/loginFlow');
 jest.mock('../../auth/oauthclient');
 

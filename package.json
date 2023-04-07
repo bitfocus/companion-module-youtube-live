@@ -34,6 +34,7 @@
 		"@types/node": "^18.15.11",
 		"@types/server-destroy": "^1.0.0",
 		"googleapis": "^48.0.0",
+		"leaked-handles": "^5.2.0",
 		"open": "^7.0.4",
 		"server-destroy": "^1.0.1"
 	},

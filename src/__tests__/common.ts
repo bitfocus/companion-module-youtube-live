@@ -1,3 +1,4 @@
+//require("leaked-handles");
 import { DetachedPromise, clone } from '../common';
 
 describe('DetachedPromise', () => {

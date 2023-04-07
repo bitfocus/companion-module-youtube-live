@@ -1,3 +1,4 @@
+//require("leaked-handles");
 /* eslint-disable @typescript-eslint/camelcase */
 jest.mock('open');
 jest.mock('../../auth/httpListener');

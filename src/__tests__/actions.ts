@@ -1,5 +1,5 @@
+//require("leaked-handles");
 /* eslint-disable @typescript-eslint/camelcase */
-//import { ActionHandler, listActions, handleAction } from '../actions';
 import {
 	CompanionFeedbackContext,
 	CompanionActionDefinitions,
@@ -109,6 +109,12 @@ describe('Action callback', () => {
 	}
 
 	afterEach(() => jest.clearAllMocks());
+
+	afterAll(() => {
+		coreOK.destroy();
+		coreKO.destroy();
+		jest.clearAllTimers();
+	})
 
 	test('Start test success', async () => {
 		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'test' });

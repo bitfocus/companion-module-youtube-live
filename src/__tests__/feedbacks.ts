@@ -1,3 +1,4 @@
+//require("leaked-handles");
 /* eslint-disable @typescript-eslint/camelcase */
 import { listFeedbacks } from '../feedbacks';
 import { BroadcastLifecycle, StreamHealth, StateMemory } from '../cache';
@@ -116,6 +117,15 @@ describe('Broadcast lifecycle feedback', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy()
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Created state', async () => {
 		const result = await tryBroadcast(BroadcastLifecycle.Created, core);
@@ -263,6 +273,15 @@ describe('Stream health feedback', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Good health', async () => {
 		const result = await tryStream(StreamHealth.Good, core);
