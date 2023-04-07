@@ -6,7 +6,7 @@ import {
 	CompanionActionEvent,
 	CompanionOptionValues
 } from '@companion-module/base';
-import { MaybeMocked, mocked } from 'ts-jest/dist/util/testing';
+import { mocked, MockedShallow } from 'jest-mock';
 import { makeMockModule, makeMockYT } from './core';
 import { listActions, ActionId } from '../actions';
 import { BroadcastLifecycle, BroadcastID, StateMemory } from '../cache';
@@ -62,8 +62,8 @@ describe('Action callback', () => {
 	let coreOK: Core;
 	let coreKO: Core;
 	const memory: StateMemory = clone(SampleMemory);
-	const mockYT: MaybeMocked<YoutubeAPI> = mocked(makeMockYT(memory));
-	const mockModule: MaybeMocked<ModuleBase> = mocked(makeMockModule());
+	const mockYT: MockedShallow<YoutubeAPI> = mocked(makeMockYT(memory));
+	const mockModule: MockedShallow<ModuleBase> = mocked(makeMockModule());
 	coreOK = new Core(mockModule, mockYT, 100, 100);
 	coreKO = new Core(mockModule, mockYT, 100, 100);
 

@@ -9,7 +9,7 @@ import { YoutubeConfig } from '../../config';
 import { DetachedPromise, Logger } from '../../common';
 import { UserCredentials, AppCredentials } from '../../auth/types';
 import { AuthorizationEnvironment, YoutubeAuthorization } from '../../auth/mainFlow';
-import { mocked } from 'ts-jest/utils';
+import { mocked } from 'jest-mock';
 
 import { GoogleLoginForm } from '../../auth/loginFlow';
 import { makeOAuth2Client } from '../../auth/oauthclient';
@@ -20,7 +20,7 @@ const _mockForm = new GoogleLoginForm(
 );
 const mockForm = mocked(_mockForm);
 const mockFormCtor = jest.fn<void, [AppCredentials, Logger]>();
-mocked(GoogleLoginForm).mockImplementation((how, log) => {
+jest.mocked(GoogleLoginForm).mockImplementation((how, log) => {
 	mockFormCtor(how, log);
 	return _mockForm;
 });
