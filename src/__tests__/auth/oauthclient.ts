@@ -1,16 +1,17 @@
+//require("leaked-handles");
 /* eslint-disable @typescript-eslint/camelcase */
 jest.mock('google-auth-library');
 
 import { makeOAuth2Client } from '../../auth/oauthclient';
 import { OAuth2Client } from 'google-auth-library';
-import { mocked } from 'ts-jest/utils';
+import { mocked } from 'jest-mock';
 import { AppCredentials, UserCredentials } from '../../auth/types';
 
 const _mockOAuth = new OAuth2Client();
 const mockOAuth = mocked(_mockOAuth);
 
 const mockOAuthCtor = jest.fn<void, [string?, string?, string?]>();
-mocked(OAuth2Client).mockImplementation(
+jest.mocked(OAuth2Client).mockImplementation(
 	(cid, cpwd, url): OAuth2Client => {
 		mockOAuthCtor(cid, cpwd, url);
 		return _mockOAuth;

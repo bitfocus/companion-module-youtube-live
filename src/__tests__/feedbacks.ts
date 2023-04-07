@@ -1,11 +1,11 @@
+//require("leaked-handles");
 /* eslint-disable @typescript-eslint/camelcase */
 import { listFeedbacks } from '../feedbacks';
 import { BroadcastLifecycle, StreamHealth, StateMemory } from '../cache';
 import { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult, CompanionFeedbackContext, combineRgb } from '@companion-module/base';
 import { clone } from '../common';
 import { ModuleBase, Core } from '../core';
-import { mocked } from 'ts-jest/utils';
-import { MaybeMocked } from 'ts-jest/dist/util/testing';
+import { mocked, MockedShallow } from 'jest-mock';
 import { YoutubeAPI } from '../youtube';
 import { makeMockModule, makeMockYT } from './core'
 
@@ -106,8 +106,8 @@ async function tryStream(health: StreamHealth, core: Core): Promise<CompanionAdv
 
 describe('Broadcast lifecycle feedback', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -117,6 +117,15 @@ describe('Broadcast lifecycle feedback', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy()
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Created state', async () => {
 		const result = await tryBroadcast(BroadcastLifecycle.Created, core);
@@ -253,8 +262,8 @@ describe('Broadcast lifecycle feedback', () => {
 
 describe('Stream health feedback', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -264,6 +273,15 @@ describe('Stream health feedback', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Good health', async () => {
 		const result = await tryStream(StreamHealth.Good, core);

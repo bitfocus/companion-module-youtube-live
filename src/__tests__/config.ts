@@ -1,3 +1,4 @@
+//require("leaked-handles");
 /* eslint-disable @typescript-eslint/camelcase */
 import { YoutubeConfig, loadRefreshInterval, loadMaxBroadcastCount, listConfigFields } from '../config';
 

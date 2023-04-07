@@ -1,3 +1,4 @@
+//require("leaked-handles");
 import { YoutubeAPI, Transition } from '../youtube';
 import { ModuleBase, Core } from '../core';
 import { sleep } from '../common';
@@ -10,8 +11,7 @@ import {
 	BroadcastLifecycle,
 	StreamHealth,
 } from '../cache';
-import { mocked } from 'ts-jest/utils';
-import { MaybeMocked } from 'ts-jest/dist/util/testing';
+import { mocked, MockedShallow } from 'jest-mock';
 
 export function makeMockYT(memory: StateMemory): YoutubeAPI {
 	return {
@@ -47,8 +47,8 @@ export function makeMockModule(): ModuleBase {
 
 describe('Miscellaneous', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -87,6 +87,15 @@ describe('Miscellaneous', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Initialization succeeds', async () => {
 		await expect(core.init()).resolves.toBe(undefined);
@@ -169,8 +178,8 @@ describe('Miscellaneous', () => {
 
 describe('Starting tests on broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -199,6 +208,15 @@ describe('Starting tests on broadcasts', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Starting test on unknown broadcast fails', async () => {
 		await core.init();
@@ -253,8 +271,8 @@ describe('Starting tests on broadcasts', () => {
 
 describe('Going live with broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -283,6 +301,15 @@ describe('Going live with broadcasts', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Going live on broadcast in invalid state fails [monitor = on]', async () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;
@@ -343,8 +370,8 @@ describe('Going live with broadcasts', () => {
 
 describe('Finishing live broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -373,6 +400,15 @@ describe('Finishing live broadcasts', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Starting finish on broadcast in invalid state fails', async () => {
 		await core.init();
@@ -396,8 +432,8 @@ describe('Finishing live broadcasts', () => {
 
 describe('Toggling live broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -426,6 +462,15 @@ describe('Toggling live broadcasts', () => {
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
+
+	afterEach(() => {
+		core.destroy();
+	})
+
+	afterAll(() => {
+		jest.clearAllMocks();
+		jest.clearAllTimers();
+	})
 
 	test('Toggle works for ready stream [monitor = on]', async () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;
