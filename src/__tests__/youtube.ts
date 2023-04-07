@@ -1,3 +1,4 @@
+//require("leaked-handles");
 import { OAuth2Client } from 'google-auth-library';
 import { YoutubeConnector, Transition } from '../youtube';
 import { FakeYouTube } from '../__mocks__/googleapis';

@@ -1,3 +1,4 @@
+//require("leaked-handles");
 import { declareVars, getBroadcastVars, getStreamVars, exportVars, VariableContent } from '../vars';
 import { StateMemory, BroadcastLifecycle, StreamHealth, Broadcast } from '../cache';
 import { CompanionVariableDefinition } from '@companion-module/base';

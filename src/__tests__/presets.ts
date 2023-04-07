@@ -1,3 +1,4 @@
+//require("leaked-handles");
 import { listPresets } from '../presets';
 import { BroadcastMap, BroadcastLifecycle } from '../cache';
 
