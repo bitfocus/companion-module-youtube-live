@@ -3,7 +3,7 @@ jest.mock('server-destroy');
 
 import _http = require('http');
 import _destroyer = require('server-destroy');
-import { mocked } from 'ts-jest/utils';
+import { mocked } from 'jest-mock';
 import { HttpReceiver } from '../../auth/httpListener';
 import { EventEmitter } from 'events';
 
@@ -17,7 +17,7 @@ destroyer.mockImplementation((server) => {
 });
 const _mockHttp = new _http.Server();
 const mockHttp = mocked(_mockHttp);
-mocked(_http.Server).mockImplementation(() => _mockHttp);
+jest.mocked(_http.Server).mockImplementation(() => _mockHttp);
 
 const mockEvent = new EventEmitter();
 mockHttp.on.mockImplementation(

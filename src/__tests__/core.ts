@@ -10,8 +10,7 @@ import {
 	BroadcastLifecycle,
 	StreamHealth,
 } from '../cache';
-import { mocked } from 'ts-jest/utils';
-import { MaybeMocked } from 'ts-jest/dist/util/testing';
+import { mocked, MockedShallow } from 'jest-mock';
 
 export function makeMockYT(memory: StateMemory): YoutubeAPI {
 	return {
@@ -47,8 +46,8 @@ export function makeMockModule(): ModuleBase {
 
 describe('Miscellaneous', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -169,8 +168,8 @@ describe('Miscellaneous', () => {
 
 describe('Starting tests on broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -253,8 +252,8 @@ describe('Starting tests on broadcasts', () => {
 
 describe('Going live with broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -343,8 +342,8 @@ describe('Going live with broadcasts', () => {
 
 describe('Finishing live broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -396,8 +395,8 @@ describe('Finishing live broadcasts', () => {
 
 describe('Toggling live broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MaybeMocked<YoutubeAPI>;
-	let mockModule: MaybeMocked<ModuleBase>;
+	let mockYT: MockedShallow<YoutubeAPI>;
+	let mockModule: MockedShallow<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {

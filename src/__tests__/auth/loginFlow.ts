@@ -9,20 +9,19 @@ import { HttpReceiver } from '../../auth/httpListener';
 import { AppCredentials } from '../../auth/types';
 import { makeOAuth2Client } from '../../auth/oauthclient';
 import { OAuth2Client, Credentials } from 'google-auth-library';
-import { mocked } from 'ts-jest/utils';
 import { GoogleLoginForm } from '../../auth/loginFlow';
 import { Logger } from '../../common';
 import { ChildProcess } from 'child_process';
 
 const _mockHttp = new HttpReceiver('blah', 1234, (_1, _2) => undefined);
 const _mockOAuth = new OAuth2Client();
-const mockOpn = mocked(opn);
-const mockHttp = mocked(_mockHttp);
-const mockOAuth = mocked(_mockOAuth);
-const mockOAuthCtor = mocked(makeOAuth2Client);
+const mockOpn = jest.mocked(opn);
+const mockHttp = jest.mocked(_mockHttp);
+const mockOAuth = jest.mocked(_mockOAuth);
+const mockOAuthCtor = jest.mocked(makeOAuth2Client);
 const mockHttpCtor = jest.fn<void, [string, number, Logger]>();
 
-mocked(HttpReceiver).mockImplementation((host, port, log) => {
+jest.mocked(HttpReceiver).mockImplementation((host, port, log) => {
 	mockHttpCtor(host, port, log);
 	return _mockHttp;
 });
