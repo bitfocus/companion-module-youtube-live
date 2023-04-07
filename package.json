@@ -25,6 +25,9 @@
 			"git add"
 		]
 	},
+	"engines": {
+		"node": "^18"
+	},
 	"dependencies": {
 		"@companion-module/base": "~1.4.0",
 		"@types/jest": "^29.5.0",
