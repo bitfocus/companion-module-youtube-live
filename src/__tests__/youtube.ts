@@ -17,6 +17,7 @@ const memory: StateMemory = {
 			BoundStreamId: 'sA',
 			ScheduledStartTime: '2011-11-11T11:11:11',
 			LiveChatId: 'lcA',
+			LiveConcurrentViewers: '0',
 		},
 		bB: {
 			Id: 'bB',
@@ -26,6 +27,7 @@ const memory: StateMemory = {
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2022-22-22T22:22:22',
 			LiveChatId: 'lcB',
+			LiveConcurrentViewers: '42',
 		},
 		bC: {
 			Id: 'bC',
@@ -35,6 +37,7 @@ const memory: StateMemory = {
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2033-33-33T33:33:33',
 			LiveChatId: 'lcC',
+			LiveConcurrentViewers: '21',
 		},
 	},
 	Streams: {
@@ -60,6 +63,7 @@ const memoryUpdated: StateMemory = {
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2022-22-22T22:22:22',
 			LiveChatId: 'lcB',
+			LiveConcurrentViewers: '0',
 		},
 		bC: {
 			Id: 'bC',
@@ -69,6 +73,7 @@ const memoryUpdated: StateMemory = {
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2033-33-33T33:33:33',
 			LiveChatId: 'lcC',
+			LiveConcurrentViewers: '0',
 		},
 	},
 	Streams: {},
@@ -85,6 +90,7 @@ describe('Queries', () => {
 			expect(part).toMatch(/.*status.*/);
 			expect(part).toMatch(/.*snippet.*/);
 			expect(part).toMatch(/.*contentDetails.*/);
+			expect(part).toMatch(/.*statistics.*/);
 			expect(mine).toBe(true);
 			return Promise.resolve({
 				data: {
@@ -97,6 +103,7 @@ describe('Queries', () => {
 								monitorStream: { enableMonitorStream: true },
 								boundStreamId: 'sA',
 							},
+							statistics: { concurrentViewers: '0' },
 						},
 						{
 							id: 'bB',
@@ -106,6 +113,7 @@ describe('Queries', () => {
 								monitorStream: { enableMonitorStream: true },
 								boundStreamId: 'sB',
 							},
+							statistics: { concurrentViewers: '42' },
 						},
 						{
 							id: 'bC',
@@ -115,6 +123,7 @@ describe('Queries', () => {
 								monitorStream: { enableMonitorStream: false },
 								boundStreamId: 'sB',
 							},
+							statistics: { concurrentViewers: '21' },
 						},
 					],
 				},
@@ -127,6 +136,7 @@ describe('Queries', () => {
 	test('refresh many', async () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
 			expect(part).toMatch(/.*status.*/);
+			expect(part).toMatch(/.*statistics.*/);
 			Object.values(memory.Broadcasts).forEach((item) => {
 				expect(localID).toMatch(new RegExp(`.*${item.Id}.*`));
 			});
@@ -136,10 +146,12 @@ describe('Queries', () => {
 						{
 							id: 'bB',
 							status: { lifeCycleStatus: 'complete' },
+							statistics: { concurrentViewers: '0' },
 						},
 						{
 							id: 'bC',
 							status: { lifeCycleStatus: 'testStarting' },
+							statistics: { concurrentViewers: '0' },
 						},
 					],
 				},
@@ -152,6 +164,7 @@ describe('Queries', () => {
 	test('refresh one - does not exist', async () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
 			expect(part).toMatch(/.*status.*/);
+			expect(part).toMatch(/.*statistics.*/);
 			expect(localID).toBe('bA');
 			return Promise.resolve({
 				data: { items: [] },
@@ -164,6 +177,7 @@ describe('Queries', () => {
 	test('refresh one - exists', async () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
 			expect(part).toMatch(/.*status.*/);
+			expect(part).toMatch(/.*statistics.*/);
 			expect(localID).toBe('bB');
 			return Promise.resolve({
 				data: {
@@ -171,6 +185,7 @@ describe('Queries', () => {
 						{
 							id: 'bB',
 							status: { lifeCycleStatus: 'complete' },
+							statistics: { concurrentViewers: '0' },
 						},
 					],
 				},

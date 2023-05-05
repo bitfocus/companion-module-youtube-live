@@ -222,6 +222,19 @@ export function listPresets(
 				],
 				steps: [],
 			};
+			presets[`unfinished_concurrent_viewers_number_${i}`] = {
+				type: 'button',
+				category: 'Unfinished/planned broadcasts',
+				name: `Unfinished broadcast's number of concurrent viewers #${i}`,
+				style: {
+					text: `Stream #${i}\\n$(YT:unfinished_concurrent_viewers_${i}) viewers`,
+					size: 'auto',
+					color: combineRgb(255, 255, 255),
+					bgcolor: 0,
+				},
+				feedbacks: [],
+				steps: [],
+			};
 		}
 	});
 

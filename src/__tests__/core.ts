@@ -62,6 +62,7 @@ describe('Miscellaneous', () => {
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2020-11-30T08:08:00',
 					LiveChatId: 'lcA',
+					LiveConcurrentViewers: '0',
 				},
 			},
 			Streams: {
@@ -79,6 +80,7 @@ describe('Miscellaneous', () => {
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2020-11-30T08:08:00',
 					LiveChatId: 'lcA',
+					LiveConcurrentViewers: '0',
 				},
 			],
 		};
@@ -193,6 +195,7 @@ describe('Starting tests on broadcasts', () => {
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T22:00:00',
 					LiveChatId: 'lcA',
+					LiveConcurrentViewers: '0',
 				},
 			},
 			Streams: {
@@ -286,6 +289,7 @@ describe('Going live with broadcasts', () => {
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T20:00:00',
 					LiveChatId: 'lcA',
+					LiveConcurrentViewers: '0',
 				},
 			},
 			Streams: {
@@ -385,6 +389,7 @@ describe('Finishing live broadcasts', () => {
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T20:00:00',
 					LiveChatId: 'lcA',
+					LiveConcurrentViewers: '0',
 				},
 			},
 			Streams: {
@@ -447,6 +452,7 @@ describe('Toggling live broadcasts', () => {
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T20:00:00',
 					LiveChatId: 'lcA',
+					LiveConcurrentViewers: '0',
 				},
 			},
 			Streams: {

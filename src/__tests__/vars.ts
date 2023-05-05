@@ -14,6 +14,7 @@ const SampleMemory: StateMemory = {
 			BoundStreamId: 'streamID',
 			ScheduledStartTime: '2021-11-30T20:00:00',
 			LiveChatId: 'livechatID',
+			LiveConcurrentViewers: '0',
 		},
 	},
 	Streams: {
@@ -43,7 +44,7 @@ describe('Variable declarations', () => {
 	});
 
 	test('Lifecycle and health added for each broadcast', () => {
-		const result = declareVars(SampleMemory, 1);
+		const result = declareVars(SampleMemory, 0);
 
 		expect(result).toEqual(
 			expect.arrayContaining([
@@ -57,6 +58,50 @@ describe('Variable declarations', () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					variableId: 'broadcast_broadcastID_health'
+				})
+			])
+		);
+	});
+
+	test('Unfinished variables added for each unfinished broadcast', () => {
+		const result = declareVars(SampleMemory, 1);
+
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'unfinished_0'
+				})
+			])
+		);
+
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'unfinished_short_0'
+				})
+			])
+		);
+
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'unfinished_state_0'
+				})
+			])
+		);
+
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'unfinished_health_0'
+				})
+			])
+		);
+
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'unfinished_concurrent_viewers_0'
 				})
 			])
 		);
