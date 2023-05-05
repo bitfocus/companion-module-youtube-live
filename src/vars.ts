@@ -35,6 +35,7 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 		result.push({ variableId: `unfinished_short_${i}`, name: `Unfinished/planned broadcast name shortened #${i}` });
 		result.push({ variableId: `unfinished_state_${i}`, name: `Unfinished/planned broadcast state #${i}` });
 		result.push({ variableId: `unfinished_health_${i}`, name: `Unfinished/planned broadcast's stream health #${i}` });
+		result.push({ variableId: `unfinished_concurrent_viewers_${i}`, name: `Unfinished/planned broadcast's concurrent viewers #${i}` });
 	});
 
 	return result;
@@ -168,7 +169,12 @@ export function getUnfinishedBroadcastVars(index: number, broadcast: Broadcast):
 		name: `unfinished_short_${index}`,
 		value: broadcast.Name.substr(0, 19),
 	};
-	return [contentName, contentShort];
+	const concurrentViewers: VariableContent = {
+		name: `unfinished_concurrent_viewers_${index}`,
+		value: broadcast.LiveConcurrentViewers,
+	};
+
+	return [contentName, contentShort, concurrentViewers];
 }
 
 /**
@@ -225,7 +231,12 @@ export function getUnfinishedDefaultVars(index: number): VariableContent[] {
 		name: `unfinished_state_${index}`,
 		value: 'n/a',
 	};
-	return [content, contentShort, health];
+	const concurrentViewers: VariableContent = {
+		name: `unfinished_concurrent_viewers_${index}`,
+		value: 'n/a',
+	};
+
+	return [content, contentShort, health, concurrentViewers];
 }
 
 /**

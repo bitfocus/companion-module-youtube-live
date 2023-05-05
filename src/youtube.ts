@@ -86,7 +86,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async listBroadcasts(): Promise<BroadcastMap> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: 'snippet, status, contentDetails',
+			part: 'snippet, status, contentDetails, statistics',
 			broadcastType: 'all',
 			mine: true,
 			maxResults: this.MaxBroadcasts,
@@ -98,6 +98,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			const id = item.id!;
 			const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
 			const monitor = item.contentDetails!.monitorStream!.enableMonitorStream ?? true;
+			const concurrentViewers = item.statistics!.concurrentViewers ?? 'n/a';
 
 			mapping[id] = {
 				Id: id,
@@ -107,6 +108,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				MonitorStreamEnabled: monitor,
 				ScheduledStartTime: item.snippet!.scheduledStartTime!,
 				LiveChatId: item.snippet!.liveChatId!,
+				LiveConcurrentViewers: concurrentViewers,
 			};
 		});
 
@@ -118,7 +120,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async refreshBroadcastStatus1(broadcast: Broadcast): Promise<Broadcast> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: 'status',
+			part: 'status, statistics',
 			id: broadcast.Id,
 			maxResults: 1,
 		});
@@ -128,6 +130,7 @@ export class YoutubeConnector implements YoutubeAPI {
 		}
 		const item = response.data.items[0];
 		const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
+		const concurrentViewers = item.statistics!.concurrentViewers ?? 'n/a';
 
 		return {
 			Id: broadcast.Id,
@@ -137,6 +140,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			MonitorStreamEnabled: broadcast.MonitorStreamEnabled,
 			ScheduledStartTime: broadcast.ScheduledStartTime,
 			LiveChatId: broadcast.LiveChatId!,
+			LiveConcurrentViewers: concurrentViewers,
 		};
 	}
 
@@ -145,7 +149,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async refreshBroadcastStatus(current: BroadcastMap): Promise<BroadcastMap> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: 'status',
+			part: 'status, statistics',
 			id: Object.keys(current).join(','),
 			maxResults: this.MaxBroadcasts,
 		});
@@ -155,6 +159,7 @@ export class YoutubeConnector implements YoutubeAPI {
 		response.data.items?.forEach((item) => {
 			const id = item.id!;
 			const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
+			const concurrentViewers = item.statistics!.concurrentViewers ?? 'n/a';
 
 			mapping[id] = {
 				Id: id,
@@ -164,6 +169,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				MonitorStreamEnabled: current[id].MonitorStreamEnabled,
 				ScheduledStartTime: current[id].ScheduledStartTime,
 				LiveChatId: current[id].LiveChatId,
+				LiveConcurrentViewers: concurrentViewers,
 			};
 		});
 
@@ -209,7 +215,6 @@ export class YoutubeConnector implements YoutubeAPI {
 	}
 
 	/**
-	 * 
 	 * @inheritdoc 
 	 */
 	async sendMessageToLiveChat(id: string, message: string): Promise<void> {
