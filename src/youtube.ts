@@ -86,7 +86,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async listBroadcasts(): Promise<BroadcastMap> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: 'snippet, status, contentDetails, statistics',
+			part: ['snippet', 'status', 'contentDetails', 'statistics'],
 			broadcastType: 'all',
 			mine: true,
 			maxResults: this.MaxBroadcasts,
@@ -120,8 +120,8 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async refreshBroadcastStatus1(broadcast: Broadcast): Promise<Broadcast> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: 'status, statistics',
-			id: broadcast.Id,
+			part: ['status', 'statistics'],
+			id: [broadcast.Id],
 			maxResults: 1,
 		});
 
@@ -149,8 +149,8 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async refreshBroadcastStatus(current: BroadcastMap): Promise<BroadcastMap> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: 'status, statistics',
-			id: Object.keys(current).join(','),
+			part: ['status', 'statistics'],
+			id: Array.from(Object.keys(current)),
 			maxResults: this.MaxBroadcasts,
 		});
 
@@ -183,8 +183,8 @@ export class YoutubeConnector implements YoutubeAPI {
 		const streamIds = Array.from(new Set(Object.values(broadcasts).map((broadcast) => broadcast.BoundStreamId)));
 
 		const response = await this.ApiClient.liveStreams.list({
-			part: 'status',
-			id: streamIds.join(','),
+			part: ['status'],
+			id: streamIds as Array<string>,
 			maxResults: this.MaxBroadcasts,
 		});
 
@@ -208,7 +208,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async transitionBroadcast(id: BroadcastID, to: Transition): Promise<void> {
 		await this.ApiClient.liveBroadcasts.transition({
-			part: 'id',
+			part: ['id'],
 			id: id,
 			broadcastStatus: to,
 		});
@@ -219,7 +219,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async sendMessageToLiveChat(id: string, message: string): Promise<void> {
 		await this.ApiClient.liveChatMessages.insert({
-			part: 'snippet',
+			part: ['snippet'],
 			requestBody: {
 				snippet: {
 					liveChatId: id,
