@@ -87,10 +87,10 @@ describe('Queries', () => {
 
 	test('load all', async () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, mine }) => {
-			expect(part).toMatch(/.*status.*/);
-			expect(part).toMatch(/.*snippet.*/);
-			expect(part).toMatch(/.*contentDetails.*/);
-			expect(part).toMatch(/.*statistics.*/);
+			expect(part).toContain('status');
+			expect(part).toContain('snippet');
+			expect(part).toContain('contentDetails');
+			expect(part).toContain('statistics');
 			expect(mine).toBe(true);
 			return Promise.resolve({
 				data: {
@@ -135,10 +135,10 @@ describe('Queries', () => {
 
 	test('refresh many', async () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
-			expect(part).toMatch(/.*status.*/);
-			expect(part).toMatch(/.*statistics.*/);
+			expect(part).toContain('status');
+			expect(part).toContain('statistics');
 			Object.values(memory.Broadcasts).forEach((item) => {
-				expect(localID).toMatch(new RegExp(`.*${item.Id}.*`));
+				expect(localID).toContain(item.Id);
 			});
 			return Promise.resolve({
 				data: {
@@ -163,9 +163,10 @@ describe('Queries', () => {
 
 	test('refresh one - does not exist', async () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
-			expect(part).toMatch(/.*status.*/);
-			expect(part).toMatch(/.*statistics.*/);
-			expect(localID).toBe('bA');
+			expect(part).toContain('status');
+			expect(part).toContain('statistics');
+			expect(localID).toHaveLength(1);
+			expect(localID).toContain('bA');
 			return Promise.resolve({
 				data: { items: [] },
 			});
@@ -176,9 +177,10 @@ describe('Queries', () => {
 
 	test('refresh one - exists', async () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
-			expect(part).toMatch(/.*status.*/);
-			expect(part).toMatch(/.*statistics.*/);
-			expect(localID).toBe('bB');
+			expect(part).toContain('status');
+			expect(part).toContain('statistics');
+			expect(localID).toHaveLength(1);
+			expect(localID).toContain('bB');
 			return Promise.resolve({
 				data: {
 					items: [
@@ -199,10 +201,10 @@ describe('Queries', () => {
 
 	test('get bound streams', async () => {
 		mock.liveStreams.list.mockImplementation(({ part, id: localID }) => {
-			expect(part).toMatch(/.*status.*/);
-			expect(localID.split(',')).toHaveLength(2);
+			expect(part).toContain('status');
+			expect(localID).toHaveLength(2);
 			Object.values(memory.Streams).forEach((item) => {
-				expect(localID).toMatch(new RegExp(`.*${item.Id}.*`));
+				expect(localID).toContain(item.Id);
 			});
 			return Promise.resolve({
 				data: {
