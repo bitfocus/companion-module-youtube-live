@@ -323,6 +323,21 @@ export class Core {
 			return this.YouTube.sendMessageToLiveChat(liveChatID, content)
 		}
 	}
+
+	async insertCuePoint(id: BroadcastID, duration?: number, ): Promise<void> {
+		const currentState = await this.checkOneBroadcast(id);
+		const requiredState = BroadcastLifecycle.Live;
+
+		if (currentState != requiredState) {
+			const currentStateName = nameLifecyclePhase(currentState);
+			const requiredStateName = nameLifecyclePhase(requiredState);
+			throw new Error(
+				`Cannot insert the cue point; required state is '${requiredStateName}', but current state is '${currentStateName}'`
+			);
+		} else {
+			return this.YouTube.insertCuePoint(id, duration);
+		}
+	}
 }
 
 /**
