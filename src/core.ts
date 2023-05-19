@@ -324,6 +324,11 @@ export class Core {
 		}
 	}
 
+	/**
+	 * Insert a cue point in the broadcast
+	 * @param id Broadcast ID in which the cue point will be inserted
+	 * @param duration Optional duration (in seconds) of the cue point
+	 */
 	async insertCuePoint(id: BroadcastID, duration?: number, ): Promise<void> {
 		const currentState = await this.checkOneBroadcast(id);
 		const requiredState = BroadcastLifecycle.Live;
