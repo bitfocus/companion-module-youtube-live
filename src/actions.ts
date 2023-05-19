@@ -237,7 +237,6 @@ export function listActions(
 				}
 			},
 		},
-
 		[ActionId.InsertCuePointCustomDuration]: {
 			name: 'Insert an advertisement cue point with a specified duration',
 			options: [
