@@ -48,6 +48,8 @@ export function listActions(
 
 	const defaultBroadcast = broadcastEntries.length == 0 ? '' : broadcastEntries[0].id;
 
+	const defaultUnfinishedBroadcast = broadcastUnfinishedEntries.length == 0 ? '' : broadcastUnfinishedEntries[0].id;
+
 	const checkCore = (): boolean => {
 		if (!core) {
 			return false;
@@ -223,7 +225,7 @@ export function listActions(
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
+					default: defaultUnfinishedBroadcast,
 				},
 			],
 			callback: async (event): Promise<void> => {
@@ -245,7 +247,7 @@ export function listActions(
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
+					default: defaultUnfinishedBroadcast,
 				},
 				{
 					type: 'number',
