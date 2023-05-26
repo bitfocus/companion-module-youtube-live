@@ -219,6 +219,7 @@ export function listActions(
 		},
 		[ActionId.InsertCuePoint]: {
 			name: 'Insert an advertisement cue point (30s)',
+			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
 			options: [
 				{
 					type: 'dropdown',
@@ -241,6 +242,7 @@ export function listActions(
 		},
 		[ActionId.InsertCuePointCustomDuration]: {
 			name: 'Insert an advertisement cue point with a specified duration',
+			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
 			options: [
 				{
 					type: 'dropdown',
