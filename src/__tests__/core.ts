@@ -33,6 +33,9 @@ export function makeMockYT(memory: StateMemory): YoutubeAPI {
 		sendMessageToLiveChat: jest.fn<Promise<void>, [string, string]>().mockImplementation(() => {
 			return Promise.resolve();
 		}),
+		insertCuePoint: jest.fn<Promise<void>, [BroadcastID, number]>().mockImplementation(() => {
+			return Promise.resolve();
+		}),
 	};
 }
 

@@ -5,6 +5,7 @@ export class FakeYouTube {
 	liveBroadcasts = {
 		transition: jest.fn(),
 		list: jest.fn(),
+		insertCuepoint: jest.fn(),
 	};
 }
 

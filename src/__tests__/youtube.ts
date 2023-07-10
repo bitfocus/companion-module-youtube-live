@@ -265,3 +265,58 @@ describe('Transition', () => {
 		expect(mock.liveBroadcasts.transition).toHaveBeenCalledTimes(1);
 	});
 });
+
+describe('Insert cue point', () => {
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
+	describe('success', () => {
+		test('default duration', async () => {
+			mock.liveBroadcasts.insertCuepoint.mockImplementation(({ id: localID, requestBody: localRequestBody }) => {
+				expect(localID).toBe('bB');
+				expect(localRequestBody).toStrictEqual({
+					cueType: 'cueTypeAd',
+				});
+				return Promise.resolve({
+					id: 'UjJxxxFCSEFwTUV0aW1lMTY4OTAxxxx0NA==',
+					durationSecs: 240,
+					cueType: 'cueTypeAd',
+					etag: 'tTBxxxaTUrKmyLL6xxxUig-thxE',
+				});
+			});
+			await expect(instance.insertCuePoint('bB')).resolves.toBeUndefined();
+			expect(mock.liveBroadcasts.insertCuepoint).toHaveBeenCalledTimes(1);
+		});
+
+		test('custom duration', async () => {
+			mock.liveBroadcasts.insertCuepoint.mockImplementation(({ id: localID, requestBody: localRequestBody }) => {
+				expect(localID).toBe('bB');
+				expect(localRequestBody).toStrictEqual({
+					cueType: 'cueTypeAd',
+					durationSecs: 15,
+				});
+				return Promise.resolve({
+					id: 'VjJxxxFCSEFwTUV0aW1lMTY15TAxxxx0NA==',
+					durationSecs: 15,
+					cueType: 'cueTypeAd',
+					etag: 'uUBxxxaTUsKmyLL6xxxVig-thxE',
+				});
+			});
+			await expect(instance.insertCuePoint('bB', 15)).resolves.toBeUndefined();
+			expect(mock.liveBroadcasts.insertCuepoint).toHaveBeenCalledTimes(1);
+		});
+	});
+
+	test('failure', async () => {
+		mock.liveBroadcasts.insertCuepoint.mockImplementation(({ id: localID, requestBody: localRequestBody }) => {
+			expect(localID).toBe('xX');
+			expect(localRequestBody).toBe({
+				cueType: 'cueTypeAd',
+			});
+			return Promise.reject(new Error('cue point insertion error'))
+		});
+		await expect(instance.insertCuePoint('xX')).rejects.toBeInstanceOf(Error);
+		expect(mock.liveBroadcasts.insertCuepoint).toHaveBeenCalledTimes(1);
+	});
+});

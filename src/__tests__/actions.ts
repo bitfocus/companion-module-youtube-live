@@ -55,6 +55,8 @@ describe('Action list', () => {
 		expect(result).toHaveProperty(ActionId.RefreshStatus);
 		expect(result).toHaveProperty(ActionId.RefreshFeedbacks);
 		expect(result).toHaveProperty(ActionId.SendMessage);
+		expect(result).toHaveProperty(ActionId.InsertCuePoint);
+		expect(result).toHaveProperty(ActionId.InsertCuePointCustomDuration);
 	});
 });
 
@@ -76,6 +78,7 @@ describe('Action callback', () => {
 	coreOK.reloadEverything = jest.fn((): Promise<void> => Promise.resolve());
 	coreOK.refreshFeedbacks = jest.fn((): Promise<void> => Promise.resolve());
 	coreOK.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.insertCuePoint = jest.fn((_a: BroadcastID, _b?: number): Promise<void> => Promise.resolve());
 
 	// Mocking KO functions
 	coreKO.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('test')));
@@ -85,6 +88,7 @@ describe('Action callback', () => {
 	coreKO.reloadEverything = jest.fn((): Promise<void> => Promise.reject(new Error('refreshstatus')));
 	coreKO.refreshFeedbacks = jest.fn((): Promise<void> => Promise.reject(new Error('refreshfbcks')));
 	coreKO.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('sendmsg')));
+	coreKO.insertCuePoint = jest.fn((_a: BroadcastID, _b?: number): Promise<void> => Promise.reject(new Error('insertcuepoint')));
 
 	// Init cores
 	coreOK.init();
@@ -220,6 +224,35 @@ describe('Action callback', () => {
 			actionsKO.send_livechat_message!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.sendLiveChatMessage).toHaveBeenCalledTimes(1);
+	});
+
+	test('Insert cue point success', async () => {
+		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test' });
+		await expect(
+			actionsOK.insert_cue_point!.callback(event, SampleContext)
+		).resolves.toBeFalsy();
+		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
+	});
+	test('Insert cue point failure', async () => {
+		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test' });
+		await expect(
+			actionsKO.insert_cue_point!.callback(event, SampleContext)
+		).rejects.toBeInstanceOf(Error);
+		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
+	});
+	test('Insert custom cue point success', async () => {
+		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test', duration: 10 });
+		await expect(
+			actionsOK.insert_cue_point_custom_duration!.callback(event, SampleContext)
+		).resolves.toBeFalsy();
+		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
+	});
+	test('Insert custom cue point failure', async () => {
+		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test', duration: 10 });
+		await expect(
+			actionsKO.insert_cue_point_custom_duration!.callback(event, SampleContext)
+		).rejects.toBeInstanceOf(Error);
+		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
 
 	test('Missing broadcast ID', async () => {
