@@ -56,6 +56,13 @@ export interface YoutubeAPI {
 	 * @param message Content of the message (max. 200 characters)
 	 */
 	sendMessageToLiveChat(id: String, message: String): Promise<void>;
+
+	/**
+	 * Insert a cue point in the specified broadcast
+	 * @param id Broadcast ID
+	 * @param duration Duration of the cue point (seconds)
+	 */
+	insertCuePoint(id: BroadcastID, duration?: number): Promise<void>;
 }
 
 /**
@@ -229,6 +236,21 @@ export class YoutubeConnector implements YoutubeAPI {
 					},
 				},
 			},
+		});
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	async insertCuePoint(id: string, duration?: number): Promise<void> {
+		const requestBody: youtube_v3.Schema$Cuepoint = {
+			cueType: 'cueTypeAd',
+		}
+
+		if (duration) requestBody['durationSecs'] = duration;
+		await this.ApiClient.liveBroadcasts.insertCuepoint({
+			id: id,
+			requestBody: requestBody,
 		});
 	}
 }

@@ -16,6 +16,8 @@ export enum ActionId {
 	RefreshFeedbacks = 'refresh_feedbacks',
 	RefreshStatus = 'refresh_status',
 	SendMessage = 'send_livechat_message',
+	InsertCuePoint = 'insert_cue_point',
+	InsertCuePointCustomDuration = 'insert_cue_point_custom_duration',
 }
 
 /**
@@ -45,6 +47,8 @@ export function listActions(
 	);
 
 	const defaultBroadcast = broadcastEntries.length == 0 ? '' : broadcastEntries[0].id;
+
+	const defaultUnfinishedBroadcast = broadcastUnfinishedEntries.length == 0 ? '' : broadcastUnfinishedEntries[0].id;
 
 	const checkCore = (): boolean => {
 		if (!core) {
@@ -207,9 +211,64 @@ export function listActions(
 
 				if (broadcastId && event.options.message_content
 					&& message.length > 0 && message.length <= 200) {
-						return core!.sendLiveChatMessage(broadcastId as BroadcastID, message);
+					return core!.sendLiveChatMessage(broadcastId as BroadcastID, message);
 				} else {
 					throw new Error('Error with given parameters.');
+				}
+			},
+		},
+		[ActionId.InsertCuePoint]: {
+			name: 'Insert an advertisement cue point (default duration)',
+			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastUnfinishedEntries],
+					default: defaultUnfinishedBroadcast,
+				},
+			],
+			callback: async (event): Promise<void> => {
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (!checkCore()) throw new Error('Internal module error');
+				if (broadcastId) {
+					return core!.insertCuePoint(broadcastId as BroadcastID);
+				} else {
+					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+				}
+			},
+		},
+		[ActionId.InsertCuePointCustomDuration]: {
+			name: 'Insert an advertisement cue point (custom duration)',
+			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastUnfinishedEntries],
+					default: defaultUnfinishedBroadcast,
+				},
+				{
+					type: 'number',
+					label: 'Duration:',
+					id: 'duration',
+					default: 30,
+					min: 1,
+					max: 120,
+				}
+			],
+			callback: async (event): Promise<void> => {
+				let duration = event.options.duration as number;
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (!checkCore()) throw new Error('Internal module error');
+				if (broadcastId) {
+					return core!.insertCuePoint(broadcastId as BroadcastID, duration);
+				} else {
+					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
 				}
 			},
 		},
