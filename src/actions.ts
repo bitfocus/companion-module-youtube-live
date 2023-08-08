@@ -201,8 +201,12 @@ export function listActions(
 				},
 				{
 					type: 'textinput',
-					label: 'Message (max. 200 chars):',
+					label: 'Message:',
 					id: 'message_content',
+					required: true,
+					regex: '/^.{1,200}$/',
+					tooltip: 'Seize a message with a maximum length of 200 characters',
+					useVariables: true,
 				},
 			],
 			callback: async (event): Promise<void> => {
