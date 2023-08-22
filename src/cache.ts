@@ -75,14 +75,20 @@ export interface Broadcast {
 	/** Whether the YouTube Studio monitor stream is enabled or not. */
 	MonitorStreamEnabled: boolean;
 
-	/** The date and time that the broadcast is scheduled to start. */
+	/** The date and time at which the broadcast is scheduled to start. */
 	ScheduledStartTime: string;
+
+	/** The date and time at which the broadcast really started */
+	ActualStartTime: string | null;
 
 	/** Broadcast live chat ID, e.g. KicKGFVDSXoxX3ZKLWdmd2QyNlEzY4l2RHhQZxILWVZ5OGhfNC1GZ0k */
 	LiveChatId: string;
 
 	/** Live broadcast concurrent viewers  */
 	LiveConcurrentViewers: string;
+
+	/** The description of the broadcast */
+	Description: string;
 }
 
 /**

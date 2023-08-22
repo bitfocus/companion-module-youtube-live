@@ -63,6 +63,15 @@ export interface YoutubeAPI {
 	 * @param duration Duration of the cue point (seconds)
 	 */
 	insertCuePoint(id: BroadcastID, duration?: number): Promise<void>;
+
+	/**
+	 * Set description for the given broadcast
+	 * @param id Broadcast ID
+	 * @param sst Scheduled start time of the broadcast
+	 * @param title Title of the broadcast
+	 * @param desc Content (to set) of the description
+	 */
+	setDescription(id: BroadcastID, sst: string, title: string, desc: string): Promise<void>
 }
 
 /**
@@ -106,6 +115,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
 			const monitor = item.contentDetails!.monitorStream!.enableMonitorStream ?? true;
 			const concurrentViewers = item.statistics!.concurrentViewers ?? 'n/a';
+			const description = item.snippet!.description ?? '';
 
 			mapping[id] = {
 				Id: id,
@@ -114,8 +124,10 @@ export class YoutubeConnector implements YoutubeAPI {
 				BoundStreamId: item.contentDetails!.boundStreamId || null,
 				MonitorStreamEnabled: monitor,
 				ScheduledStartTime: item.snippet!.scheduledStartTime!,
+				ActualStartTime: item.snippet!.actualStartTime || null,
 				LiveChatId: item.snippet!.liveChatId!,
 				LiveConcurrentViewers: concurrentViewers,
+				Description: description,
 			};
 		});
 
@@ -127,7 +139,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async refreshBroadcastStatus1(broadcast: Broadcast): Promise<Broadcast> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: ['status', 'statistics'],
+			part: ['snippet', 'status', 'statistics'],
 			id: [broadcast.Id],
 			maxResults: 1,
 		});
@@ -135,9 +147,15 @@ export class YoutubeConnector implements YoutubeAPI {
 		if (!response.data.items || response.data.items.length == 0) {
 			throw new Error('no such broadcast: ' + broadcast.Id);
 		}
+
 		const item = response.data.items[0];
 		const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
 		const concurrentViewers = item.statistics!.concurrentViewers ?? 'n/a';
+		const actualStartTime =
+			broadcast.ActualStartTime
+			? broadcast.ActualStartTime
+			: (item.snippet?.actualStartTime ? item.snippet.actualStartTime : null);
+		const description = item.snippet!.description ?? '';
 
 		return {
 			Id: broadcast.Id,
@@ -146,8 +164,10 @@ export class YoutubeConnector implements YoutubeAPI {
 			BoundStreamId: broadcast.BoundStreamId,
 			MonitorStreamEnabled: broadcast.MonitorStreamEnabled,
 			ScheduledStartTime: broadcast.ScheduledStartTime,
+			ActualStartTime: actualStartTime,
 			LiveChatId: broadcast.LiveChatId!,
 			LiveConcurrentViewers: concurrentViewers,
+			Description: description,
 		};
 	}
 
@@ -156,7 +176,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 */
 	async refreshBroadcastStatus(current: BroadcastMap): Promise<BroadcastMap> {
 		const response = await this.ApiClient.liveBroadcasts.list({
-			part: ['status', 'statistics'],
+			part: ['snippet', 'status', 'statistics'],
 			id: Array.from(Object.keys(current)),
 			maxResults: this.MaxBroadcasts,
 		});
@@ -167,6 +187,11 @@ export class YoutubeConnector implements YoutubeAPI {
 			const id = item.id!;
 			const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
 			const concurrentViewers = item.statistics!.concurrentViewers ?? 'n/a';
+			const actualStartTime =
+				current[id].ActualStartTime
+				? current[id].ActualStartTime
+				: (item.snippet?.actualStartTime ? item.snippet.actualStartTime : null);
+			const description = item.snippet!.description ?? '';
 
 			mapping[id] = {
 				Id: id,
@@ -175,8 +200,10 @@ export class YoutubeConnector implements YoutubeAPI {
 				BoundStreamId: current[id].BoundStreamId,
 				MonitorStreamEnabled: current[id].MonitorStreamEnabled,
 				ScheduledStartTime: current[id].ScheduledStartTime,
+				ActualStartTime: actualStartTime,
 				LiveChatId: current[id].LiveChatId,
 				LiveConcurrentViewers: concurrentViewers,
+				Description: description,
 			};
 		});
 
@@ -252,5 +279,24 @@ export class YoutubeConnector implements YoutubeAPI {
 			id: id,
 			requestBody: requestBody,
 		});
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	async setDescription(id: BroadcastID, sst: string, title: string, desc: string): Promise<void> {
+		const description = desc.replace(/\\n/g, String.fromCharCode(10));
+
+		await this.ApiClient.liveBroadcasts.update({
+			part: ['snippet'],
+			requestBody: {
+				id: id,
+				snippet: {
+					scheduledStartTime: sst,
+					title: title,
+					description: description,
+				}
+			}
+		})
 	}
 }

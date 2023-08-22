@@ -44,6 +44,9 @@ export class Core {
 	/** List of running pollers */
 	private RunningTransitions: Record<BroadcastID, Poller>;
 
+	/** Timestamp of the last inserted chapter in description */
+	private LastChapterTimestamp: number;
+
 	/**
 	 * Initialize the module core
 	 * @param mod Companion glue
@@ -58,6 +61,7 @@ export class Core {
 		this.RefreshInterval = refreshInterval;
 		this.TransitionPollInterval = pollInterval;
 		this.RunningTransitions = {};
+		this.LastChapterTimestamp = 0;
 	}
 
 	/**
@@ -139,7 +143,7 @@ export class Core {
 	 * @param id Broadcast ID to publish
 	 */
 	async makeBroadcastLive(id: BroadcastID): Promise<void> {
-		const status = await this.checkOneBroadcast(id);
+		const status = await this.checkBroadcastStatus(id);
 		const name = nameLifecyclePhase(status);
 		const hasMonitor = this.Cache.Broadcasts[id].MonitorStreamEnabled;
 
@@ -172,7 +176,7 @@ export class Core {
 	 * @param id Broadcast ID to operate on
 	 */
 	async toggleBroadcast(id: BroadcastID): Promise<void> {
-		const status = await this.checkOneBroadcast(id);
+		const status = await this.checkBroadcastStatus(id);
 		const name = nameLifecyclePhase(status);
 		const hasMonitor = this.Cache.Broadcasts[id].MonitorStreamEnabled;
 
@@ -207,7 +211,7 @@ export class Core {
 	 * @param required Required state.
 	 */
 	async verifyCurrentState(id: BroadcastID, required: BroadcastLifecycle): Promise<void> {
-		const current = await this.checkOneBroadcast(id);
+		const current = await this.checkBroadcastStatus(id);
 
 		if (current == required) {
 			return Promise.resolve();
@@ -222,10 +226,11 @@ export class Core {
 	}
 
 	/**
-	 * Refresh the given broadcast lifecycle state and return it.
-	 * @param id Broadcast ID to check.
+	 * Refresh the given broadcast data
+	 * @param id ID of the broadcast to refresh
+	 * @returns Refreshed broadcast
 	 */
-	async checkOneBroadcast(id: BroadcastID): Promise<BroadcastLifecycle> {
+	async refreshBroadcast(id: BroadcastID): Promise<Broadcast> {
 		let oldBroadcast: Broadcast;
 		const unfinishedHit = this.Cache.UnfinishedBroadcasts.find((a) => a.Id == id);
 
@@ -249,7 +254,17 @@ export class Core {
 		}
 
 		this.Module.reloadBroadcast(newBroadcast, this.Cache);
-		return newBroadcast.Status;
+		return newBroadcast;
+	}
+
+	/**
+	 * Refresh the given broadcast lifecycle state and return it
+	 * @param id Broadcast ID to check.
+	 */
+	async checkBroadcastStatus(id: BroadcastID): Promise<BroadcastLifecycle> {
+		const broadcast = await this.refreshBroadcast(id);
+		
+		return broadcast.Status;
 	}
 
 	/**
@@ -304,7 +319,7 @@ export class Core {
 	 * @param content Text of the message
 	 */
 	async sendLiveChatMessage(id: BroadcastID, content: string): Promise<void> {
-		const currentState = await this.checkOneBroadcast(id);
+		const currentState = await this.checkBroadcastStatus(id);
 		const requiredState = BroadcastLifecycle.Live;
 		const messageMaxLength = 200;
 
@@ -330,7 +345,7 @@ export class Core {
 	 * @param duration Optional duration (in seconds) of the cue point
 	 */
 	async insertCuePoint(id: BroadcastID, duration?: number, ): Promise<void> {
-		const currentState = await this.checkOneBroadcast(id);
+		const currentState = await this.checkBroadcastStatus(id);
 		const requiredState = BroadcastLifecycle.Live;
 
 		if (currentState != requiredState) {
@@ -341,6 +356,88 @@ export class Core {
 			);
 		} else {
 			return this.YouTube.insertCuePoint(id, duration);
+		}
+	}
+
+	async setDescription(id: BroadcastID, desc: string) {
+		if (this.Cache.Broadcasts[id]) {
+			if (desc.length > 0 || desc.length <= 5000) {
+				return this.YouTube.setDescription(
+					id,
+					this.Cache.Broadcasts[id].ScheduledStartTime,
+					this.Cache.Broadcasts[id].Name,
+					desc,
+				)
+			} else {
+				throw new Error(`Unable to set description; given description contains '${desc.length}' characters (1 to 5000 required)`);
+			}
+		} else {
+			throw new Error(`Broadcast does not exist: ${id}`);
+		}
+	}
+
+	async prependToDescription(id: BroadcastID, text: string) {
+		const broadcast: Broadcast = await this.refreshBroadcast(id);
+		let description: string = broadcast.Description;
+
+		description = text + description;
+		if (description.length > 0 || description.length <= 5000) {
+			await this.setDescription(id, description);
+		} else {
+			throw new Error(`Unable to prepend given text to description; description must not exceed 5000 characters`);
+		}
+	}
+
+	async appendToDescription(id: BroadcastID, text: string) {
+		const broadcast: Broadcast = await this.refreshBroadcast(id);
+		let description: string = broadcast.Description;
+
+		description = description + text;
+		if (description.length > 0 || description.length <= 5000) {
+			await this.setDescription(id, description);
+		} else {
+			throw new Error(`Unable to prepend given text to description; description must not exceed 5000 characters`);
+		}
+	}
+
+	async addChapterToDescription(id: BroadcastID, title: string, separator?: string) {
+		const currentState = await this.checkBroadcastStatus(id);
+		const requiredState = BroadcastLifecycle.Live;
+
+		if (currentState != requiredState) {
+			const currentStateName = nameLifecyclePhase(currentState);
+			const requiredStateName = nameLifecyclePhase(requiredState);
+			throw new Error(
+				`Cannot add chapter to description; required state is '${requiredStateName}', but current state is '${currentStateName}'`
+			);
+		} else {
+			const broadcast: Broadcast = await this.refreshBroadcast(id);
+			const startTime = broadcast.ActualStartTime ? Date.parse(broadcast.ActualStartTime) : null;
+			let description: string = broadcast.Description;
+			
+			if (startTime) {
+				const dateNow = Date.now();
+				const elapsedTime = new Date(dateNow - startTime);
+				let timecode = ('0' + elapsedTime.getUTCHours()).slice(-2) + ':' +
+					('0' + elapsedTime.getMinutes()).slice(-2) + ':' +
+					('0' + elapsedTime.getSeconds()).slice(-2);
+
+				/** Insert the first 00:00:00 timestamp if it doesn't exist */
+				if (!description.includes('00:00:00' + (separator ? separator : " - ")) ||
+					(Number(elapsedTime.getUTCHours()) === 0 && Number(elapsedTime.getMinutes()) === 0 && Number(elapsedTime.getSeconds()) <= 15)) {
+						timecode = '00:00:00';
+				}
+
+				if (this.LastChapterTimestamp === 0 || new Date(dateNow - this.LastChapterTimestamp).getSeconds() > 10) {
+					this.LastChapterTimestamp = (timecode === '00:00:00' && startTime !== null) ? startTime : dateNow;
+					description = description + '\n' + timecode + (separator ? separator : " - ") + title;
+					await this.setDescription(id, description);
+				} else {
+					throw new Error(`Cannot add chapter to descripion; chapters must be spaced at least 10 seconds apart `)
+				}
+			} else {
+				throw new Error(`Cannot add chapter to description; unable to get the start time of the specified broadcast'`);
+			}
 		}
 	}
 }
@@ -394,7 +491,7 @@ class Poller {
 	 * Periodic callback that does the poll check
 	 */
 	loop(): void {
-		this.Core.checkOneBroadcast(this.BroadcastID)
+		this.Core.checkBroadcastStatus(this.BroadcastID)
 			.then((currentStatus) => {
 				if ((currentStatus as string) == (this.TransitionTo as string)) {
 					this.Core.Module.log('debug', 'poll done');
