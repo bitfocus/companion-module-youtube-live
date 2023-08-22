@@ -209,8 +209,8 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event): Promise<void> => {
-				let message = event.options.message_content as string;
+			callback: async (event, context): Promise<void> => {
+				let message = await context.parseVariablesInString(event.options.message_content as string);
 				const broadcastId = checkBroadcastId(event.options);
 
 				if (broadcastId && event.options.message_content
