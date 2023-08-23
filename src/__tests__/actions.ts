@@ -4,7 +4,7 @@ import {
 	CompanionFeedbackContext,
 	CompanionActionDefinitions,
 	CompanionActionEvent,
-	CompanionOptionValues
+	CompanionOptionValues,
 } from '@companion-module/base';
 import { mocked, MockedShallow } from 'jest-mock';
 import { makeMockModule, makeMockYT } from './core';
@@ -20,7 +20,9 @@ import { YoutubeAPI } from '../youtube';
 
 const SampleContext: CompanionFeedbackContext = {
 	parseVariablesInString: function (text: string): Promise<string> {
-		throw new Error('Function not implemented. Parameter was: ' + text);
+		return new Promise<string>((resolve) => {
+			resolve(text);
+		});
 	}
 }
 
