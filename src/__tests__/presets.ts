@@ -18,8 +18,10 @@ describe('Preset list', () => {
 				BoundStreamId: 'abcd1234',
 				MonitorStreamEnabled: true,
 				ScheduledStartTime: '2021-11-30T20:00:00',
+				ActualStartTime: null,
 				LiveChatId: 'lcTest',
 				LiveConcurrentViewers: '0',
+				Description: '',
 			},
 		};
 		const result = listPresets(() => ({ broadcasts: broadcasts, unfinishedCount: 0 }))
@@ -42,8 +44,10 @@ describe('Preset list', () => {
 				BoundStreamId: 'abcd1234',
 				MonitorStreamEnabled: true,
 				ScheduledStartTime: '2021-11-30T20:00:00',
+				ActualStartTime: null,
 				LiveChatId: 'lcTest',
 				LiveConcurrentViewers: '0',
+				Description: '',
 			},
 		};
 		const result = listPresets(() => ({ broadcasts: broadcasts, unfinishedCount: 1 }))

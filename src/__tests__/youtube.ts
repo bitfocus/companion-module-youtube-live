@@ -16,8 +16,10 @@ const memory: StateMemory = {
 			MonitorStreamEnabled: true,
 			BoundStreamId: 'sA',
 			ScheduledStartTime: '2011-11-11T11:11:11',
+			ActualStartTime: null,
 			LiveChatId: 'lcA',
 			LiveConcurrentViewers: '0',
+			Description: '',
 		},
 		bB: {
 			Id: 'bB',
@@ -26,8 +28,10 @@ const memory: StateMemory = {
 			MonitorStreamEnabled: true,
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2022-22-22T22:22:22',
+			ActualStartTime: '2022-22-22T22:42:42',
 			LiveChatId: 'lcB',
 			LiveConcurrentViewers: '42',
+			Description: 'Live description',
 		},
 		bC: {
 			Id: 'bC',
@@ -36,8 +40,10 @@ const memory: StateMemory = {
 			MonitorStreamEnabled: false,
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2033-33-33T33:33:33',
+			ActualStartTime: null,
 			LiveChatId: 'lcC',
 			LiveConcurrentViewers: '21',
+			Description: 'Ready description',
 		},
 	},
 	Streams: {
@@ -62,8 +68,10 @@ const memoryUpdated: StateMemory = {
 			MonitorStreamEnabled: true,
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2022-22-22T22:22:22',
+			ActualStartTime: '2022-22-22T22:42:42',
 			LiveChatId: 'lcB',
 			LiveConcurrentViewers: '0',
+			Description: 'Live description',
 		},
 		bC: {
 			Id: 'bC',
@@ -72,8 +80,10 @@ const memoryUpdated: StateMemory = {
 			MonitorStreamEnabled: false,
 			BoundStreamId: 'sB',
 			ScheduledStartTime: '2033-33-33T33:33:33',
+			ActualStartTime: null,
 			LiveChatId: 'lcC',
 			LiveConcurrentViewers: '0',
+			Description: 'Ready description',
 		},
 	},
 	Streams: {},
@@ -98,7 +108,12 @@ describe('Queries', () => {
 						{
 							id: 'bA',
 							status: { lifeCycleStatus: 'testing' },
-							snippet: { title: 'Broadcast A', scheduledStartTime: '2011-11-11T11:11:11', liveChatId: 'lcA' },
+							snippet: {
+								title: 'Broadcast A',
+								scheduledStartTime: '2011-11-11T11:11:11',
+								liveChatId: 'lcA',
+								description: '',
+							},
 							contentDetails: {
 								monitorStream: { enableMonitorStream: true },
 								boundStreamId: 'sA',
@@ -108,7 +123,13 @@ describe('Queries', () => {
 						{
 							id: 'bB',
 							status: { lifeCycleStatus: 'live' },
-							snippet: { title: 'Broadcast B', scheduledStartTime: '2022-22-22T22:22:22', liveChatId: 'lcB' },
+							snippet: {
+								title: 'Broadcast B',
+								scheduledStartTime: '2022-22-22T22:22:22',
+								actualStartTime: '2022-22-22T22:42:42',
+								liveChatId: 'lcB',
+								description: 'Live description',
+							},
 							contentDetails: {
 								monitorStream: { enableMonitorStream: true },
 								boundStreamId: 'sB',
@@ -118,7 +139,12 @@ describe('Queries', () => {
 						{
 							id: 'bC',
 							status: { lifeCycleStatus: 'ready' },
-							snippet: { title: 'Broadcast C', scheduledStartTime: '2033-33-33T33:33:33', liveChatId: 'lcC' },
+							snippet: {
+								title: 'Broadcast C',
+								scheduledStartTime: '2033-33-33T33:33:33',
+								liveChatId: 'lcC',
+								description: 'Ready description',
+							},
 							contentDetails: {
 								monitorStream: { enableMonitorStream: false },
 								boundStreamId: 'sB',
@@ -137,6 +163,7 @@ describe('Queries', () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
 			expect(part).toContain('status');
 			expect(part).toContain('statistics');
+			expect(part).toContain('snippet');
 			Object.values(memory.Broadcasts).forEach((item) => {
 				expect(localID).toContain(item.Id);
 			});
@@ -146,11 +173,24 @@ describe('Queries', () => {
 						{
 							id: 'bB',
 							status: { lifeCycleStatus: 'complete' },
+							snippet: {
+								title: 'Broadcast B',
+								scheduledStartTime: '2022-22-22T22:22:22',
+								actualStartTime: '2022-22-22T22:42:42',
+								liveChatId: 'lcB',
+								description: 'Live description',
+							},
 							statistics: { concurrentViewers: '0' },
 						},
 						{
 							id: 'bC',
 							status: { lifeCycleStatus: 'testStarting' },
+							snippet: {
+								title: 'Broadcast C',
+								scheduledStartTime: '2033-33-33T33:33:33',
+								liveChatId: 'lcC',
+								description: 'Ready description',
+							},
 							statistics: { concurrentViewers: '0' },
 						},
 					],
@@ -165,6 +205,7 @@ describe('Queries', () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
 			expect(part).toContain('status');
 			expect(part).toContain('statistics');
+			expect(part).toContain('snippet');
 			expect(localID).toHaveLength(1);
 			expect(localID).toContain('bA');
 			return Promise.resolve({
@@ -179,6 +220,7 @@ describe('Queries', () => {
 		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
 			expect(part).toContain('status');
 			expect(part).toContain('statistics');
+			expect(part).toContain('snippet');
 			expect(localID).toHaveLength(1);
 			expect(localID).toContain('bB');
 			return Promise.resolve({
@@ -187,6 +229,13 @@ describe('Queries', () => {
 						{
 							id: 'bB',
 							status: { lifeCycleStatus: 'complete' },
+							snippet: {
+								title: 'Broadcast B',
+								scheduledStartTime: '2022-22-22T22:22:22',
+								actualStartTime: '2022-22-22T22:42:42',
+								liveChatId: 'lcB',
+								description: 'Live description',
+							},
 							statistics: { concurrentViewers: '0' },
 						},
 					],
@@ -314,9 +363,63 @@ describe('Insert cue point', () => {
 			expect(localRequestBody).toBe({
 				cueType: 'cueTypeAd',
 			});
-			return Promise.reject(new Error('cue point insertion error'))
+			return Promise.reject(new Error('cue point insertion error'));
 		});
 		await expect(instance.insertCuePoint('xX')).rejects.toBeInstanceOf(Error);
 		expect(mock.liveBroadcasts.insertCuepoint).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('Set description', () => {
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
+	test('success', async () => {
+		mock.liveBroadcasts.update.mockImplementation(({ part, requestBody: localRequestBody }) => {
+			expect(part).toContain('snippet')
+			expect(localRequestBody).toStrictEqual({
+				id: 'bB',
+				snippet: {
+					scheduledStartTime: '2022-22-22T22:22:22',
+					title: 'Broadcast B',
+					description: 'Test description',
+				}
+			});
+			return Promise.resolve({
+				kind: 'youtube#liveBroadcast',
+				etag: 'etagB',
+				id: 'bB',
+				snippet: {
+					publishedAt: '2022-22-22T22:02:02',
+					channelId: 'channelID',
+					title: 'Broadcast B',
+					description: 'Test description',
+					scheduledStartTime: '2022-22-22T22:22:22',
+					actualStartTime: '2022-22-22T22:42:42',
+					isDefaultBroadcast: false,
+					liveChatId: 'lcB',
+				}
+			})
+		});
+		await expect(instance.setDescription('bB', '2022-22-22T22:22:22', 'Broadcast B', 'Test description')).resolves.toBeUndefined();
+		expect(mock.liveBroadcasts.update).toHaveBeenCalledTimes(1);
+	});
+
+	test('failure', async () => {
+		mock.liveBroadcasts.update.mockImplementation(({ part, requestBody: localRequestBody }) => {
+			expect(part).toContain('snippet')
+			expect(localRequestBody).toStrictEqual({
+				id: 'bB',
+				snippet: {
+					scheduledStartTime: '2022-22-22T21:21:21',
+					title: 'Broadcast B',
+					description: 'Test description',
+				}
+			});
+			return Promise.reject(new Error('set description error'));
+		});
+		await expect(instance.setDescription('bB', '2022-22-22T21:21:21', 'Broadcast B', 'Test description')).rejects.toBeInstanceOf(Error);
+		expect(mock.liveBroadcasts.update).toHaveBeenCalledTimes(1);
 	});
 });
