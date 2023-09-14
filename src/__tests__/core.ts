@@ -36,6 +36,9 @@ export function makeMockYT(memory: StateMemory): YoutubeAPI {
 		insertCuePoint: jest.fn<Promise<void>, [BroadcastID, number]>().mockImplementation(() => {
 			return Promise.resolve();
 		}),
+		setDescription: jest.fn<Promise<void>, [BroadcastID, string, string, string]>().mockImplementation(() => {
+			return Promise.resolve();
+		})
 	};
 }
 
@@ -64,8 +67,10 @@ describe('Miscellaneous', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2020-11-30T08:08:00',
+					ActualStartTime: null,
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
+					Description: '',
 				},
 			},
 			Streams: {
@@ -82,8 +87,10 @@ describe('Miscellaneous', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2020-11-30T08:08:00',
+					ActualStartTime: null,
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
+					Description: '',
 				},
 			],
 		};
@@ -197,8 +204,10 @@ describe('Starting tests on broadcasts', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T22:00:00',
+					ActualStartTime: null,
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
+					Description: '',
 				},
 			},
 			Streams: {
@@ -291,8 +300,10 @@ describe('Going live with broadcasts', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T20:00:00',
+					ActualStartTime: null,
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
+					Description: '',
 				},
 			},
 			Streams: {
@@ -391,8 +402,10 @@ describe('Finishing live broadcasts', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T20:00:00',
+					ActualStartTime: null,
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
+					Description: '',
 				},
 			},
 			Streams: {
@@ -454,8 +467,10 @@ describe('Toggling live broadcasts', () => {
 					MonitorStreamEnabled: true,
 					BoundStreamId: 'sA',
 					ScheduledStartTime: '2021-11-30T20:00:00',
+					ActualStartTime: null,
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
+					Description: '',
 				},
 			},
 			Streams: {

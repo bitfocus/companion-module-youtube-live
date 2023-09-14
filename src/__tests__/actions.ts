@@ -35,8 +35,10 @@ const SampleMemory: StateMemory = {
 			Status: BroadcastLifecycle.Live,
 			BoundStreamId: 'abcd',
 			ScheduledStartTime: '2021-11-30T20:00:00',
+			ActualStartTime: '2021-11-30T20:00:10',
 			LiveChatId: 'lcTest',
 			LiveConcurrentViewers: '33',
+			Description: 'Live description',
 		},
 	},
 	Streams: {},
@@ -59,6 +61,10 @@ describe('Action list', () => {
 		expect(result).toHaveProperty(ActionId.SendMessage);
 		expect(result).toHaveProperty(ActionId.InsertCuePoint);
 		expect(result).toHaveProperty(ActionId.InsertCuePointCustomDuration);
+		expect(result).toHaveProperty(ActionId.SetDescription);
+		expect(result).toHaveProperty(ActionId.PrependToDescription);
+		expect(result).toHaveProperty(ActionId.AppendToDescription);
+		expect(result).toHaveProperty(ActionId.AddChapterToDescription);
 	});
 });
 
@@ -81,6 +87,10 @@ describe('Action callback', () => {
 	coreOK.refreshFeedbacks = jest.fn((): Promise<void> => Promise.resolve());
 	coreOK.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.insertCuePoint = jest.fn((_a: BroadcastID, _b?: number): Promise<void> => Promise.resolve());
+	coreOK.setDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.addChapterToDescription = jest.fn((_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.resolve());
 
 	// Mocking KO functions
 	coreKO.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('test')));
@@ -91,6 +101,10 @@ describe('Action callback', () => {
 	coreKO.refreshFeedbacks = jest.fn((): Promise<void> => Promise.reject(new Error('refreshfbcks')));
 	coreKO.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('sendmsg')));
 	coreKO.insertCuePoint = jest.fn((_a: BroadcastID, _b?: number): Promise<void> => Promise.reject(new Error('insertcuepoint')));
+	coreKO.setDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('setdescription')));
+	coreKO.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('prependtodescription')));
+	coreKO.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('appendtodescription')));
+	coreKO.addChapterToDescription = jest.fn((_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.reject(new Error('addchaptertodescription')));
 
 	// Init cores
 	coreOK.init();
@@ -136,6 +150,20 @@ describe('Action callback', () => {
 			actionsKO.init_broadcast!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.startBroadcastTest).toHaveBeenCalledTimes(1);
+	});
+	test('Missing broadcast ID', async () => {
+		const event = makeEvent(ActionId.InitBroadcast, {});
+		await expect(
+			actionsOK.init_broadcast!.callback(event, SampleContext)
+		).rejects.toBeInstanceOf(Error);
+		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
+	});
+	test('Unknown broadcast ID', async () => {
+		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'random' });
+		await expect(
+			actionsOK.init_broadcast!.callback(event, SampleContext)
+		).rejects.toBeInstanceOf(Error);
+		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
 
 	test('Go live success', async () => {
@@ -257,18 +285,74 @@ describe('Action callback', () => {
 		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
 
-	test('Missing broadcast ID', async () => {
-		const event = makeEvent(ActionId.InitBroadcast, {});
+	test('Set description success', async () => {
+		const event = makeEvent(ActionId.SetDescription, { broadcast_id: 'test', desc_content: 'description' });
 		await expect(
-			actionsOK.init_broadcast!.callback(event, SampleContext)
-		).rejects.toBeInstanceOf(Error);
-		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
+			actionsOK.set_description!.callback(event, SampleContext)
+		).resolves.toBeFalsy();
+		expect(coreOK.setDescription).toHaveBeenCalledTimes(1);
 	});
-	test('Unknown broadcast ID', async () => {
-		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'random' });
+	test('Set description failure', async () => {
+		const event = makeEvent(ActionId.SetDescription, { broadcast_id: 'test', desc_content: 'description' });
 		await expect(
-			actionsOK.init_broadcast!.callback(event, SampleContext)
+			actionsKO.set_description!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
-		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
+		expect(coreKO.setDescription).toHaveBeenCalledTimes(1);
+	});
+	test('Prepend to description success', async () => {
+		const event = makeEvent(ActionId.PrependToDescription, { broadcast_id: 'test', text: 'text to prepend' });
+		await expect(
+			actionsOK.preprend_to_description!.callback(event, SampleContext)
+		).resolves.toBeFalsy();
+		expect(coreOK.prependToDescription).toHaveBeenCalledTimes(1);
+	});
+	test('Prepend to description failure', async () => {
+		const event = makeEvent(ActionId.PrependToDescription, { broadcast_id: 'test', text: 'text to prepend' });
+		await expect(
+			actionsKO.preprend_to_description!.callback(event, SampleContext)
+		).rejects.toBeInstanceOf(Error);
+		expect(coreKO.prependToDescription).toHaveBeenCalledTimes(1);
+	});
+	test('Append to description success', async () => {
+		const event = makeEvent(ActionId.AppendToDescription, { broadcast_id: 'test', text: 'text to append' });
+		await expect(
+			actionsOK.append_to_description!.callback(event, SampleContext)
+		).resolves.toBeFalsy();
+		expect(coreOK.appendToDescription).toHaveBeenCalledTimes(1);
+	});
+	test('Append to description failure', async () => {
+		const event = makeEvent(ActionId.AppendToDescription, { broadcast_id: 'test', text: 'text to append' });
+		await expect(
+			actionsKO.append_to_description!.callback(event, SampleContext)
+		).rejects.toBeInstanceOf(Error);
+		expect(coreKO.appendToDescription).toHaveBeenCalledTimes(1);
+	});
+	test('Add chapter to description success', async () => {
+		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title' });
+		await expect(
+			actionsOK.add_chapter_to_description!.callback(event, SampleContext)
+		).resolves.toBeFalsy();
+		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
+	});
+	test('Add chapter to description failure', async () => {
+		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title' });
+		await expect(
+			actionsKO.add_chapter_to_description!.callback(event, SampleContext)
+		).rejects.toBeInstanceOf(Error);
+		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
+	});
+	test('Add chapter with custom separator to description success', async () => {
+		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title', separator: '—' });
+		await expect(
+			actionsOK.add_chapter_to_description!.callback(event, SampleContext)
+		).resolves.toBeFalsy();
+		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
+	});
+	test('Add chapter with custom separator to description failure', async () => {
+		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title', separator: '—' });
+		await expect(
+			actionsKO.add_chapter_to_description!.callback(event, SampleContext)
+		).rejects.toBeInstanceOf(Error);
+		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 });

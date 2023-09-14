@@ -18,6 +18,10 @@ export enum ActionId {
 	SendMessage = 'send_livechat_message',
 	InsertCuePoint = 'insert_cue_point',
 	InsertCuePointCustomDuration = 'insert_cue_point_custom_duration',
+	SetDescription = 'set_description',
+	PrependToDescription = 'preprend_to_description',
+	AppendToDescription = 'append_to_description',
+	AddChapterToDescription = 'add_chapter_to_description'
 }
 
 /**
@@ -273,6 +277,153 @@ export function listActions(
 					return core!.insertCuePoint(broadcastId as BroadcastID, duration);
 				} else {
 					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+				}
+			},
+		},
+		[ActionId.SetDescription]: {
+			name: 'Set description',
+			description: 'Warning: if a description exists for the selected broadcast, it will be replaced',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
+					default: defaultBroadcast,
+				},
+				{
+					type: 'textinput',
+					label: 'Description:',
+					id: 'desc_content',
+					regex: '/^.{0,5000}$/',
+					tooltip: 'Seize a description with a maximum length of 5000 characters',
+					useVariables: true,
+				},
+			],
+			callback: async (event, context): Promise<void> => {
+				const description = await context.parseVariablesInString(event.options.desc_content as string);
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId && event.options.desc_content
+					&& description.length > 0 && description.length <= 5000) {
+					return core!.setDescription(broadcastId as BroadcastID, description);
+				} else {
+					throw new Error('Unable to set description: bad paramaters.');
+				}
+			},
+		},
+		[ActionId.PrependToDescription]: {
+			name: 'Prepend text to description',
+			description: 'Insert text at the beginning of the description',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
+					default: defaultBroadcast,
+				},
+				{
+					type: 'textinput',
+					label: 'Text:',
+					id: 'text',
+					regex: '/^.{1,5000}$/',
+					tooltip: 'The total length of the description must not exceed 5000 characters.',
+					useVariables: true,
+				},
+			],
+			callback: async (event, context): Promise<void> => {
+				const text = await context.parseVariablesInString(event.options.text as string);
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId && event.options.text
+					&& text.length > 0 && text.length <= 5000) {
+					return core!.prependToDescription(broadcastId as BroadcastID, text);
+				} else {
+					throw new Error('Unable to prepend text to description: bad paramaters.');
+				}
+			},
+		},
+		[ActionId.AppendToDescription]: {
+			name: 'Append text to description',
+			description: 'Insert text at the end of the description',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
+					default: defaultBroadcast,
+				},
+				{
+					type: 'textinput',
+					label: 'Text:',
+					id: 'text',
+					regex: '/^.{1,5000}$/',
+					tooltip: 'The total length of the description must not exceed 5000 characters.',
+					useVariables: true,
+				},
+			],
+			callback: async (event, context): Promise<void> => {
+				const text = await context.parseVariablesInString(event.options.text as string);
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId && event.options.text
+					&& text.length > 0 && text.length <= 5000) {
+					return core!.appendToDescription(broadcastId as BroadcastID, text);
+				} else {
+					throw new Error('Unable to append text to description: bad paramaters.');
+				}
+			},
+		},
+		[ActionId.AddChapterToDescription]: {
+			name: 'Add chapter timecode to description',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastUnfinishedEntries],
+					default: defaultUnfinishedBroadcast,
+				},
+				{
+					type: 'textinput',
+					label: 'Chapter title:',
+					id: 'title',
+					tooltip: 'Title of the chapter which will be shown on YouTube',
+					useVariables: true,
+					regex: '/^.{1,}$/',
+				},
+				{
+					type: 'checkbox',
+					label: 'Use default separator?',
+					id: 'default_separator',
+					tooltip: 'Default separator is " - "',
+					default: true,
+				},
+				{
+					type: 'textinput',
+					label: ' Custom separator:',
+					id: 'separator',
+					tooltip: 'The separator must contain at least one character',
+					useVariables: true,
+					regex: '/^.{1,}$/',
+					isVisible: (options) => { return !options.default_separator as boolean }
+				},
+			],
+			callback: async (event, context): Promise<void> => {
+				const separator = await context.parseVariablesInString(event.options.separator as string);
+				const chapterTitle = await context.parseVariablesInString(event.options.title as string);
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId && chapterTitle) {
+					if (event.options.default_separator) {
+						return core!.addChapterToDescription(broadcastId as BroadcastID, chapterTitle);
+					} else {
+						return core!.addChapterToDescription(broadcastId as BroadcastID, chapterTitle, separator);
+					}
+				} else {
+					throw new Error('Unable to prepend text to description: bad paramaters.');
 				}
 			},
 		},
