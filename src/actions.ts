@@ -201,7 +201,7 @@ export function listActions(
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
+					default: defaultUnfinishedBroadcast,
 				},
 				{
 					type: 'textinput',
