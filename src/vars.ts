@@ -32,6 +32,7 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 
 	[...Array(unfinishedCnt).keys()].forEach((i) => {
 		result.push({ variableId: `unfinished_${i}`, name: `Unfinished/planned broadcast name #${i}` });
+		result.push({ variableId: `unfinished_${i}_id`, name: `Unfinished/planned broadcast id #${i}` });
 		result.push({ variableId: `unfinished_short_${i}`, name: `Unfinished/planned broadcast name shortened #${i}` });
 		result.push({ variableId: `unfinished_state_${i}`, name: `Unfinished/planned broadcast state #${i}` });
 		result.push({ variableId: `unfinished_health_${i}`, name: `Unfinished/planned broadcast's stream health #${i}` });
@@ -165,6 +166,10 @@ export function getUnfinishedBroadcastVars(index: number, broadcast: Broadcast):
 		name: `unfinished_${index}`,
 		value: broadcast.Name,
 	};
+	const contentId: VariableContent = {
+		name: `unfinished_${index}_id`,
+		value: broadcast.Id,
+	};
 	const contentShort: VariableContent = {
 		name: `unfinished_short_${index}`,
 		value: broadcast.Name.substr(0, 19),
@@ -174,7 +179,7 @@ export function getUnfinishedBroadcastVars(index: number, broadcast: Broadcast):
 		value: broadcast.LiveConcurrentViewers,
 	};
 
-	return [contentName, contentShort, concurrentViewers];
+	return [contentName, contentId, contentShort, concurrentViewers];
 }
 
 /**
@@ -223,6 +228,10 @@ export function getUnfinishedDefaultVars(index: number): VariableContent[] {
 		name: `unfinished_${index}`,
 		value: 'n/a',
 	};
+	const contentId: VariableContent = {
+		name: `unfinished_${index}_id`,
+		value: 'n/a',
+	};
 	const contentShort: VariableContent = {
 		name: `unfinished_short_${index}`,
 		value: 'n/a',
@@ -236,7 +245,7 @@ export function getUnfinishedDefaultVars(index: number): VariableContent[] {
 		value: 'n/a',
 	};
 
-	return [content, contentShort, health, concurrentViewers];
+	return [content, contentId, contentShort, health, concurrentViewers];
 }
 
 /**
