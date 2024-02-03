@@ -72,6 +72,14 @@ export interface YoutubeAPI {
 	 * @param desc Content (to set) of the description
 	 */
 	setDescription(id: BroadcastID, sst: string, title: string, desc: string): Promise<void>
+
+	/**
+	 * Set title for the given broadcast
+	 * @param id Broadcast ID
+	 * @param sst Scheduled start time of the broadcast
+	 * @param title Title of the broadcast
+	 */
+	setTitle(id: BroadcastID, sst: string, title: string): Promise<void>
 }
 
 /**
@@ -295,6 +303,22 @@ export class YoutubeConnector implements YoutubeAPI {
 					scheduledStartTime: sst,
 					title: title,
 					description: description,
+				}
+			}
+		})
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	async setTitle(id: string, sst: string, title: string): Promise<void> {
+		await this.ApiClient.liveBroadcasts.update({
+			part: ['snippet'],
+			requestBody: {
+				id: id,
+				snippet: {
+					scheduledStartTime: sst,
+					title: title,
 				}
 			}
 		})

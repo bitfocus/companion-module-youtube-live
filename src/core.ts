@@ -359,6 +359,28 @@ export class Core {
 		}
 	}
 
+	/**
+	 * Set title for the given broadcast
+	 * @param id Broadcast ID
+	 * @param title New title for the broadcast
+	 * @returns 
+	 */
+	async setTitle(id: BroadcastID, title: string) {
+		if (this.Cache.Broadcasts[id]) {
+			if (title.length > 0 || title.length <= 100) {
+				return this.YouTube.setTitle(
+					id,
+					this.Cache.Broadcasts[id].ScheduledStartTime,
+					title
+				)
+			} else {
+				throw new Error(`Unable to set title; given description contains '${title.length}' characters (1 to 100 required)`);
+			}
+		} else {
+			throw new Error(`Broadcast does not exist: ${id}`);
+		}
+	}
+
 	async setDescription(id: BroadcastID, desc: string) {
 		if (this.Cache.Broadcasts[id]) {
 			if (desc.length > 0 || desc.length <= 5000) {

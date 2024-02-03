@@ -370,6 +370,58 @@ describe('Insert cue point', () => {
 	});
 });
 
+describe('Set title', () => {
+	beforeEach(() => {
+		jest.resetAllMocks();
+	});
+
+	test('success', async () => {
+		mock.liveBroadcasts.update.mockImplementation(({ part, requestBody: localRequestBody }) => {
+			expect(part).toContain('snippet')
+			expect(localRequestBody).toStrictEqual({
+				id: 'bB',
+				snippet: {
+					scheduledStartTime: '2022-22-22T22:22:22',
+					title: 'Broadcast X',
+				}
+			});
+			return Promise.resolve({
+				kind: 'youtube#liveBroadcast',
+				etag: 'etagB',
+				id: 'bB',
+				snippet: {
+					publishedAt: '2022-22-22T22:02:02',
+					channelId: 'channelID',
+					title: 'Broadcast X',
+					description: 'Test description',
+					scheduledStartTime: '2022-22-22T22:22:22',
+					actualStartTime: '2022-22-22T22:42:42',
+					isDefaultBroadcast: false,
+					liveChatId: 'lcB',
+				}
+			})
+		});
+		await expect(instance.setTitle('bB', '2022-22-22T22:22:22', 'Broadcast X')).resolves.toBeUndefined();
+		expect(mock.liveBroadcasts.update).toHaveBeenCalledTimes(1);
+	});
+
+	test('failure', async () => {
+		mock.liveBroadcasts.update.mockImplementation(({ part, requestBody: localRequestBody }) => {
+			expect(part).toContain('snippet')
+			expect(localRequestBody).toStrictEqual({
+				id: 'bB',
+				snippet: {
+					scheduledStartTime: '2022-22-22T21:21:21',
+					title: 'Broadcast X',
+				}
+			});
+			return Promise.reject(new Error('set title error'));
+		});
+		await expect(instance.setTitle('bB', '2022-22-22T21:21:21', 'Broadcast X')).rejects.toBeInstanceOf(Error);
+		expect(mock.liveBroadcasts.update).toHaveBeenCalledTimes(1);
+	});
+});
+
 describe('Set description', () => {
 	beforeEach(() => {
 		jest.resetAllMocks();

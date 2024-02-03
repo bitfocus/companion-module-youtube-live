@@ -36,6 +36,9 @@ export function makeMockYT(memory: StateMemory): YoutubeAPI {
 		insertCuePoint: jest.fn<Promise<void>, [BroadcastID, number]>().mockImplementation(() => {
 			return Promise.resolve();
 		}),
+		setTitle: jest.fn<Promise<void>, [BroadcastID, string, string]>().mockImplementation(() => {
+			return Promise.resolve();
+		}),
 		setDescription: jest.fn<Promise<void>, [BroadcastID, string, string, string]>().mockImplementation(() => {
 			return Promise.resolve();
 		})

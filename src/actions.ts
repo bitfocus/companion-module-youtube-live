@@ -18,6 +18,7 @@ export enum ActionId {
 	SendMessage = 'send_livechat_message',
 	InsertCuePoint = 'insert_cue_point',
 	InsertCuePointCustomDuration = 'insert_cue_point_custom_duration',
+	SetTitle = 'set_title',
 	SetDescription = 'set_description',
 	PrependToDescription = 'preprend_to_description',
 	AppendToDescription = 'append_to_description',
@@ -277,6 +278,38 @@ export function listActions(
 					return core!.insertCuePoint(broadcastId as BroadcastID, duration);
 				} else {
 					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+				}
+			},
+		},
+		[ActionId.SetTitle]: {
+			name: 'Set title',
+			description: 'Warning: the title of the broadcast will be replaced',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
+					default: defaultBroadcast,
+				},
+				{
+					type: 'textinput',
+					label: 'Title:',
+					id: 'title_content',
+					regex: '/^.{0,100}$/',
+					tooltip: 'Seize a title with a maximum length of 100 characters',
+					useVariables: true,
+				},
+			],
+			callback: async (event, context): Promise<void> => {
+				const title = await context.parseVariablesInString(event.options.title_content as string);
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId && event.options.title_content
+					&& title.length > 0 && title.length <= 100) {
+					return core!.setTitle(broadcastId as BroadcastID, title);
+				} else {
+					throw new Error('Unable to set title: bad paramaters.');
 				}
 			},
 		},
