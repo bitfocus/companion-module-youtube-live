@@ -20,6 +20,7 @@ So all broadcasts to be controlled by the module have to be created in the YouTu
   used to make broadcasts created after Companion startup appear in the Companion UI.
 - **Send message to live chat** - This action send a message (200 chars max.) to a YouTube broadcast's live chat.
 - **Insert advertisement (cuepoint)** - This action inserts an advertisement to the YouTube broadcast.
+- **Set title** - This action set the title of the specified broadcast.
 - **Set description** - This action set the description of the specified broadcast.
 - **Prepend text to description** - This action insert the given text at beginning of the description.
 - **Append text to description** - This action insert the given text at end of the description.
