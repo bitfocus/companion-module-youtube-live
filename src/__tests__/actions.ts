@@ -61,6 +61,7 @@ describe('Action list', () => {
 		expect(result).toHaveProperty(ActionId.SendMessage);
 		expect(result).toHaveProperty(ActionId.InsertCuePoint);
 		expect(result).toHaveProperty(ActionId.InsertCuePointCustomDuration);
+		expect(result).toHaveProperty(ActionId.SetTitle);
 		expect(result).toHaveProperty(ActionId.SetDescription);
 		expect(result).toHaveProperty(ActionId.PrependToDescription);
 		expect(result).toHaveProperty(ActionId.AppendToDescription);
@@ -87,6 +88,7 @@ describe('Action callback', () => {
 	coreOK.refreshFeedbacks = jest.fn((): Promise<void> => Promise.resolve());
 	coreOK.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.insertCuePoint = jest.fn((_a: BroadcastID, _b?: number): Promise<void> => Promise.resolve());
+	coreOK.setTitle = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.setDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
@@ -101,6 +103,7 @@ describe('Action callback', () => {
 	coreKO.refreshFeedbacks = jest.fn((): Promise<void> => Promise.reject(new Error('refreshfbcks')));
 	coreKO.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('sendmsg')));
 	coreKO.insertCuePoint = jest.fn((_a: BroadcastID, _b?: number): Promise<void> => Promise.reject(new Error('insertcuepoint')));
+	coreKO.setTitle = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('settitle')));
 	coreKO.setDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('setdescription')));
 	coreKO.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('prependtodescription')));
 	coreKO.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('appendtodescription')));
@@ -283,6 +286,21 @@ describe('Action callback', () => {
 			actionsKO.insert_cue_point_custom_duration!.callback(event, SampleContext)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
+	});
+
+	test('Set title success', async () => {
+		const event = makeEvent(ActionId.SetTitle, { broadcast_id: 'test', title_content: 'Test Broadcast (updated title)' });
+		await expect(
+			actionsOK.set_title!.callback(event, SampleContext)
+		).resolves.toBeFalsy();
+		expect(coreOK.setTitle).toHaveBeenCalledTimes(1);
+	});
+	test('Set title failure', async () => {
+		const event = makeEvent(ActionId.SetTitle, { broadcast_id: 'test', title_content: 'Test Broadcast (updated title)' });
+		await expect(
+			actionsKO.set_title!.callback(event, SampleContext)
+		).rejects.toBeInstanceOf(Error);
+		expect(coreKO.setTitle).toHaveBeenCalledTimes(1);
 	});
 
 	test('Set description success', async () => {
