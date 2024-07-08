@@ -8,6 +8,7 @@ import {
 } from '@companion-module/base';
 import { BroadcastMap, BroadcastLifecycle, StreamHealth, BroadcastID } from './cache';
 import { Core } from './core';
+import { CompanionCommonCallbackContext } from "@companion-module/base/dist/module-api/common";
 
 export enum FeedbackId {
 	BroadcastStatus = 'broadcast_status',
@@ -16,6 +17,7 @@ export enum FeedbackId {
 
 /**
  * Get a list of feedbacks for this module
+ * @param The companion instance used to
  * @param broadcasts Map of known broadcasts
  * @param unfinishedCount Number of unfinished broadcast
  * @param core Module core
@@ -91,19 +93,42 @@ export function listFeedbacks(
 					default: combineRgb(126, 126, 126),
 				},
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast',
 					id: 'broadcast',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
 				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
+				}
 			],
-			callback: (event: CompanionFeedbackAdvancedEvent): CompanionAdvancedFeedbackResult => {
+			callback: async (event: CompanionFeedbackAdvancedEvent, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!checkCore) return {};
-				if (!event.options.broadcast) return {};
-				const id = event.options.broadcast as BroadcastID;
+				if (event.options.use_var) {
+					if (!event.options.broadcast_vars) return {};
+				} else {
+					if (!event.options.broadcast) return {};
+				}
+				const id = (
+					event.options.use_var
+						? await context.parseVariablesInString(event.options.broadcast_vars as string)
+						: event.options.broadcast
+				) as BroadcastID;
 				const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
-		
+
 				let broadcastStatus: BroadcastLifecycle;
 				if (id in core!.Cache.Broadcasts) {
 					broadcastStatus = core!.Cache.Broadcasts[id].Status;
@@ -115,7 +140,7 @@ export function listFeedbacks(
 						return {};
 					}
 				}
-		
+
 				// Handle missing fields
 				event.options.bg_ready = event.options.bg_ready ?? combineRgb(209, 209, 0);
 				event.options.bg_testing = event.options.bg_testing ?? combineRgb(0, 172, 0);
@@ -123,7 +148,7 @@ export function listFeedbacks(
 				event.options.bg_complete = event.options.bg_complete ?? combineRgb(0, 0, 168);
 				event.options.text = event.options.text ?? combineRgb(255, 255, 255);
 				event.options.text_complete = event.options.text_complete ?? combineRgb(126, 126, 126);
-		
+
 				switch (broadcastStatus) {
 					case BroadcastLifecycle.LiveStarting:
 						if (dimStarting)
@@ -200,17 +225,40 @@ export function listFeedbacks(
 					default: combineRgb(255, 255, 255),
 				},
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast',
 					id: 'broadcast',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
 				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
+				}
 			],
-			callback: (event: CompanionFeedbackAdvancedEvent): CompanionAdvancedFeedbackResult => {
+			callback: async (event: CompanionFeedbackAdvancedEvent, context: CompanionCommonCallbackContext): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!checkCore) return {};
-				if (!event.options.broadcast) return {};
-				const id = event.options.broadcast as BroadcastID;
+				if (event.options.use_var) {
+					if (!event.options.broadcast_vars) return {};
+				} else {
+					if (!event.options.broadcast) return {};
+				}
+				const id = (
+					event.options.use_var
+						? await context.parseVariablesInString(event.options.broadcast_vars as string)
+						: event.options.broadcast
+				) as BroadcastID;
 
 				let streamId: string | null;
 				let broadcastStatus: BroadcastLifecycle;
