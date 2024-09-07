@@ -463,7 +463,7 @@ export class Core {
 		}
 	}
 
-	async setVisibility(id: BroadcastID, visibility: Visibility) {
+	async setVisibility(id: BroadcastID, visibility: Visibility): Promise<void> {
 		return this.YouTube.setVisibility(id, visibility);
 	}
 }

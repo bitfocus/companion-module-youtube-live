@@ -476,20 +476,21 @@ export function listActions(
 					type: 'dropdown',
 					label: 'Visibility:',
 					id: 'visibility',
-					choices: Object.values(Visibility).map(visibility => {return {
-						id: visibility,
-						label: visibility.charAt(0).toUpperCase() + visibility.slice(1)
-					} as DropdownChoice;}),
-					default: Visibility.Private
+					choices: Object.values(Visibility).map((visibility) => {
+						return {
+							id: visibility,
+							label: visibility.charAt(0).toUpperCase() + visibility.slice(1),
+						} as DropdownChoice;
+					}),
+					default: Visibility.Private,
 				},
-
 			],
 			callback: async (event, _context): Promise<void> => {
 				const visibility = event.options.visibility as Visibility;
 				const broadcastId = checkBroadcastId(event.options);
 
 				if (broadcastId) {
-					return core!.setVisibility(broadcastId as BroadcastID, visibility)
+					return core!.setVisibility(broadcastId as BroadcastID, visibility);
 				} else {
 					throw new Error('Unable to prepend text to description: bad paramaters.');
 				}

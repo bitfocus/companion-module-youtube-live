@@ -92,7 +92,7 @@ export interface YoutubeAPI {
 	 * @param id Broadcast ID
 	 * @param visibility Visibility of the broadcast
 	 */
-	setVisibility(id: BroadcastID, visibility: Visibility): Promise<void>
+	setVisibility(id: BroadcastID, visibility: Visibility): Promise<void>;
 }
 
 /**
@@ -347,8 +347,8 @@ export class YoutubeConnector implements YoutubeAPI {
 				id: id,
 				status: {
 					privacyStatus: visibility,
-				}
-			}
-		})
+				},
+			},
+		});
 	}
 }
