@@ -15,6 +15,12 @@ export enum Transition {
 	ToComplete = 'complete',
 }
 
+export enum Visibility {
+	Private = 'private',
+	Unlisted = 'unlisted',
+	Public = 'public',
+}
+
 export interface YoutubeAPI {
 	/**
 	 * Fetch known broadcasts (limited by max count)
@@ -80,6 +86,13 @@ export interface YoutubeAPI {
 	 * @param title Title of the broadcast
 	 */
 	setTitle(id: BroadcastID, sst: string, title: string): Promise<void>
+
+	/**
+	 * Set the visibility of the broadcast
+	 * @param id Broadcast ID
+	 * @param visibility Visibility of the broadcast
+	 */
+	setVisibility(id: BroadcastID, visibility: Visibility): Promise<void>
 }
 
 /**
@@ -319,6 +332,21 @@ export class YoutubeConnector implements YoutubeAPI {
 				snippet: {
 					scheduledStartTime: sst,
 					title: title,
+				}
+			}
+		})
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	async setVisibility(id: BroadcastID, visibility: Visibility): Promise<void> {
+		await this.ApiClient.liveBroadcasts.update({
+			part: ['status'],
+			requestBody: {
+				id: id,
+				status: {
+					privacyStatus: visibility,
 				}
 			}
 		})

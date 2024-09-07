@@ -7,6 +7,7 @@ import {
 } from '@companion-module/base';
 import { BroadcastMap, BroadcastID } from './cache';
 import { Core } from './core';
+import { Visibility } from './youtube';
 
 export enum ActionId {
 	InitBroadcast = 'init_broadcast',
@@ -22,7 +23,8 @@ export enum ActionId {
 	SetDescription = 'set_description',
 	PrependToDescription = 'preprend_to_description',
 	AppendToDescription = 'append_to_description',
-	AddChapterToDescription = 'add_chapter_to_description'
+	AddChapterToDescription = 'add_chapter_to_description',
+	SetVisibility = 'set_visibility',
 }
 
 /**
@@ -455,6 +457,39 @@ export function listActions(
 					} else {
 						return core!.addChapterToDescription(broadcastId as BroadcastID, chapterTitle, separator);
 					}
+				} else {
+					throw new Error('Unable to prepend text to description: bad paramaters.');
+				}
+			},
+		},
+		[ActionId.SetVisibility]: {
+			name: 'Set visibility of the broadcast',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
+					default: defaultUnfinishedBroadcast,
+				},
+				{
+					type: 'dropdown',
+					label: 'Visibility:',
+					id: 'visibility',
+					choices: Object.values(Visibility).map(visibility => {return {
+						id: visibility,
+						label: visibility.charAt(0).toUpperCase() + visibility.slice(1)
+					} as DropdownChoice;}),
+					default: Visibility.Private
+				},
+
+			],
+			callback: async (event, _context): Promise<void> => {
+				const visibility = event.options.visibility as Visibility;
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId) {
+					return core!.setVisibility(broadcastId as BroadcastID, visibility)
 				} else {
 					throw new Error('Unable to prepend text to description: bad paramaters.');
 				}
