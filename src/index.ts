@@ -18,9 +18,9 @@ import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateV
 import { listActions } from './actions';
 import { listFeedbacks } from './feedbacks';
 import { listPresets } from './presets';
+import { UpgradeScripts } from './upgrades';
 import { YoutubeConnector } from './youtube';
 import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow';
-import { UpgradeScripts } from './upgrades';
 
 /**
  * Main Companion integration class of this module
