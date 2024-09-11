@@ -422,7 +422,7 @@ export class Core {
 		}
 	}
 
-	async addChapterToDescription(id: BroadcastID, title: string, separator?: string) {
+	async addChapterToDescription(id: BroadcastID, title: string, separator: string, forceFirstTimestampToBeZeroes = true) {
 		const currentState = await this.checkBroadcastStatus(id);
 		const requiredState = BroadcastLifecycle.Live;
 
@@ -445,14 +445,14 @@ export class Core {
 					('0' + elapsedTime.getSeconds()).slice(-2);
 
 				/** Insert the first 00:00:00 timestamp if it doesn't exist */
-				if (!description.includes('00:00:00' + (separator ? separator : " - ")) ||
+				if ((forceFirstTimestampToBeZeroes && !description.includes('00:00:00' + separator)) ||
 					(Number(elapsedTime.getUTCHours()) === 0 && Number(elapsedTime.getMinutes()) === 0 && Number(elapsedTime.getSeconds()) <= 15)) {
 						timecode = '00:00:00';
 				}
 
 				if (this.LastChapterTimestamp === 0 || new Date(dateNow - this.LastChapterTimestamp).getSeconds() > 10) {
 					this.LastChapterTimestamp = (timecode === '00:00:00' && startTime !== null) ? startTime : dateNow;
-					description = description + '\n' + timecode + (separator ? separator : " - ") + title;
+					description = description + '\n' + timecode + separator + title;
 					await this.setDescription(id, description);
 				} else {
 					throw new Error(`Cannot add chapter to descripion; chapters must be spaced at least 10 seconds apart `)

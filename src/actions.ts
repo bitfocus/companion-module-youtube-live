@@ -443,24 +443,34 @@ export function listActions(
 					regex: '/^.{1,}$/',
 					isVisible: (options) => { return !options.default_separator as boolean }
 				},
+				{
+					type: 'checkbox',
+					label: 'Force first timestamp to be "00:00:00"?',
+					id: 'force_first_timestamp_00_00_00',
+					default: false,
+				},
 			],
 			callback: async (event, context): Promise<void> => {
-				const separator = await context.parseVariablesInString(event.options.separator as string);
+				const separator = event.options.default_separator
+					? await context.parseVariablesInString(event.options.separator as string)
+					: ' - ';
 				const chapterTitle = await context.parseVariablesInString(event.options.title as string);
 				const broadcastId = checkBroadcastId(event.options);
+				const forceFirstTimestampToBeZeroes = event.options.force_first_timestamp_00_00_00 as boolean;
 
 				if (broadcastId && chapterTitle) {
-					if (event.options.default_separator) {
-						return core!.addChapterToDescription(broadcastId as BroadcastID, chapterTitle);
-					} else {
-						return core!.addChapterToDescription(broadcastId as BroadcastID, chapterTitle, separator);
-					}
+					return core!.addChapterToDescription(
+						broadcastId as BroadcastID,
+						chapterTitle,
+						separator,
+						forceFirstTimestampToBeZeroes
+					);
 				} else {
 					throw new Error('Unable to prepend text to description: bad paramaters.');
 				}
 			},
 		},
-	}
+	};
 
-	return actions
+	return actions;
 }

@@ -79,7 +79,7 @@ describe('Action callback', () => {
 	coreOK = new Core(mockModule, mockYT, 100, 100);
 	coreKO = new Core(mockModule, mockYT, 100, 100);
 
-	// Moking OK functions
+	// Mocking OK functions
 	coreOK.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
 	coreOK.makeBroadcastLive = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
 	coreOK.finishBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
@@ -92,7 +92,9 @@ describe('Action callback', () => {
 	coreOK.setDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.addChapterToDescription = jest.fn((_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.resolve());
+	coreOK.addChapterToDescription = jest.fn(
+		(_a: BroadcastID, _b: string, _c: string, _d: boolean): Promise<void> => Promise.resolve()
+	);
 
 	// Mocking KO functions
 	coreKO.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('test')));
@@ -107,7 +109,9 @@ describe('Action callback', () => {
 	coreKO.setDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('setdescription')));
 	coreKO.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('prependtodescription')));
 	coreKO.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('appendtodescription')));
-	coreKO.addChapterToDescription = jest.fn((_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.reject(new Error('addchaptertodescription')));
+	coreKO.addChapterToDescription = jest.fn(
+		(_a: BroadcastID, _b: string, _c: string, _d: boolean): Promise<void> => Promise.reject(new Error('addchaptertodescription'))
+	);
 
 	// Init cores
 	coreOK.init();
@@ -346,31 +350,23 @@ describe('Action callback', () => {
 		expect(coreKO.appendToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter to description success', async () => {
-		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title' });
-		await expect(
-			actionsOK.add_chapter_to_description!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		const event = makeEvent(ActionId.AddChapterToDescription, {
+			broadcast_id: 'test',
+			title: 'chapter title',
+			separator: '—',
+			force_first_timestamp_00_00_00: false,
+		});
+		await expect(actionsOK.add_chapter_to_description!.callback(event, SampleContext)).resolves.toBeFalsy();
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter to description failure', async () => {
-		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title' });
-		await expect(
-			actionsKO.add_chapter_to_description!.callback(event, SampleContext)
-		).rejects.toBeInstanceOf(Error);
-		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
-	});
-	test('Add chapter with custom separator to description success', async () => {
-		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title', separator: '—' });
-		await expect(
-			actionsOK.add_chapter_to_description!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
-		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
-	});
-	test('Add chapter with custom separator to description failure', async () => {
-		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title', separator: '—' });
-		await expect(
-			actionsKO.add_chapter_to_description!.callback(event, SampleContext)
-		).rejects.toBeInstanceOf(Error);
+		const event = makeEvent(ActionId.AddChapterToDescription, {
+			broadcast_id: 'test',
+			title: 'chapter title',
+			separator: '—',
+			force_first_timestamp_00_00_00: false,
+		});
+		await expect(actionsKO.add_chapter_to_description!.callback(event, SampleContext)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 });

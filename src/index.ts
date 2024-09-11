@@ -20,6 +20,7 @@ import { listFeedbacks } from './feedbacks';
 import { listPresets } from './presets';
 import { YoutubeConnector } from './youtube';
 import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow';
+import { UpgradeScripts } from './upgrades';
 
 /**
  * Main Companion integration class of this module
@@ -170,4 +171,4 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	}
 }
 
-runEntrypoint(YoutubeInstance, []);
+runEntrypoint(YoutubeInstance, UpgradeScripts);
