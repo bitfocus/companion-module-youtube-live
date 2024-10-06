@@ -22,7 +22,7 @@ export enum ActionId {
 	SetDescription = 'set_description',
 	PrependToDescription = 'preprend_to_description',
 	AppendToDescription = 'append_to_description',
-	AddChapterToDescription = 'add_chapter_to_description'
+	AddChapterToDescription = 'add_chapter_to_description',
 }
 
 /**
@@ -445,25 +445,25 @@ export function listActions(
 				},
 				{
 					type: 'checkbox',
-					label: 'Force first timestamp to be "00:00:00"?',
-					id: 'force_first_timestamp_00_00_00',
+					label: 'Use "00:00:00" as the timestamp if it is not present yet?',
+					id: 'ensure_presence_of_all_zeroes_timestamp',
 					default: false,
 				},
 			],
 			callback: async (event, context): Promise<void> => {
 				const separator = event.options.default_separator
-					? await context.parseVariablesInString(event.options.separator as string)
-					: ' - ';
+					? ' - '
+					: await context.parseVariablesInString(event.options.separator as string);
 				const chapterTitle = await context.parseVariablesInString(event.options.title as string);
 				const broadcastId = checkBroadcastId(event.options);
-				const forceFirstTimestampToBeZeroes = event.options.force_first_timestamp_00_00_00 as boolean;
+				const ensurePresenceOfAllZeroesTimestamp = event.options.ensure_presence_of_all_zeroes_timestamp as boolean;
 
 				if (broadcastId && chapterTitle) {
 					return core!.addChapterToDescription(
 						broadcastId as BroadcastID,
 						chapterTitle,
 						separator,
-						forceFirstTimestampToBeZeroes
+						ensurePresenceOfAllZeroesTimestamp
 					);
 				} else {
 					throw new Error('Unable to prepend text to description: bad paramaters.');

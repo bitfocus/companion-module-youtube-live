@@ -7,7 +7,7 @@ import {
 import { ActionId } from './actions';
 import { YoutubeConfig } from './config';
 
-function add_default_for_force_first_timestamp_00_00_00(
+function add_default_for_ensure_presence_of_all_zeroes_timestamp(
 	_context: CompanionUpgradeContext<YoutubeConfig>,
 	props: CompanionStaticUpgradeProps<YoutubeConfig>
 ): CompanionStaticUpgradeResult<YoutubeConfig> {
@@ -18,9 +18,9 @@ function add_default_for_force_first_timestamp_00_00_00(
 	};
 
 	props.actions
-		.filter((v) => v.actionId === ActionId.AddChapterToDescription && !('force_first_timestamp_00_00_00' in v.options))
+		.filter((v) => v.actionId === ActionId.AddChapterToDescription && !('ensure_presence_of_all_zeroes_timestamp' in v.options))
 		.forEach((v) => {
-			v.options.force_first_timestamp_00_00_00 = true;
+			v.options.ensure_presence_of_all_zeroes_timestamp = true;
 			result.updatedActions.push(v);
 		});
 
@@ -28,5 +28,5 @@ function add_default_for_force_first_timestamp_00_00_00(
 }
 
 export const UpgradeScripts: CompanionStaticUpgradeScript<YoutubeConfig>[] = [
-	add_default_for_force_first_timestamp_00_00_00,
+	add_default_for_ensure_presence_of_all_zeroes_timestamp,
 ];

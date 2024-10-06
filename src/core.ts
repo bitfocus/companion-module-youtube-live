@@ -422,7 +422,12 @@ export class Core {
 		}
 	}
 
-	async addChapterToDescription(id: BroadcastID, title: string, separator: string, forceFirstTimestampToBeZeroes = true) {
+	async addChapterToDescription(
+		id: BroadcastID,
+		title: string,
+		separator: string,
+		ensurePresenceOfAllZeroesTimestamp = true
+	) {
 		const currentState = await this.checkBroadcastStatus(id);
 		const requiredState = BroadcastLifecycle.Live;
 
@@ -436,7 +441,7 @@ export class Core {
 			const broadcast: Broadcast = await this.refreshBroadcast(id);
 			const startTime = broadcast.ActualStartTime ? Date.parse(broadcast.ActualStartTime) : null;
 			let description: string = broadcast.Description;
-			
+
 			if (startTime) {
 				const dateNow = Date.now();
 				const elapsedTime = new Date(dateNow - startTime);
@@ -445,9 +450,13 @@ export class Core {
 					('0' + elapsedTime.getSeconds()).slice(-2);
 
 				/** Insert the first 00:00:00 timestamp if it doesn't exist */
-				if ((forceFirstTimestampToBeZeroes && !description.includes('00:00:00' + separator)) ||
-					(Number(elapsedTime.getUTCHours()) === 0 && Number(elapsedTime.getMinutes()) === 0 && Number(elapsedTime.getSeconds()) <= 15)) {
-						timecode = '00:00:00';
+				if (
+					(ensurePresenceOfAllZeroesTimestamp && !description.includes('00:00:00' + separator)) ||
+					(Number(elapsedTime.getUTCHours()) === 0 &&
+						Number(elapsedTime.getMinutes()) === 0 &&
+						Number(elapsedTime.getSeconds()) <= 15)
+				) {
+					timecode = '00:00:00';
 				}
 
 				if (this.LastChapterTimestamp === 0 || new Date(dateNow - this.LastChapterTimestamp).getSeconds() > 10) {
@@ -455,7 +464,7 @@ export class Core {
 					description = description + '\n' + timecode + separator + title;
 					await this.setDescription(id, description);
 				} else {
-					throw new Error(`Cannot add chapter to descripion; chapters must be spaced at least 10 seconds apart `)
+					throw new Error(`Cannot add chapter to descripion; chapters must be spaced at least 10 seconds apart`);
 				}
 			} else {
 				throw new Error(`Cannot add chapter to description; unable to get the start time of the specified broadcast'`);
