@@ -50,6 +50,11 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 			.then((googleAuth) => {
 				this.saveToken(JSON.stringify(googleAuth.credentials));
 
+				googleAuth.on('tokens', (credentials) => {
+					this.log('info', 'Token refreshed by OAuth2 client');
+					this.saveToken(JSON.stringify({ ...credentials, refresh_token: googleAuth.credentials.refresh_token }));
+				});
+
 				const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(this.config));
 
 				this.core = new Core(this, api, loadRefreshInterval(this.config));
