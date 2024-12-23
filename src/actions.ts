@@ -7,6 +7,7 @@ import {
 } from '@companion-module/base';
 import { BroadcastMap, BroadcastID } from './cache';
 import { Core } from './core';
+import { CompanionCommonCallbackContext } from '@companion-module/base/dist/module-api/common';
 
 export enum ActionId {
 	InitBroadcast = 'init_broadcast',
@@ -62,14 +63,18 @@ export function listActions(
 		return true
 	}
 
-	const checkBroadcastId = (options: CompanionActionEvent['options']): BroadcastID | undefined => {
-		let broadcastId: BroadcastID = options.broadcast_id as BroadcastID;
+	const checkBroadcastId = async (options: CompanionActionEvent['options'], context: CompanionCommonCallbackContext): Promise<string | undefined> => {
+		let broadcastId: BroadcastID = (
+			options.use_var
+				? await context.parseVariablesInString(options.broadcast_vars as string)
+				: options.broadcast_id
+		) as BroadcastID;
 
 		if (!checkCore()) {
 			return undefined;
 		}
 
-		if (options.broadcast_id) {
+		if (broadcastId) {
 			if (!(broadcastId in core!.Cache.Broadcasts)) {
 				const hit = core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcastId);
 				if (hit) {
@@ -92,20 +97,35 @@ export function listActions(
 			name: 'Start broadcast test',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (broadcastId) {
 					return await core!.startBroadcastTest(broadcastId as BroadcastID);
 				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+					throw new Error('Error with given broadcast ID: ' + (event.options.use_var ? event.options.broadcast_vars : event.options.broadcast_id));
 				}
 			},
 		},
@@ -113,20 +133,35 @@ export function listActions(
 			name: 'Go live',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (broadcastId) {
 					return core!.makeBroadcastLive(broadcastId as BroadcastID);
 				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+					throw new Error('Error with given broadcast ID: ' + (event.options.use_var ? event.options.broadcast_vars : event.options.broadcast_id));
 				}
 			},
 		},
@@ -134,20 +169,35 @@ export function listActions(
 			name: 'Finish broadcast',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (broadcastId) {
 					return core!.finishBroadcast(broadcastId as BroadcastID);
 				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+					throw new Error('Error with given broadcast ID: ' + (event.options.use_var ? event.options.broadcast_vars : event.options.broadcast_id));
 				}
 			},
 		},
@@ -155,20 +205,35 @@ export function listActions(
 			name: 'Advance broadcast to next phase',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (broadcastId) {
 					return core!.toggleBroadcast(broadcastId as BroadcastID);
 				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+					throw new Error('Error with given broadcast ID: ' + (event.options.use_var ? event.options.broadcast_vars : event.options.broadcast_id));
 				}
 			},
 		},
@@ -198,11 +263,26 @@ export function listActions(
 			name: 'Send message to live chat',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastUnfinishedEntries],
 					default: defaultUnfinishedBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 				{
 					type: 'textinput',
@@ -216,7 +296,7 @@ export function listActions(
 			],
 			callback: async (event, context): Promise<void> => {
 				let message = await context.parseVariablesInString(event.options.message_content as string);
-				const broadcastId = checkBroadcastId(event.options);
+				const broadcastId =await  checkBroadcastId(event.options, context);
 
 				if (broadcastId && event.options.message_content
 					&& message.length > 0 && message.length <= 200) {
@@ -231,21 +311,36 @@ export function listActions(
 			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastUnfinishedEntries],
 					default: defaultUnfinishedBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (!checkCore()) throw new Error('Internal module error');
 				if (broadcastId) {
 					return core!.insertCuePoint(broadcastId as BroadcastID);
 				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+					throw new Error('Error with given broadcast ID: ' + (event.options.use_var ? event.options.broadcast_vars : event.options.broadcast_id));
 				}
 			},
 		},
@@ -254,11 +349,26 @@ export function listActions(
 			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastUnfinishedEntries],
 					default: defaultUnfinishedBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 				{
 					type: 'number',
@@ -269,15 +379,15 @@ export function listActions(
 					max: 120,
 				}
 			],
-			callback: async (event): Promise<void> => {
+			callback: async (event, context): Promise<void> => {
 				let duration = event.options.duration as number;
-				const broadcastId = checkBroadcastId(event.options);
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (!checkCore()) throw new Error('Internal module error');
 				if (broadcastId) {
 					return core!.insertCuePoint(broadcastId as BroadcastID, duration);
 				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+					throw new Error('Error with given broadcast ID: ' + (event.options.use_var ? event.options.broadcast_vars : event.options.broadcast_id));
 				}
 			},
 		},
@@ -286,11 +396,26 @@ export function listActions(
 			description: 'Warning: the title of the broadcast will be replaced',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 				{
 					type: 'textinput',
@@ -303,7 +428,7 @@ export function listActions(
 			],
 			callback: async (event, context): Promise<void> => {
 				const title = await context.parseVariablesInString(event.options.title_content as string);
-				const broadcastId = checkBroadcastId(event.options);
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (broadcastId && event.options.title_content
 					&& title.length > 0 && title.length <= 100) {
@@ -318,11 +443,26 @@ export function listActions(
 			description: 'Warning: if a description exists for the selected broadcast, it will be replaced',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 				{
 					type: 'textinput',
@@ -335,7 +475,7 @@ export function listActions(
 			],
 			callback: async (event, context): Promise<void> => {
 				const description = await context.parseVariablesInString(event.options.desc_content as string);
-				const broadcastId = checkBroadcastId(event.options);
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (broadcastId && event.options.desc_content
 					&& description.length > 0 && description.length <= 5000) {
@@ -350,11 +490,26 @@ export function listActions(
 			description: 'Insert text at the beginning of the description',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 				{
 					type: 'textinput',
@@ -367,7 +522,7 @@ export function listActions(
 			],
 			callback: async (event, context): Promise<void> => {
 				const text = await context.parseVariablesInString(event.options.text as string);
-				const broadcastId = checkBroadcastId(event.options);
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (broadcastId && event.options.text
 					&& text.length > 0 && text.length <= 5000) {
@@ -382,11 +537,26 @@ export function listActions(
 			description: 'Insert text at the end of the description',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 				{
 					type: 'textinput',
@@ -399,7 +569,7 @@ export function listActions(
 			],
 			callback: async (event, context): Promise<void> => {
 				const text = await context.parseVariablesInString(event.options.text as string);
-				const broadcastId = checkBroadcastId(event.options);
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (broadcastId && event.options.text
 					&& text.length > 0 && text.length <= 5000) {
@@ -413,11 +583,26 @@ export function listActions(
 			name: 'Add chapter timecode to description',
 			options: [
 				{
+					type: 'checkbox',
+					label: 'Use variables for broadcast selection',
+					id: 'use_var',
+					default: false
+				},
+				{
 					type: 'dropdown',
 					label: 'Broadcast:',
 					id: 'broadcast_id',
 					choices: [...broadcastUnfinishedEntries],
 					default: defaultUnfinishedBroadcast,
+					isVisible: (options) => options.use_var == false
+				},
+				{
+					type: 'textinput',
+					label: 'Broadcast',
+					id: 'broadcast_vars',
+					useVariables: true,
+					tooltip: 'Use unfinished_ followed by a number to dynamically select an unfinished broadcast, or the Video ID for static selection',
+					isVisible: (options) => options.use_var == true
 				},
 				{
 					type: 'textinput',
@@ -447,7 +632,7 @@ export function listActions(
 			callback: async (event, context): Promise<void> => {
 				const separator = await context.parseVariablesInString(event.options.separator as string);
 				const chapterTitle = await context.parseVariablesInString(event.options.title as string);
-				const broadcastId = checkBroadcastId(event.options);
+				const broadcastId = await checkBroadcastId(event.options, context);
 
 				if (broadcastId && chapterTitle) {
 					if (event.options.default_separator) {
