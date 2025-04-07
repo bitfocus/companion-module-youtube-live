@@ -1,4 +1,5 @@
-import { InstanceBase } from '@companion-module/base'
+import { CompanionActionContext, CompanionOptionValues, InstanceBase } from '@companion-module/base';
+import { BroadcastID } from './cache';
 import { YoutubeConfig } from './config';
 
 /** Generic module skeleton for extracting function types. */
@@ -44,4 +45,18 @@ export function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => {
 		setTimeout(resolve, ms);
 	});
+}
+
+export const BroadcastIdOptionId = 'broadcast_id';
+
+export async function getBroadcastIdFromOptions(
+	options: CompanionOptionValues,
+	_context: CompanionActionContext
+): Promise<BroadcastID | undefined> {
+	const rawBroadcastId = options[BroadcastIdOptionId];
+	if (rawBroadcastId) {
+		return String(rawBroadcastId);
+	} else {
+		return undefined;
+	}
 }
