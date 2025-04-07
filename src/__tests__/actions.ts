@@ -145,7 +145,8 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.InitBroadcast, {});
 		await expect(
 			actionsOK.init_broadcast.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		).resolves.toBeUndefined();
+		expect(coreOK.Module.log).toHaveBeenLastCalledWith('warn', 'Action failed: undefined broadcast ID')
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
 	test('Unknown broadcast ID', async () => {
@@ -153,7 +154,11 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'random' });
 		await expect(
 			actionsOK.init_broadcast.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		).resolves.toBeUndefined();
+		expect(coreOK.Module.log).toHaveBeenLastCalledWith(
+			'warn',
+			"Action failed: broadcast ID 'random' - not found or invalid"
+		);
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
 

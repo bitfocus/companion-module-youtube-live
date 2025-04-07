@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { CompanionActionDefinition, CompanionActionEvent, DropdownChoice } from '@companion-module/base';
+import {
+	CompanionActionContext,
+	CompanionActionDefinitions,
+	CompanionActionDefinition,
+	CompanionActionEvent,
+	DropdownChoice,
+} from '@companion-module/base';
 import { BroadcastMap, BroadcastID } from './cache';
+import { BroadcastIdOptionId, getBroadcastIdFromOptions } from './common';
 import { Core } from './core';
 
 export enum ActionId {
@@ -57,30 +64,32 @@ export function listActions(
 		return true
 	}
 
-	const checkBroadcastId = (options: CompanionActionEvent['options']): BroadcastID | undefined => {
-		let broadcastId: BroadcastID = options.broadcast_id as BroadcastID;
-
+	const checkBroadcastId = async (
+		options: CompanionActionEvent['options'],
+		context: CompanionActionContext
+	): Promise<BroadcastID | undefined> => {
 		if (!checkCore()) {
 			return undefined;
 		}
 
-		if (options.broadcast_id) {
-			if (!(broadcastId in core!.Cache.Broadcasts)) {
-				const hit = core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcastId);
-				if (hit) {
-					broadcastId = hit.Id;
-				} else {
-					core!.Module.log('warn', 'Action failed: unknown broadcast ID - not found or invalid');
-					return undefined;
-				}
-			}
-		} else {
+		let broadcastId: BroadcastID | undefined = await getBroadcastIdFromOptions(options, context);
+		if (broadcastId === undefined) {
 			core!.Module.log('warn', 'Action failed: undefined broadcast ID');
 			return undefined;
 		}
 
+		if (!(broadcastId in core!.Cache.Broadcasts)) {
+			const hit = core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcastId);
+			if (hit) {
+				broadcastId = hit.Id;
+			} else {
+				core!.Module.log('warn', `Action failed: broadcast ID '${broadcastId}' - not found or invalid`);
+				return undefined;
+			}
+		}
+
 		return broadcastId;
-	}
+	};
 
 	return {
 		[ActionId.InitBroadcast]: {
@@ -89,19 +98,18 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId) {
-					return await core!.startBroadcastTest(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
 				}
+
+				return core!.startBroadcastTest(broadcastId);
 			},
 		},
 		[ActionId.StartBroadcast]: {
@@ -110,19 +118,18 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId) {
-					return core!.makeBroadcastLive(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
 				}
+
+				return core!.makeBroadcastLive(broadcastId);
 			},
 		},
 		[ActionId.StopBroadcast]: {
@@ -131,19 +138,18 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId) {
-					return core!.finishBroadcast(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
 				}
+
+				return core!.finishBroadcast(broadcastId);
 			},
 		},
 		[ActionId.ToggleBroadcast]: {
@@ -152,19 +158,18 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId) {
-					return core!.toggleBroadcast(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
 				}
+
+				return core!.toggleBroadcast(broadcastId);
 			},
 		},
 		[ActionId.RefreshFeedbacks]: {
@@ -195,7 +200,7 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastUnfinishedEntries],
 					default: defaultUnfinishedBroadcast,
 				},
@@ -210,15 +215,17 @@ export function listActions(
 				},
 			],
 			callback: async (event, context): Promise<void> => {
-				let message = await context.parseVariablesInString(event.options.message_content as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.message_content
-					&& message.length > 0 && message.length <= 200) {
-					return core!.sendLiveChatMessage(broadcastId as BroadcastID, message);
-				} else {
-					throw new Error('Error with given parameters.');
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
 				}
+
+				const message = await context.parseVariablesInString(String(event.options.message_content));
+				if (message.length === 0 || 200 < message.length) {
+					throw new Error('Message is empty or too long.');
+				}
+
+				return core!.sendLiveChatMessage(broadcastId, message);
 			},
 		},
 		[ActionId.InsertCuePoint]: {
@@ -228,20 +235,19 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastUnfinishedEntries],
 					default: defaultUnfinishedBroadcast,
 				},
 			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
+				}
 
 				if (!checkCore()) throw new Error('Internal module error');
-				if (broadcastId) {
-					return core!.insertCuePoint(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
-				}
+				return core!.insertCuePoint(broadcastId);
 			},
 		},
 		[ActionId.InsertCuePointCustomDuration]: {
@@ -251,7 +257,7 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastUnfinishedEntries],
 					default: defaultUnfinishedBroadcast,
 				},
@@ -264,16 +270,16 @@ export function listActions(
 					max: 120,
 				}
 			],
-			callback: async (event): Promise<void> => {
-				let duration = event.options.duration as number;
-				const broadcastId = checkBroadcastId(event.options);
+			callback: async (event, context): Promise<void> => {
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
+				}
 
 				if (!checkCore()) throw new Error('Internal module error');
-				if (broadcastId) {
-					return core!.insertCuePoint(broadcastId as BroadcastID, duration);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
-				}
+
+				const duration = Number(event.options.duration);
+				return core!.insertCuePoint(broadcastId, duration);
 			},
 		},
 		[ActionId.SetTitle]: {
@@ -283,7 +289,7 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
@@ -297,15 +303,17 @@ export function listActions(
 				},
 			],
 			callback: async (event, context): Promise<void> => {
-				const title = await context.parseVariablesInString(event.options.title_content as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.title_content
-					&& title.length > 0 && title.length <= 100) {
-					return core!.setTitle(broadcastId as BroadcastID, title);
-				} else {
-					throw new Error('Unable to set title: bad paramaters.');
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
 				}
+
+				const title = await context.parseVariablesInString(String(event.options.title_content));
+				if (title.length === 0 || 100 < title.length) {
+					throw new Error('Unable to set title: title is empty or too long.');
+				}
+
+				return core!.setTitle(broadcastId, title);
 			},
 		},
 		[ActionId.SetDescription]: {
@@ -315,7 +323,7 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
@@ -329,15 +337,17 @@ export function listActions(
 				},
 			],
 			callback: async (event, context): Promise<void> => {
-				const description = await context.parseVariablesInString(event.options.desc_content as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.desc_content
-					&& description.length > 0 && description.length <= 5000) {
-					return core!.setDescription(broadcastId as BroadcastID, description);
-				} else {
-					throw new Error('Unable to set description: bad paramaters.');
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
 				}
+
+				const description = await context.parseVariablesInString(String(event.options.desc_content));
+				if (description.length === 0 || 5000 < description.length) {
+					throw new Error('Unable to set description: description is empty or too long.');
+				}
+
+				return core!.setDescription(broadcastId, description);
 			},
 		},
 		[ActionId.PrependToDescription]: {
@@ -347,7 +357,7 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
@@ -361,15 +371,21 @@ export function listActions(
 				},
 			],
 			callback: async (event, context): Promise<void> => {
-				const text = await context.parseVariablesInString(event.options.text as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.text
-					&& text.length > 0 && text.length <= 5000) {
-					return core!.prependToDescription(broadcastId as BroadcastID, text);
-				} else {
-					throw new Error('Unable to prepend text to description: bad paramaters.');
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
 				}
+
+				const text = await context.parseVariablesInString(String(event.options.text));
+				if (text.length === 0) {
+					return;
+				}
+
+				if (text.length > 5000) {
+					throw new Error('Unable to prepend text to description: text is too long.');
+				}
+
+				return core!.prependToDescription(broadcastId, text);
 			},
 		},
 		[ActionId.AppendToDescription]: {
@@ -379,7 +395,7 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
 					default: defaultBroadcast,
 				},
@@ -393,15 +409,21 @@ export function listActions(
 				},
 			],
 			callback: async (event, context): Promise<void> => {
-				const text = await context.parseVariablesInString(event.options.text as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.text
-					&& text.length > 0 && text.length <= 5000) {
-					return core!.appendToDescription(broadcastId as BroadcastID, text);
-				} else {
-					throw new Error('Unable to append text to description: bad paramaters.');
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
 				}
+
+				const text = await context.parseVariablesInString(String(event.options.text));
+				if (text.length === 0) {
+					return;
+				}
+
+				if (text.length > 5000) {
+					throw new Error('Unable to append text to description: text is too long.');
+				}
+
+				return core!.appendToDescription(broadcastId, text);
 			},
 		},
 		[ActionId.AddChapterToDescription]: {
@@ -410,7 +432,7 @@ export function listActions(
 				{
 					type: 'dropdown',
 					label: 'Broadcast:',
-					id: 'broadcast_id',
+					id: BroadcastIdOptionId,
 					choices: [...broadcastUnfinishedEntries],
 					default: defaultUnfinishedBroadcast,
 				},
@@ -440,18 +462,22 @@ export function listActions(
 				},
 			],
 			callback: async (event, context): Promise<void> => {
-				const separator = await context.parseVariablesInString(event.options.separator as string);
-				const chapterTitle = await context.parseVariablesInString(event.options.title as string);
-				const broadcastId = checkBroadcastId(event.options);
+				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+				if (broadcastId === undefined) {
+					return;
+				}
 
-				if (broadcastId && chapterTitle) {
+				const separator = await context.parseVariablesInString(String(event.options.separator));
+				const chapterTitle = await context.parseVariablesInString(String(event.options.title));
+
+				if (chapterTitle) {
 					if (event.options.default_separator) {
-						return core!.addChapterToDescription(broadcastId as BroadcastID, chapterTitle);
+						return core!.addChapterToDescription(broadcastId, chapterTitle);
 					} else {
-						return core!.addChapterToDescription(broadcastId as BroadcastID, chapterTitle, separator);
+						return core!.addChapterToDescription(broadcastId, chapterTitle, separator);
 					}
 				} else {
-					throw new Error('Unable to prepend text to description: bad paramaters.');
+					throw new Error('Unable to prepend text to description: bad parameters.');
 				}
 			},
 		},
