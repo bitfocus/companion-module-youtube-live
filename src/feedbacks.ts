@@ -5,14 +5,44 @@ import {
 	CompanionFeedbackAdvancedEvent,
 	DropdownChoice,
 	combineRgb,
-	CompanionFeedbackContext
+	CompanionMigrationFeedback,
+	CompanionFeedbackContext,
+	SomeCompanionFeedbackInputField,
 } from '@companion-module/base';
 import { Broadcast, BroadcastMap, BroadcastLifecycle, Stream, StreamHealth } from './cache';
 import { Core } from './core';
+import {
+	broadcastIdDropdownOption,
+	BroadcastIdFromTextOption,
+	BroadcastIdIsTextCheckbox,
+	BroadcastIdIsTextOptionId,
+	BroadcastIdDropdownOptionId,
+	BroadcastIdTextOptionId,
+	getBroadcastIdFromOptions,
+} from './common';
 
 export enum FeedbackId {
 	BroadcastStatus = 'broadcast_status',
 	StreamHealth = 'broadcast_bound_stream_health',
+}
+
+export function tryUpgradeFeedbackSelectingBroadcastID(feedback: CompanionMigrationFeedback): boolean {
+	switch (feedback.feedbackId) {
+		case FeedbackId.BroadcastStatus:
+		case FeedbackId.StreamHealth:
+			if (BroadcastIdIsTextOptionId in feedback.options) {
+				return false;
+			}
+			break;
+		default:
+			return false;
+	}
+
+	const options = feedback.options;
+	options[BroadcastIdIsTextOptionId] = false;
+	options[BroadcastIdDropdownOptionId] = options[BroadcastIdTextOptionId] = options.broadcast;
+	delete options.broadcast;
+	return true;
 }
 
 /**
@@ -51,24 +81,30 @@ export function listFeedbacks(
 
 	const findBroadcastForOptions = async (
 		options: CompanionFeedbackAdvancedEvent['options'],
-		_context: CompanionFeedbackContext
+		context: CompanionFeedbackContext
 	): Promise<Broadcast | undefined> => {
 		if (!checkCore()) {
 			return undefined;
 		}
 
-		const rawBroadcastOption = options.broadcast;
-		if (!rawBroadcastOption) {
+		const id = await getBroadcastIdFromOptions(options, context);
+		if (id === undefined) {
+			core!.Module.log('warn', 'Feedback failed: undefined broadcast ID');
 			return undefined;
 		}
 
-		const id = String(rawBroadcastOption);
 		if (id in core!.Cache.Broadcasts) {
 			return core!.Cache.Broadcasts[id];
 		}
 
 		return core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
 	}
+
+	const selectFromAllBroadcasts: SomeCompanionFeedbackInputField[] = [
+		BroadcastIdIsTextCheckbox,
+		broadcastIdDropdownOption([...broadcastEntries, ...broadcastUnfinishedEntries], defaultBroadcast),
+		BroadcastIdFromTextOption,
+	];
 
 	return {
 		[FeedbackId.BroadcastStatus]: {
@@ -112,13 +148,7 @@ export function listFeedbacks(
 					id: 'text_complete',
 					default: combineRgb(126, 126, 126),
 				},
-				{
-					type: 'dropdown',
-					label: 'Broadcast',
-					id: 'broadcast',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 			],
 			callback: async (event, context): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!checkCore) return {};
@@ -217,13 +247,7 @@ export function listFeedbacks(
 					id: 'text_no_data',
 					default: combineRgb(255, 255, 255),
 				},
-				{
-					type: 'dropdown',
-					label: 'Broadcast',
-					id: 'broadcast',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 			],
 			callback: async (event, context): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!checkCore) return {};

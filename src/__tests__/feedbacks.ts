@@ -15,6 +15,9 @@ import { MockContext } from '../__mocks__/context';
 //
 
 const SampleContext = new MockContext();
+SampleContext.setVariable('letter:e', 'e');
+SampleContext.setVariable('string:bad', 'BAD');
+SampleContext.setVariable('string:test', 'test');
 
 const SampleMemory: StateMemory = {
 	Broadcasts: {
@@ -49,7 +52,9 @@ const SampleBroadcastCheck: CompanionFeedbackAdvancedEvent = {
 		bg_testing: combineRgb(255, 255, 0),
 		bg_live: combineRgb(255, 0, 0),
 		bg_complete: combineRgb(0, 0, 255),
-		broadcast: 'test',
+		broadcast_id_is_text: false,
+		broadcast_id: 'test',
+		broadcast_id_text: '$(string:bad)',
 	},
 	_page: 0,
 	_bank: 0,
@@ -66,7 +71,9 @@ const SampleStreamCheck: CompanionFeedbackAdvancedEvent = {
 		bg_ok: combineRgb(255, 255, 0),
 		bg_bad: combineRgb(255, 0, 0),
 		bg_no_data: combineRgb(0, 0, 255),
-		broadcast: 'test',
+		broadcast_id_is_text: true,
+		broadcast_id: 'BAD',
+		broadcast_id_text: 't$(letter:e)st',
 	},
 	_page: 0,
 	_bank: 0,
@@ -183,7 +190,9 @@ describe('Broadcast lifecycle feedback', () => {
 			type: 'advanced',
 			feedbackId: 'broadcast_status',
 			options: {
-				broadcast: 'test',
+				broadcast_id_is_text: true,
+				broadcast_id: 'BAD',
+				broadcast_id_text: '$(string:test)',
 			},
 			_page: 0,
 			_bank: 0,
@@ -309,7 +318,9 @@ describe('Stream health feedback', () => {
 			type: 'advanced',
 			feedbackId: 'broadcast_bound_stream_health',
 			options: {
-				broadcast: 'test',
+				broadcast_id_is_text: false,
+				broadcast_id: 'test',
+				broadcast_id_text: '$(string:bad)',
 			},
 			_page: 0,
 			_bank: 0,
