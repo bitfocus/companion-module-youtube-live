@@ -4,10 +4,20 @@ import {
 	CompanionActionDefinitions,
 	CompanionActionDefinition,
 	CompanionActionEvent,
+	CompanionMigrationAction,
 	DropdownChoice,
+	SomeCompanionActionInputField,
 } from '@companion-module/base';
 import { BroadcastMap, BroadcastID } from './cache';
-import { BroadcastIdOptionId, getBroadcastIdFromOptions } from './common';
+import {
+	BroadcastIdIsTextCheckbox,
+	BroadcastIdFromTextOption,
+	BroadcastIdIsTextOptionId,
+	broadcastIdDropdownOption,
+	BroadcastIdDropdownOptionId,
+	BroadcastIdTextOptionId,
+	getBroadcastIdFromOptions,
+} from './common';
 import { Core } from './core';
 
 export enum ActionId {
@@ -25,6 +35,35 @@ export enum ActionId {
 	PrependToDescription = 'preprend_to_description',
 	AppendToDescription = 'append_to_description',
 	AddChapterToDescription = 'add_chapter_to_description'
+}
+
+export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationAction): boolean {
+	let options: CompanionMigrationAction['options']
+	switch (action.actionId) {
+		case ActionId.InitBroadcast:
+		case ActionId.StartBroadcast:
+		case ActionId.StopBroadcast:
+		case ActionId.ToggleBroadcast:
+		case ActionId.SendMessage:
+		case ActionId.InsertCuePoint:
+		case ActionId.InsertCuePointCustomDuration:
+		case ActionId.SetTitle:
+		case ActionId.SetDescription:
+		case ActionId.PrependToDescription:
+		case ActionId.AppendToDescription:
+		case ActionId.AddChapterToDescription:
+			options = action.options;
+			if (BroadcastIdIsTextOptionId in options) {
+				return false;
+			}
+			break;
+		default:
+			return false;
+	}
+
+	options[BroadcastIdIsTextOptionId] = false;
+	options[BroadcastIdTextOptionId] = options[BroadcastIdDropdownOptionId];
+	return true;
 }
 
 /**
@@ -91,18 +130,22 @@ export function listActions(
 		return broadcastId;
 	}
 
+	const selectFromAllBroadcasts: SomeCompanionActionInputField[] = [
+		BroadcastIdIsTextCheckbox,
+		broadcastIdDropdownOption([...broadcastEntries, ...broadcastUnfinishedEntries], defaultBroadcast),
+		BroadcastIdFromTextOption,
+	];
+
+	const selectFromUnfinishedBroadcasts: SomeCompanionActionInputField[] = [
+		BroadcastIdIsTextCheckbox,
+		broadcastIdDropdownOption([...broadcastUnfinishedEntries], defaultUnfinishedBroadcast),
+		BroadcastIdFromTextOption,
+	];
+
 	const actions: { [id in ActionId]: CompanionActionDefinition | undefined } = {
 		[ActionId.InitBroadcast]: {
 			name: 'Start broadcast test',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
-			],
+			options: [...selectFromAllBroadcasts],
 			callback: async (event, context): Promise<void> => {
 				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
 				if (broadcastId === undefined) {
@@ -114,15 +157,7 @@ export function listActions(
 		},
 		[ActionId.StartBroadcast]: {
 			name: 'Go live',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
-			],
+			options: [...selectFromAllBroadcasts],
 			callback: async (event, context): Promise<void> => {
 				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
 				if (broadcastId === undefined) {
@@ -134,15 +169,7 @@ export function listActions(
 		},
 		[ActionId.StopBroadcast]: {
 			name: 'Finish broadcast',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
-			],
+			options: [...selectFromAllBroadcasts],
 			callback: async (event, context): Promise<void> => {
 				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
 				if (broadcastId === undefined) {
@@ -154,15 +181,7 @@ export function listActions(
 		},
 		[ActionId.ToggleBroadcast]: {
 			name: 'Advance broadcast to next phase',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
-			],
+			options: [...selectFromAllBroadcasts],
 			callback: async (event, context): Promise<void> => {
 				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
 				if (broadcastId === undefined) {
@@ -197,13 +216,7 @@ export function listActions(
 		[ActionId.SendMessage]: {
 			name: 'Send message to live chat',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastUnfinishedEntries],
-					default: defaultUnfinishedBroadcast,
-				},
+				...selectFromUnfinishedBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Message:',
@@ -231,15 +244,7 @@ export function listActions(
 		[ActionId.InsertCuePoint]: {
 			name: 'Insert an advertisement cue point (default duration)',
 			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastUnfinishedEntries],
-					default: defaultUnfinishedBroadcast,
-				},
-			],
+			options: [...selectFromUnfinishedBroadcasts],
 			callback: async (event, context): Promise<void> => {
 				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
 				if (broadcastId === undefined) {
@@ -254,13 +259,7 @@ export function listActions(
 			name: 'Insert an advertisement cue point (custom duration)',
 			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastUnfinishedEntries],
-					default: defaultUnfinishedBroadcast,
-				},
+				...selectFromUnfinishedBroadcasts,
 				{
 					type: 'number',
 					label: 'Duration:',
@@ -286,13 +285,7 @@ export function listActions(
 			name: 'Set title',
 			description: 'Warning: the title of the broadcast will be replaced',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Title:',
@@ -320,13 +313,7 @@ export function listActions(
 			name: 'Set description',
 			description: 'Warning: if a description exists for the selected broadcast, it will be replaced',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Description:',
@@ -354,13 +341,7 @@ export function listActions(
 			name: 'Prepend text to description',
 			description: 'Insert text at the beginning of the description',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Text:',
@@ -392,13 +373,7 @@ export function listActions(
 			name: 'Append text to description',
 			description: 'Insert text at the end of the description',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Text:',
@@ -429,13 +404,7 @@ export function listActions(
 		[ActionId.AddChapterToDescription]: {
 			name: 'Add chapter timecode to description',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: BroadcastIdOptionId,
-					choices: [...broadcastUnfinishedEntries],
-					default: defaultUnfinishedBroadcast,
-				},
+				...selectFromUnfinishedBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Chapter title:',
