@@ -2,36 +2,38 @@ name: Build + test
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Download Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
 
-    - name: Download Node.js 18.x
-      uses: actions/setup-node@v3
-      with:
-        node-version: 18.x
+      - name: Checkout Companion
+        uses: actions/checkout@v3
+        with:
+          repository: bitfocus/companion
+          path: ./
+          submodules: false
 
-    - name: Checkout Companion
-      uses: actions/checkout@v3
-      with:
-        repository: bitfocus/companion
-        path: ./
-        submodules: false
+      - name: Checkout this commit
+        uses: actions/checkout@v3
+        with:
+          path: ./module-local-dev/youtube-live
 
-    - name: Checkout this commit
-      uses: actions/checkout@v3
-      with:
-        path: ./module-local-dev/youtube-live
+      - name: Compile module
+        run: |
+          corepack enable
+          yarn install --frozen-lockfile
+        working-directory: ./module-local-dev/youtube-live
 
-    - name: Compile module
-      run: yarn install --frozen-lockfile
-      working-directory: ./module-local-dev/youtube-live
-
-    - name: Run unit tests
-      run: yarn test
-      working-directory: ./module-local-dev/youtube-live
+      - name: Run unit tests
+        run: |
+          yarn test
+        working-directory: ./module-local-dev/youtube-live
