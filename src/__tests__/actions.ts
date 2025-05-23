@@ -1,11 +1,6 @@
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/camelcase */
-import {
-	CompanionFeedbackContext,
-	CompanionActionDefinitions,
-	CompanionActionEvent,
-	CompanionOptionValues,
-} from '@companion-module/base';
+import { CompanionActionDefinitions, CompanionActionEvent, CompanionOptionValues } from '@companion-module/base';
 import { mocked, MockedShallow } from 'jest-mock';
 import { makeMockModule, makeMockYT } from './core';
 import { listActions, ActionId } from '../actions';
@@ -13,18 +8,7 @@ import { BroadcastLifecycle, BroadcastID, StateMemory } from '../cache';
 import { clone } from '../common';
 import { ModuleBase, Core } from '../core';
 import { YoutubeAPI } from '../youtube';
-
-//
-// SAMPLE CONTEXT
-//
-
-const SampleContext: CompanionFeedbackContext = {
-	parseVariablesInString: function (text: string): Promise<string> {
-		return new Promise<string>((resolve) => {
-			resolve(text);
-		});
-	}
-}
+import { MockContext } from '../__mocks__/context';
 
 const SampleMemory: StateMemory = {
 	Broadcasts: {
@@ -141,235 +125,267 @@ describe('Action callback', () => {
 	})
 
 	test('Start test success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.init_broadcast!.callback(event, SampleContext)
+			actionsOK.init_broadcast!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
 	test('Start test failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.init_broadcast!.callback(event, SampleContext)
+			actionsKO.init_broadcast!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
 	test('Missing broadcast ID', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.InitBroadcast, {});
 		await expect(
-			actionsOK.init_broadcast!.callback(event, SampleContext)
+			actionsOK.init_broadcast!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
 	test('Unknown broadcast ID', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'random' });
 		await expect(
-			actionsOK.init_broadcast!.callback(event, SampleContext)
+			actionsOK.init_broadcast!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
 
 	test('Go live success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.StartBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.start_broadcast!.callback(event, SampleContext)
+			actionsOK.start_broadcast!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
 	test('Go live failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.StartBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.start_broadcast!.callback(event, SampleContext)
+			actionsKO.start_broadcast!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
 
 	test('Finish success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.StopBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.stop_broadcast!.callback(event, SampleContext)
+			actionsOK.stop_broadcast!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
 	test('Finish failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.StopBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.stop_broadcast!.callback(event, SampleContext)
+			actionsKO.stop_broadcast!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
 
 	test('Toggle success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.ToggleBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.toggle_broadcast!.callback(event, SampleContext)
+			actionsOK.toggle_broadcast!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
 	test('Toggle failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.ToggleBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.toggle_broadcast!.callback(event, SampleContext)
+			actionsKO.toggle_broadcast!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
 
 	test('Reload all success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshStatus, {});
 		await expect(
-			actionsOK.refresh_status!.callback(event, SampleContext)
+			actionsOK.refresh_status!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.reloadEverything).toHaveBeenCalledTimes(1);
 	});
 	test('Reload all failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshStatus, {});
 		await expect(
-			actionsKO.refresh_status!.callback(event, SampleContext)
+			actionsKO.refresh_status!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.reloadEverything).toHaveBeenCalledTimes(1);
 	});
 
 	test('Feedback refresh success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshFeedbacks, {});
 		await expect(
-			actionsOK.refresh_feedbacks!.callback(event, SampleContext)
+			actionsOK.refresh_feedbacks!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 	test('Feedback refresh failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshFeedbacks, {});
 		await expect(
-			actionsKO.refresh_feedbacks!.callback(event, SampleContext)
+			actionsKO.refresh_feedbacks!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 
 	test('Send message success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.SendMessage, { broadcast_id: 'test', message_content: 'testing message' });
 		await expect(
-			actionsOK.send_livechat_message!.callback(event, SampleContext)
+			actionsOK.send_livechat_message!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
 	test('Send message failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.SendMessage, { broadcast_id: 'test', message_content: 'testing message' });
 		await expect(
-			actionsKO.send_livechat_message!.callback(event, SampleContext)
+			actionsKO.send_livechat_message!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
 
 	test('Insert cue point success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.insert_cue_point!.callback(event, SampleContext)
+			actionsOK.insert_cue_point!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
 	test('Insert cue point failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.insert_cue_point!.callback(event, SampleContext)
+			actionsKO.insert_cue_point!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
 	test('Insert custom cue point success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test', duration: 10 });
 		await expect(
-			actionsOK.insert_cue_point_custom_duration!.callback(event, SampleContext)
+			actionsOK.insert_cue_point_custom_duration!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
 	test('Insert custom cue point failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test', duration: 10 });
 		await expect(
-			actionsKO.insert_cue_point_custom_duration!.callback(event, SampleContext)
+			actionsKO.insert_cue_point_custom_duration!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
 
 	test('Set title success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.SetTitle, { broadcast_id: 'test', title_content: 'Test Broadcast (updated title)' });
 		await expect(
-			actionsOK.set_title!.callback(event, SampleContext)
+			actionsOK.set_title!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.setTitle).toHaveBeenCalledTimes(1);
 	});
 	test('Set title failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.SetTitle, { broadcast_id: 'test', title_content: 'Test Broadcast (updated title)' });
 		await expect(
-			actionsKO.set_title!.callback(event, SampleContext)
+			actionsKO.set_title!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.setTitle).toHaveBeenCalledTimes(1);
 	});
 
 	test('Set description success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.SetDescription, { broadcast_id: 'test', desc_content: 'description' });
 		await expect(
-			actionsOK.set_description!.callback(event, SampleContext)
+			actionsOK.set_description!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.setDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Set description failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.SetDescription, { broadcast_id: 'test', desc_content: 'description' });
 		await expect(
-			actionsKO.set_description!.callback(event, SampleContext)
+			actionsKO.set_description!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.setDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Prepend to description success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.PrependToDescription, { broadcast_id: 'test', text: 'text to prepend' });
 		await expect(
-			actionsOK.preprend_to_description!.callback(event, SampleContext)
+			actionsOK.preprend_to_description!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.prependToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Prepend to description failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.PrependToDescription, { broadcast_id: 'test', text: 'text to prepend' });
 		await expect(
-			actionsKO.preprend_to_description!.callback(event, SampleContext)
+			actionsKO.preprend_to_description!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.prependToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Append to description success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.AppendToDescription, { broadcast_id: 'test', text: 'text to append' });
 		await expect(
-			actionsOK.append_to_description!.callback(event, SampleContext)
+			actionsOK.append_to_description!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.appendToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Append to description failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.AppendToDescription, { broadcast_id: 'test', text: 'text to append' });
 		await expect(
-			actionsKO.append_to_description!.callback(event, SampleContext)
+			actionsKO.append_to_description!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.appendToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter to description success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title' });
 		await expect(
-			actionsOK.add_chapter_to_description!.callback(event, SampleContext)
+			actionsOK.add_chapter_to_description!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter to description failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title' });
 		await expect(
-			actionsKO.add_chapter_to_description!.callback(event, SampleContext)
+			actionsKO.add_chapter_to_description!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter with custom separator to description success', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title', separator: '—' });
 		await expect(
-			actionsOK.add_chapter_to_description!.callback(event, SampleContext)
+			actionsOK.add_chapter_to_description!.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter with custom separator to description failure', async () => {
+		const context = new MockContext();
 		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title', separator: '—' });
 		await expect(
-			actionsKO.add_chapter_to_description!.callback(event, SampleContext)
+			actionsKO.add_chapter_to_description!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
