@@ -2,22 +2,19 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { listFeedbacks } from '../feedbacks';
 import { BroadcastLifecycle, StreamHealth, StateMemory } from '../cache';
-import { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult, CompanionFeedbackContext, combineRgb } from '@companion-module/base';
+import { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult, combineRgb } from '@companion-module/base';
 import { clone } from '../common';
 import { ModuleBase, Core } from '../core';
 import { mocked, MockedShallow } from 'jest-mock';
 import { YoutubeAPI } from '../youtube';
-import { makeMockModule, makeMockYT } from './core'
+import { makeMockModule, makeMockYT } from './core';
+import { MockContext } from '../__mocks__/context';
 
 //
 // SAMPLE DATA
 //
 
-const SampleContext: CompanionFeedbackContext = {
-	parseVariablesInString: function (text: string): Promise<string> {
-		throw new Error('Function not implemented. Parameter was: ' + text);
-	}
-}
+const SampleContext = new MockContext();
 
 const SampleMemory: StateMemory = {
 	Broadcasts: {
@@ -96,7 +93,7 @@ describe('Common tests', () => {
 async function tryBroadcast(phase: BroadcastLifecycle, core: Core): Promise<CompanionAdvancedFeedbackResult> {
 	await core.init();
 	core.Cache.Broadcasts.test.Status = phase;
-	const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));	
+	const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
 	return feedbacks.broadcast_status!.callback(SampleBroadcastCheck, SampleContext) as CompanionAdvancedFeedbackResult;
 }
 
@@ -347,7 +344,7 @@ describe('Stream health feedback', () => {
 			_rawBank: 'test' as any,
 			controlId: 'control0'
 		};
-		
+
 		await core.init();
 		core.Cache = data;
 
@@ -426,7 +423,7 @@ describe('Stream health feedback', () => {
 
 		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
 		const result = feedbacks.broadcast_bound_stream_health!.callback(event, SampleContext) as CompanionAdvancedFeedbackResult;
-		
+
 		expect(Object.keys(result)).toHaveLength(0);
 	});
 });

@@ -1,6 +1,6 @@
-import { CompanionActionContext } from '@companion-module/base';
+import { CompanionActionContext, CompanionFeedbackContext } from '@companion-module/base';
 
-export class MockContext implements CompanionActionContext {
+export class MockContext implements CompanionActionContext, CompanionFeedbackContext {
 	async parseVariablesInString(text: string): Promise<string> {
 		return new Promise<string>((resolve) => {
 			resolve(text);
