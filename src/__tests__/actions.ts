@@ -359,34 +359,62 @@ describe('Action callback', () => {
 	});
 	test('Add chapter to description success', async () => {
 		const context = new MockContext();
-		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title' });
+		const ChapterTitle = 'gooder chapter title';
+		const event = makeEvent(ActionId.AddChapterToDescription, {
+			broadcast_id: 'test',
+			title: ChapterTitle,
+			default_separator: true,
+		});
 		await expect(
 			actionsOK.add_chapter_to_description!.callback(event, context)
 		).resolves.toBeUndefined();
+		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter to description failure', async () => {
 		const context = new MockContext();
-		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title' });
+		const ChapterTitle = 'goodest chapter title';
+		const event = makeEvent(ActionId.AddChapterToDescription, {
+			broadcast_id: 'test',
+			title: ChapterTitle,
+			default_separator: true,
+		});
 		await expect(
 			actionsKO.add_chapter_to_description!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
+		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter with custom separator to description success', async () => {
 		const context = new MockContext();
-		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title', separator: '—' });
+		const ChapterTitle = 'quality chapter title';
+		const Sep = '—';
+		const event = makeEvent(ActionId.AddChapterToDescription, {
+			broadcast_id: 'test',
+			title: ChapterTitle,
+			default_separator: false,
+			separator: Sep,
+		});
 		await expect(
 			actionsOK.add_chapter_to_description!.callback(event, context)
 		).resolves.toBeUndefined();
+		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep);
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter with custom separator to description failure', async () => {
 		const context = new MockContext();
-		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title', separator: '—' });
+		const ChapterTitle = 'A-OK chapter title';
+		const Sep = 'DASH';
+		const event = makeEvent(ActionId.AddChapterToDescription, {
+			broadcast_id: 'test',
+			title: ChapterTitle,
+			default_separator: false,
+			separator: Sep,
+		});
 		await expect(
 			actionsKO.add_chapter_to_description!.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
+		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 });
