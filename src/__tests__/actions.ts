@@ -144,7 +144,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'test' });
 		await expect(
 			actionsOK.init_broadcast!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
 	test('Start test failure', async () => {
@@ -173,7 +173,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.StartBroadcast, { broadcast_id: 'test' });
 		await expect(
 			actionsOK.start_broadcast!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
 	test('Go live failure', async () => {
@@ -188,7 +188,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.StopBroadcast, { broadcast_id: 'test' });
 		await expect(
 			actionsOK.stop_broadcast!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
 	test('Finish failure', async () => {
@@ -203,7 +203,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.ToggleBroadcast, { broadcast_id: 'test' });
 		await expect(
 			actionsOK.toggle_broadcast!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
 	test('Toggle failure', async () => {
@@ -218,7 +218,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.RefreshStatus, {});
 		await expect(
 			actionsOK.refresh_status!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.reloadEverything).toHaveBeenCalledTimes(1);
 	});
 	test('Reload all failure', async () => {
@@ -233,7 +233,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.RefreshFeedbacks, {});
 		await expect(
 			actionsOK.refresh_feedbacks!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 	test('Feedback refresh failure', async () => {
@@ -248,7 +248,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.SendMessage, { broadcast_id: 'test', message_content: 'testing message' });
 		await expect(
 			actionsOK.send_livechat_message!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
 	test('Send message failure', async () => {
@@ -263,7 +263,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test' });
 		await expect(
 			actionsOK.insert_cue_point!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
 	test('Insert cue point failure', async () => {
@@ -277,7 +277,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test', duration: 10 });
 		await expect(
 			actionsOK.insert_cue_point_custom_duration!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
 	test('Insert custom cue point failure', async () => {
@@ -292,7 +292,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.SetTitle, { broadcast_id: 'test', title_content: 'Test Broadcast (updated title)' });
 		await expect(
 			actionsOK.set_title!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.setTitle).toHaveBeenCalledTimes(1);
 	});
 	test('Set title failure', async () => {
@@ -307,7 +307,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.SetDescription, { broadcast_id: 'test', desc_content: 'description' });
 		await expect(
 			actionsOK.set_description!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.setDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Set description failure', async () => {
@@ -321,7 +321,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.PrependToDescription, { broadcast_id: 'test', text: 'text to prepend' });
 		await expect(
 			actionsOK.preprend_to_description!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.prependToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Prepend to description failure', async () => {
@@ -335,7 +335,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.AppendToDescription, { broadcast_id: 'test', text: 'text to append' });
 		await expect(
 			actionsOK.append_to_description!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.appendToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Append to description failure', async () => {
@@ -349,7 +349,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title' });
 		await expect(
 			actionsOK.add_chapter_to_description!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter to description failure', async () => {
@@ -363,7 +363,7 @@ describe('Action callback', () => {
 		const event = makeEvent(ActionId.AddChapterToDescription, { broadcast_id: 'test', title: 'chapter title', separator: '—' });
 		await expect(
 			actionsOK.add_chapter_to_description!.callback(event, SampleContext)
-		).resolves.toBeFalsy();
+		).resolves.toBeUndefined();
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter with custom separator to description failure', async () => {
