@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import {
-	CompanionFeedbackDefinitions,
+	CompanionAdvancedFeedbackDefinition,
 	CompanionAdvancedFeedbackResult,
 	CompanionFeedbackAdvancedEvent,
 	DropdownChoice,
-	combineRgb
+	combineRgb,
+	CompanionFeedbackContext,
 } from '@companion-module/base';
 import { BroadcastMap, BroadcastLifecycle, StreamHealth, BroadcastID } from './cache';
 import { Core } from './core';
@@ -12,6 +13,13 @@ import { Core } from './core';
 export enum FeedbackId {
 	BroadcastStatus = 'broadcast_status',
 	StreamHealth = 'broadcast_bound_stream_health',
+}
+
+interface AdvancedFeedbackWithSyncCallback extends CompanionAdvancedFeedbackDefinition {
+	callback: (
+		feedback: CompanionFeedbackAdvancedEvent,
+		context: CompanionFeedbackContext
+	) => CompanionAdvancedFeedbackResult;
 }
 
 /**
@@ -22,7 +30,7 @@ export enum FeedbackId {
  */
 export function listFeedbacks(
 	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined; }
-): CompanionFeedbackDefinitions {
+): Record<FeedbackId, AdvancedFeedbackWithSyncCallback> {
 	const { broadcasts } = getProps();
 	const { unfinishedCount } = getProps();
 	const { core } = getProps();
@@ -103,7 +111,7 @@ export function listFeedbacks(
 				if (!event.options.broadcast) return {};
 				const id = event.options.broadcast as BroadcastID;
 				const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
-		
+
 				let broadcastStatus: BroadcastLifecycle;
 				if (id in core!.Cache.Broadcasts) {
 					broadcastStatus = core!.Cache.Broadcasts[id].Status;
@@ -115,7 +123,7 @@ export function listFeedbacks(
 						return {};
 					}
 				}
-		
+
 				// Handle missing fields
 				event.options.bg_ready = event.options.bg_ready ?? combineRgb(209, 209, 0);
 				event.options.bg_testing = event.options.bg_testing ?? combineRgb(0, 172, 0);
@@ -123,7 +131,7 @@ export function listFeedbacks(
 				event.options.bg_complete = event.options.bg_complete ?? combineRgb(0, 0, 168);
 				event.options.text = event.options.text ?? combineRgb(255, 255, 255);
 				event.options.text_complete = event.options.text_complete ?? combineRgb(126, 126, 126);
-		
+
 				switch (broadcastStatus) {
 					case BroadcastLifecycle.LiveStarting:
 						if (dimStarting)
