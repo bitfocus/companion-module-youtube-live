@@ -1,6 +1,6 @@
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/camelcase */
-import { CompanionActionDefinitions, CompanionActionEvent, CompanionOptionValues } from '@companion-module/base';
+import { CompanionActionEvent, CompanionOptionValues } from '@companion-module/base';
 import { mocked, MockedShallow } from 'jest-mock';
 import { makeMockModule, makeMockYT } from './core';
 import { listActions, ActionId } from '../actions';
@@ -98,8 +98,8 @@ describe('Action callback', () => {
 	coreKO.init();
 
 	// List actions
-	const actionsOK: CompanionActionDefinitions = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreOK }));
-	const actionsKO: CompanionActionDefinitions = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreKO }));
+	const actionsOK = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreOK }));
+	const actionsKO = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreKO }));
 
 	// Make event
 	function makeEvent(actionId: string, options: CompanionOptionValues): CompanionActionEvent {
@@ -128,7 +128,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.init_broadcast!.callback(event, context)
+			actionsOK.init_broadcast.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
@@ -136,7 +136,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.init_broadcast!.callback(event, context)
+			actionsKO.init_broadcast.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
@@ -144,7 +144,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.InitBroadcast, {});
 		await expect(
-			actionsOK.init_broadcast!.callback(event, context)
+			actionsOK.init_broadcast.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
@@ -152,7 +152,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.InitBroadcast, { broadcast_id: 'random' });
 		await expect(
-			actionsOK.init_broadcast!.callback(event, context)
+			actionsOK.init_broadcast.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
@@ -161,7 +161,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.StartBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.start_broadcast!.callback(event, context)
+			actionsOK.start_broadcast.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
@@ -169,7 +169,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.StartBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.start_broadcast!.callback(event, context)
+			actionsKO.start_broadcast.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
@@ -178,7 +178,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.StopBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.stop_broadcast!.callback(event, context)
+			actionsOK.stop_broadcast.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
@@ -186,7 +186,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.StopBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.stop_broadcast!.callback(event, context)
+			actionsKO.stop_broadcast.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
@@ -195,7 +195,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.ToggleBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.toggle_broadcast!.callback(event, context)
+			actionsOK.toggle_broadcast.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
@@ -203,7 +203,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.ToggleBroadcast, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.toggle_broadcast!.callback(event, context)
+			actionsKO.toggle_broadcast.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
@@ -212,7 +212,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshStatus, {});
 		await expect(
-			actionsOK.refresh_status!.callback(event, context)
+			actionsOK.refresh_status.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.reloadEverything).toHaveBeenCalledTimes(1);
 	});
@@ -220,7 +220,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshStatus, {});
 		await expect(
-			actionsKO.refresh_status!.callback(event, context)
+			actionsKO.refresh_status.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.reloadEverything).toHaveBeenCalledTimes(1);
 	});
@@ -229,7 +229,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshFeedbacks, {});
 		await expect(
-			actionsOK.refresh_feedbacks!.callback(event, context)
+			actionsOK.refresh_feedbacks.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
@@ -237,7 +237,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshFeedbacks, {});
 		await expect(
-			actionsKO.refresh_feedbacks!.callback(event, context)
+			actionsKO.refresh_feedbacks.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
@@ -246,7 +246,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.SendMessage, { broadcast_id: 'test', message_content: 'testing message' });
 		await expect(
-			actionsOK.send_livechat_message!.callback(event, context)
+			actionsOK.send_livechat_message.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
@@ -254,7 +254,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.SendMessage, { broadcast_id: 'test', message_content: 'testing message' });
 		await expect(
-			actionsKO.send_livechat_message!.callback(event, context)
+			actionsKO.send_livechat_message.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
@@ -263,7 +263,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test' });
 		await expect(
-			actionsOK.insert_cue_point!.callback(event, context)
+			actionsOK.insert_cue_point.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
@@ -271,7 +271,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test' });
 		await expect(
-			actionsKO.insert_cue_point!.callback(event, context)
+			actionsKO.insert_cue_point.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
@@ -279,7 +279,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test', duration: 10 });
 		await expect(
-			actionsOK.insert_cue_point_custom_duration!.callback(event, context)
+			actionsOK.insert_cue_point_custom_duration.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
@@ -287,7 +287,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.InsertCuePoint, { broadcast_id: 'test', duration: 10 });
 		await expect(
-			actionsKO.insert_cue_point_custom_duration!.callback(event, context)
+			actionsKO.insert_cue_point_custom_duration.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
@@ -296,7 +296,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.SetTitle, { broadcast_id: 'test', title_content: 'Test Broadcast (updated title)' });
 		await expect(
-			actionsOK.set_title!.callback(event, context)
+			actionsOK.set_title.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.setTitle).toHaveBeenCalledTimes(1);
 	});
@@ -304,7 +304,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.SetTitle, { broadcast_id: 'test', title_content: 'Test Broadcast (updated title)' });
 		await expect(
-			actionsKO.set_title!.callback(event, context)
+			actionsKO.set_title.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.setTitle).toHaveBeenCalledTimes(1);
 	});
@@ -313,7 +313,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.SetDescription, { broadcast_id: 'test', desc_content: 'description' });
 		await expect(
-			actionsOK.set_description!.callback(event, context)
+			actionsOK.set_description.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.setDescription).toHaveBeenCalledTimes(1);
 	});
@@ -321,7 +321,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.SetDescription, { broadcast_id: 'test', desc_content: 'description' });
 		await expect(
-			actionsKO.set_description!.callback(event, context)
+			actionsKO.set_description.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.setDescription).toHaveBeenCalledTimes(1);
 	});
@@ -329,7 +329,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.PrependToDescription, { broadcast_id: 'test', text: 'text to prepend' });
 		await expect(
-			actionsOK.preprend_to_description!.callback(event, context)
+			actionsOK.preprend_to_description.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.prependToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -337,7 +337,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.PrependToDescription, { broadcast_id: 'test', text: 'text to prepend' });
 		await expect(
-			actionsKO.preprend_to_description!.callback(event, context)
+			actionsKO.preprend_to_description.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.prependToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -345,7 +345,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.AppendToDescription, { broadcast_id: 'test', text: 'text to append' });
 		await expect(
-			actionsOK.append_to_description!.callback(event, context)
+			actionsOK.append_to_description.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.appendToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -353,7 +353,7 @@ describe('Action callback', () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.AppendToDescription, { broadcast_id: 'test', text: 'text to append' });
 		await expect(
-			actionsKO.append_to_description!.callback(event, context)
+			actionsKO.append_to_description.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.appendToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -366,7 +366,7 @@ describe('Action callback', () => {
 			default_separator: true,
 		});
 		await expect(
-			actionsOK.add_chapter_to_description!.callback(event, context)
+			actionsOK.add_chapter_to_description.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
@@ -380,7 +380,7 @@ describe('Action callback', () => {
 			default_separator: true,
 		});
 		await expect(
-			actionsKO.add_chapter_to_description!.callback(event, context)
+			actionsKO.add_chapter_to_description.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
@@ -396,7 +396,7 @@ describe('Action callback', () => {
 			separator: Sep,
 		});
 		await expect(
-			actionsOK.add_chapter_to_description!.callback(event, context)
+			actionsOK.add_chapter_to_description.callback(event, context)
 		).resolves.toBeUndefined();
 		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep);
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
@@ -412,7 +412,7 @@ describe('Action callback', () => {
 			separator: Sep,
 		});
 		await expect(
-			actionsKO.add_chapter_to_description!.callback(event, context)
+			actionsKO.add_chapter_to_description.callback(event, context)
 		).rejects.toBeInstanceOf(Error);
 		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);

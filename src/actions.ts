@@ -1,10 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import {
-	CompanionActionDefinitions,
-	CompanionActionDefinition,
-	CompanionActionEvent,
-	DropdownChoice,
-} from '@companion-module/base';
+import { CompanionActionDefinition, CompanionActionEvent, DropdownChoice } from '@companion-module/base';
 import { BroadcastMap, BroadcastID } from './cache';
 import { Core } from './core';
 
@@ -30,11 +25,11 @@ export enum ActionId {
  * @param broadcasts Map of known broadcasts
  * @param unfinishedCount Number of unfinished broadcast
  * @param core Module core
- * @returns 
+ * @returns
  */
 export function listActions(
 	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined; }
-): CompanionActionDefinitions {
+): Record<ActionId, CompanionActionDefinition> {
 	const { broadcasts } = getProps();
 	const { unfinishedCount } = getProps();
 	const { core } = getProps();
@@ -87,7 +82,7 @@ export function listActions(
 		return broadcastId;
 	}
 
-	const actions: { [id in ActionId]: CompanionActionDefinition | undefined } = {
+	return {
 		[ActionId.InitBroadcast]: {
 			name: 'Start broadcast test',
 			options: [
@@ -460,7 +455,5 @@ export function listActions(
 				}
 			},
 		},
-	}
-
-	return actions
+	};
 }
