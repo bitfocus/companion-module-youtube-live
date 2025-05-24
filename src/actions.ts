@@ -7,6 +7,7 @@ import {
 } from '@companion-module/base';
 import { BroadcastMap, BroadcastID } from './cache';
 import { Core } from './core';
+import { Visibility } from './youtube';
 
 export enum ActionId {
 	InitBroadcast = 'init_broadcast',
@@ -22,7 +23,8 @@ export enum ActionId {
 	SetDescription = 'set_description',
 	PrependToDescription = 'preprend_to_description',
 	AppendToDescription = 'append_to_description',
-	AddChapterToDescription = 'add_chapter_to_description'
+	AddChapterToDescription = 'add_chapter_to_description',
+	SetVisibility = 'set_visibility',
 }
 
 /**
@@ -309,7 +311,7 @@ export function listActions(
 					&& title.length > 0 && title.length <= 100) {
 					return core!.setTitle(broadcastId as BroadcastID, title);
 				} else {
-					throw new Error('Unable to set title: bad paramaters.');
+					throw new Error('Unable to set title: bad parameters.');
 				}
 			},
 		},
@@ -341,7 +343,7 @@ export function listActions(
 					&& description.length > 0 && description.length <= 5000) {
 					return core!.setDescription(broadcastId as BroadcastID, description);
 				} else {
-					throw new Error('Unable to set description: bad paramaters.');
+					throw new Error('Unable to set description: bad parameters.');
 				}
 			},
 		},
@@ -373,7 +375,7 @@ export function listActions(
 					&& text.length > 0 && text.length <= 5000) {
 					return core!.prependToDescription(broadcastId as BroadcastID, text);
 				} else {
-					throw new Error('Unable to prepend text to description: bad paramaters.');
+					throw new Error('Unable to prepend text to description: bad parameters.');
 				}
 			},
 		},
@@ -405,7 +407,7 @@ export function listActions(
 					&& text.length > 0 && text.length <= 5000) {
 					return core!.appendToDescription(broadcastId as BroadcastID, text);
 				} else {
-					throw new Error('Unable to append text to description: bad paramaters.');
+					throw new Error('Unable to append text to description: bad parameters.');
 				}
 			},
 		},
@@ -456,7 +458,41 @@ export function listActions(
 						return core!.addChapterToDescription(broadcastId as BroadcastID, chapterTitle, separator);
 					}
 				} else {
-					throw new Error('Unable to prepend text to description: bad paramaters.');
+					throw new Error('Unable to prepend text to description: bad parameters.');
+				}
+			},
+		},
+		[ActionId.SetVisibility]: {
+			name: 'Set visibility of the broadcast',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Broadcast:',
+					id: 'broadcast_id',
+					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
+					default: defaultUnfinishedBroadcast,
+				},
+				{
+					type: 'dropdown',
+					label: 'Visibility:',
+					id: 'visibility',
+					choices: Object.values(Visibility).map((visibility) => {
+						return {
+							id: visibility,
+							label: visibility.charAt(0).toUpperCase() + visibility.slice(1),
+						} as DropdownChoice;
+					}),
+					default: Visibility.Private,
+				},
+			],
+			callback: async (event, _context): Promise<void> => {
+				const visibility = event.options.visibility as Visibility;
+				const broadcastId = checkBroadcastId(event.options);
+
+				if (broadcastId && visibility) {
+					return core!.setVisibility(broadcastId as BroadcastID, visibility);
+				} else {
+					throw new Error('Unable to prepend text to description: bad parameters.');
 				}
 			},
 		},
