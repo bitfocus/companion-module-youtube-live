@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import {
 	CompanionActionContext,
-	CompanionActionDefinitions,
 	CompanionActionDefinition,
 	CompanionActionEvent,
 	DropdownChoice,
@@ -91,6 +90,19 @@ export function listActions(
 		return broadcastId;
 	};
 
+	const broadcastCallback = (
+		callback: (broadcastId: BroadcastID, event: CompanionActionEvent, context: CompanionActionContext) => Promise<void>
+	): CompanionActionDefinition['callback'] => {
+		return async (event, context): Promise<void> => {
+			const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+			if (broadcastId === undefined) {
+				return;
+			}
+
+			return callback(broadcastId, event, context);
+		};
+	};
+
 	return {
 		[ActionId.InitBroadcast]: {
 			name: 'Start broadcast test',
@@ -103,14 +115,7 @@ export function listActions(
 					default: defaultBroadcast,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
-				return core!.startBroadcastTest(broadcastId);
-			},
+			callback: broadcastCallback(async (broadcastId) => core!.startBroadcastTest(broadcastId)),
 		},
 		[ActionId.StartBroadcast]: {
 			name: 'Go live',
@@ -123,14 +128,7 @@ export function listActions(
 					default: defaultBroadcast,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
-				return core!.makeBroadcastLive(broadcastId);
-			},
+			callback: broadcastCallback(async (broadcastId) => core!.makeBroadcastLive(broadcastId)),
 		},
 		[ActionId.StopBroadcast]: {
 			name: 'Finish broadcast',
@@ -143,14 +141,7 @@ export function listActions(
 					default: defaultBroadcast,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
-				return core!.finishBroadcast(broadcastId);
-			},
+			callback: broadcastCallback(async (broadcastId) => core!.finishBroadcast(broadcastId)),
 		},
 		[ActionId.ToggleBroadcast]: {
 			name: 'Advance broadcast to next phase',
@@ -163,14 +154,7 @@ export function listActions(
 					default: defaultBroadcast,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
-				return core!.toggleBroadcast(broadcastId);
-			},
+			callback: broadcastCallback(async (broadcastId) => core!.toggleBroadcast(broadcastId)),
 		},
 		[ActionId.RefreshFeedbacks]: {
 			name: 'Refresh broadcast/stream feedbacks',
@@ -214,19 +198,14 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
+			callback: broadcastCallback(async (broadcastId, event, context) => {
 				const message = await context.parseVariablesInString(String(event.options.message_content));
 				if (message.length === 0 || 200 < message.length) {
 					throw new Error('Message is empty or too long.');
 				}
 
 				return core!.sendLiveChatMessage(broadcastId, message);
-			},
+			}),
 		},
 		[ActionId.InsertCuePoint]: {
 			name: 'Insert an advertisement cue point (default duration)',
@@ -240,15 +219,10 @@ export function listActions(
 					default: defaultUnfinishedBroadcast,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
+			callback: broadcastCallback(async (broadcastId) => {
 				if (!checkCore()) throw new Error('Internal module error');
 				return core!.insertCuePoint(broadcastId);
-			},
+			}),
 		},
 		[ActionId.InsertCuePointCustomDuration]: {
 			name: 'Insert an advertisement cue point (custom duration)',
@@ -270,17 +244,12 @@ export function listActions(
 					max: 120,
 				}
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
+			callback: broadcastCallback(async (broadcastId, event) => {
 				if (!checkCore()) throw new Error('Internal module error');
 
 				const duration = Number(event.options.duration);
 				return core!.insertCuePoint(broadcastId, duration);
-			},
+			}),
 		},
 		[ActionId.SetTitle]: {
 			name: 'Set title',
@@ -302,19 +271,14 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
+			callback: broadcastCallback(async (broadcastId, event, context) => {
 				const title = await context.parseVariablesInString(String(event.options.title_content));
 				if (title.length === 0 || 100 < title.length) {
 					throw new Error('Unable to set title: title is empty or too long.');
 				}
 
 				return core!.setTitle(broadcastId, title);
-			},
+			}),
 		},
 		[ActionId.SetDescription]: {
 			name: 'Set description',
@@ -336,19 +300,14 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
+			callback: broadcastCallback(async (broadcastId, event, context) => {
 				const description = await context.parseVariablesInString(String(event.options.desc_content));
 				if (description.length === 0 || 5000 < description.length) {
 					throw new Error('Unable to set description: description is empty or too long.');
 				}
 
 				return core!.setDescription(broadcastId, description);
-			},
+			}),
 		},
 		[ActionId.PrependToDescription]: {
 			name: 'Prepend text to description',
@@ -370,12 +329,7 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
+			callback: broadcastCallback(async (broadcastId, event, context) => {
 				const text = await context.parseVariablesInString(String(event.options.text));
 				if (text.length === 0) {
 					return;
@@ -386,7 +340,7 @@ export function listActions(
 				}
 
 				return core!.prependToDescription(broadcastId, text);
-			},
+			}),
 		},
 		[ActionId.AppendToDescription]: {
 			name: 'Append text to description',
@@ -408,12 +362,7 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
+			callback: broadcastCallback(async (broadcastId, event, context) => {
 				const text = await context.parseVariablesInString(String(event.options.text));
 				if (text.length === 0) {
 					return;
@@ -424,7 +373,7 @@ export function listActions(
 				}
 
 				return core!.appendToDescription(broadcastId, text);
-			},
+			}),
 		},
 		[ActionId.AddChapterToDescription]: {
 			name: 'Add chapter timecode to description',
@@ -461,12 +410,7 @@ export function listActions(
 					isVisible: (options) => { return !options.default_separator as boolean }
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
-				if (broadcastId === undefined) {
-					return;
-				}
-
+			callback: broadcastCallback(async (broadcastId, event, context) => {
 				const separator = await context.parseVariablesInString(String(event.options.separator));
 				const chapterTitle = await context.parseVariablesInString(String(event.options.title));
 
@@ -479,7 +423,7 @@ export function listActions(
 				} else {
 					throw new Error('Unable to prepend text to description: bad parameters.');
 				}
-			},
+			}),
 		},
 	};
 }
