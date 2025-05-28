@@ -404,12 +404,12 @@ export function listActions(
 					type: 'dropdown',
 					label: 'Visibility:',
 					id: 'visibility',
-					choices: Object.values(Visibility).map((visibility) => {
-						return {
+					choices: Object.values(Visibility).map(
+						(visibility: Visibility): DropdownChoice => ({
 							id: visibility,
 							label: visibility.charAt(0).toUpperCase() + visibility.slice(1),
-						} as DropdownChoice;
-					}),
+						})
+					),
 					default: Visibility.Private,
 				},
 			],
