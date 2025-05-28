@@ -1,17 +1,55 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import {
-	CompanionFeedbackDefinitions,
+	CompanionAdvancedFeedbackDefinition,
 	CompanionAdvancedFeedbackResult,
 	CompanionFeedbackAdvancedEvent,
 	DropdownChoice,
-	combineRgb
+	combineRgb,
+	CompanionMigrationFeedback,
+	CompanionFeedbackContext,
+	SomeCompanionFeedbackInputField,
 } from '@companion-module/base';
-import { BroadcastMap, BroadcastLifecycle, StreamHealth, BroadcastID } from './cache';
+import { Broadcast, BroadcastMap, BroadcastLifecycle, Stream, StreamHealth } from './cache';
+import {
+	broadcastIdDropdownOption,
+	BroadcastIdFromTextOption,
+	BroadcastIdIsTextCheckbox,
+	BroadcastIdIsTextOptionId,
+	BroadcastIdDropdownOptionId,
+	BroadcastIdTextOptionId,
+	getBroadcastIdFromOptions,
+} from './common';
 import { Core } from './core';
 
 export enum FeedbackId {
 	BroadcastStatus = 'broadcast_status',
 	StreamHealth = 'broadcast_bound_stream_health',
+}
+
+export function tryUpgradeFeedbackSelectingBroadcastID(feedback: CompanionMigrationFeedback): boolean {
+	switch (feedback.feedbackId) {
+		case FeedbackId.BroadcastStatus:
+		case FeedbackId.StreamHealth:
+			if (BroadcastIdIsTextOptionId in feedback.options) {
+				return false;
+			}
+			break;
+		default:
+			return false;
+	}
+
+	const options = feedback.options;
+	options[BroadcastIdIsTextOptionId] = false;
+	options[BroadcastIdDropdownOptionId] = options[BroadcastIdTextOptionId] = options.broadcast;
+	delete options.broadcast;
+	return true;
+}
+
+interface AdvancedFeedbackWithAsyncCallback extends CompanionAdvancedFeedbackDefinition {
+	callback: (
+		feedback: CompanionFeedbackAdvancedEvent,
+		context: CompanionFeedbackContext
+	) => Promise<CompanionAdvancedFeedbackResult>;
 }
 
 /**
@@ -22,7 +60,7 @@ export enum FeedbackId {
  */
 export function listFeedbacks(
 	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined; }
-): CompanionFeedbackDefinitions {
+): Record<FeedbackId, AdvancedFeedbackWithAsyncCallback> {
 	const { broadcasts } = getProps();
 	const { unfinishedCount } = getProps();
 	const { core } = getProps();
@@ -47,6 +85,33 @@ export function listFeedbacks(
 		}
 		return true
 	}
+
+	const findBroadcastForOptions = async (
+		options: CompanionFeedbackAdvancedEvent['options'],
+		context: CompanionFeedbackContext
+	): Promise<Broadcast | undefined> => {
+		if (!checkCore()) {
+			return undefined;
+		}
+
+		const id = await getBroadcastIdFromOptions(options, context);
+		if (id === undefined) {
+			core!.Module.log('warn', 'Feedback failed: undefined broadcast ID');
+			return undefined;
+		}
+
+		if (id in core!.Cache.Broadcasts) {
+			return core!.Cache.Broadcasts[id];
+		}
+
+		return core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
+	}
+
+	const selectFromAllBroadcasts: SomeCompanionFeedbackInputField[] = [
+		BroadcastIdIsTextCheckbox,
+		broadcastIdDropdownOption([...broadcastEntries, ...broadcastUnfinishedEntries], defaultBroadcast),
+		BroadcastIdFromTextOption,
+	];
 
 	return {
 		[FeedbackId.BroadcastStatus]: {
@@ -90,32 +155,22 @@ export function listFeedbacks(
 					id: 'text_complete',
 					default: combineRgb(126, 126, 126),
 				},
-				{
-					type: 'dropdown',
-					label: 'Broadcast',
-					id: 'broadcast',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 			],
-			callback: (event: CompanionFeedbackAdvancedEvent): CompanionAdvancedFeedbackResult => {
+			callback: async (event, context): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!checkCore) return {};
-				if (!event.options.broadcast) return {};
-				const id = event.options.broadcast as BroadcastID;
 				const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
-		
+
 				let broadcastStatus: BroadcastLifecycle;
-				if (id in core!.Cache.Broadcasts) {
-					broadcastStatus = core!.Cache.Broadcasts[id].Status;
-				} else {
-					const hit = core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
-					if (hit) {
-						broadcastStatus = hit.Status;
-					} else {
+				{
+					const broadcast = await findBroadcastForOptions(event.options, context);
+					if (broadcast === undefined) {
 						return {};
 					}
+
+					broadcastStatus = broadcast.Status;
 				}
-		
+
 				// Handle missing fields
 				event.options.bg_ready = event.options.bg_ready ?? combineRgb(209, 209, 0);
 				event.options.bg_testing = event.options.bg_testing ?? combineRgb(0, 172, 0);
@@ -123,7 +178,7 @@ export function listFeedbacks(
 				event.options.bg_complete = event.options.bg_complete ?? combineRgb(0, 0, 168);
 				event.options.text = event.options.text ?? combineRgb(255, 255, 255);
 				event.options.text_complete = event.options.text_complete ?? combineRgb(126, 126, 126);
-		
+
 				switch (broadcastStatus) {
 					case BroadcastLifecycle.LiveStarting:
 						if (dimStarting)
@@ -199,34 +254,27 @@ export function listFeedbacks(
 					id: 'text_no_data',
 					default: combineRgb(255, 255, 255),
 				},
-				{
-					type: 'dropdown',
-					label: 'Broadcast',
-					id: 'broadcast',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 			],
-			callback: (event: CompanionFeedbackAdvancedEvent): CompanionAdvancedFeedbackResult => {
+			callback: async (event, context): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!checkCore) return {};
-				if (!event.options.broadcast) return {};
-				const id = event.options.broadcast as BroadcastID;
 
-				let streamId: string | null;
+				let stream: Stream;
 				let broadcastStatus: BroadcastLifecycle;
-				if (id in core!.Cache.Broadcasts) {
-					streamId = core!.Cache.Broadcasts[id].BoundStreamId;
-					broadcastStatus = core!.Cache.Broadcasts[id].Status;
-				} else {
-					const hit = core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
-					if (hit) {
-						streamId = hit.BoundStreamId;
-						broadcastStatus = hit.Status;
-					} else {
+				{
+					const broadcast = await findBroadcastForOptions(event.options, context);
+					if (broadcast === undefined || broadcast.BoundStreamId === null) {
 						return {};
 					}
+
+					const streamId = broadcast.BoundStreamId;
+					if (!(streamId in core!.Cache.Streams)) {
+						return {};
+					}
+
+					stream = core!.Cache.Streams[streamId];
+					broadcastStatus = broadcast.Status;
 				}
-				if (streamId == null || !(streamId in core!.Cache.Streams)) return {};
 
 				// Handle missing fields
 				event.options.bg_good = event.options.bg_good ?? combineRgb(0, 204, 0);
@@ -238,7 +286,7 @@ export function listFeedbacks(
 				event.options.text_bad = event.options.text_bad ?? combineRgb(255, 255, 255);
 				event.options.text_no_data = event.options.text_no_data ?? combineRgb(255, 255, 255);
 
-				switch (core!.Cache.Streams[streamId].Health) {
+				switch (stream.Health) {
 					case StreamHealth.Good:
 						return { bgcolor: event.options.bg_good as number, color: event.options.text_good as number };
 					case StreamHealth.OK:

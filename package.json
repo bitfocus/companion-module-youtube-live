@@ -29,7 +29,7 @@
 		"node": "^18"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.4.0",
+		"@companion-module/base": "~1.5.0",
 		"@types/jest": "^29.5.0",
 		"@types/node": "^20.10.6",
 		"@types/server-destroy": "^1.0.0",
@@ -39,7 +39,7 @@
 		"server-destroy": "^1.0.1"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^1.2.0",
+		"@companion-module/tools": "~2.0.4",
 		"@typescript-eslint/eslint-plugin": "~2.31.0",
 		"@typescript-eslint/parser": "~2.31.0",
 		"eslint": "^6.8.0",
@@ -54,5 +54,6 @@
 	},
 	"resolutions": {
 		"eslint/inquirer": "~7.2.0"
-	}
+	},
+	"packageManager": "yarn@4.8.1"
 }

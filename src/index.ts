@@ -18,6 +18,7 @@ import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateV
 import { listActions } from './actions';
 import { listFeedbacks } from './feedbacks';
 import { listPresets } from './presets';
+import { UpgradeScripts } from './upgrades';
 import { YoutubeConnector } from './youtube';
 import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow';
 
@@ -170,4 +171,4 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	}
 }
 
-runEntrypoint(YoutubeInstance, []);
+runEntrypoint(YoutubeInstance, UpgradeScripts);
