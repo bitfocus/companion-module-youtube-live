@@ -1,11 +1,22 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import {
-	CompanionActionDefinitions,
+	CompanionActionContext,
 	CompanionActionDefinition,
 	CompanionActionEvent,
+	CompanionMigrationAction,
 	DropdownChoice,
+	SomeCompanionActionInputField,
 } from '@companion-module/base';
 import { BroadcastMap, BroadcastID } from './cache';
+import {
+	BroadcastIdIsTextCheckbox,
+	BroadcastIdFromTextOption,
+	BroadcastIdIsTextOptionId,
+	broadcastIdDropdownOption,
+	BroadcastIdDropdownOptionId,
+	BroadcastIdTextOptionId,
+	getBroadcastIdFromOptions,
+} from './common';
 import { Core } from './core';
 
 export enum ActionId {
@@ -25,16 +36,45 @@ export enum ActionId {
 	AddChapterToDescription = 'add_chapter_to_description',
 }
 
+export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationAction): boolean {
+	let options: CompanionMigrationAction['options']
+	switch (action.actionId) {
+		case ActionId.InitBroadcast:
+		case ActionId.StartBroadcast:
+		case ActionId.StopBroadcast:
+		case ActionId.ToggleBroadcast:
+		case ActionId.SendMessage:
+		case ActionId.InsertCuePoint:
+		case ActionId.InsertCuePointCustomDuration:
+		case ActionId.SetTitle:
+		case ActionId.SetDescription:
+		case ActionId.PrependToDescription:
+		case ActionId.AppendToDescription:
+		case ActionId.AddChapterToDescription:
+			options = action.options;
+			if (BroadcastIdIsTextOptionId in options) {
+				return false;
+			}
+			break;
+		default:
+			return false;
+	}
+
+	options[BroadcastIdIsTextOptionId] = false;
+	options[BroadcastIdTextOptionId] = options[BroadcastIdDropdownOptionId];
+	return true;
+}
+
 /**
  * Get a list of actions for this module
  * @param broadcasts Map of known broadcasts
  * @param unfinishedCount Number of unfinished broadcast
  * @param core Module core
- * @returns 
+ * @returns
  */
 export function listActions(
 	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined; }
-): CompanionActionDefinitions {
+): Record<ActionId, CompanionActionDefinition> {
 	const { broadcasts } = getProps();
 	const { unfinishedCount } = getProps();
 	const { core } = getProps();
@@ -62,115 +102,78 @@ export function listActions(
 		return true
 	}
 
-	const checkBroadcastId = (options: CompanionActionEvent['options']): BroadcastID | undefined => {
-		let broadcastId: BroadcastID = options.broadcast_id as BroadcastID;
-
+	const checkBroadcastId = async (
+		options: CompanionActionEvent['options'],
+		context: CompanionActionContext
+	): Promise<BroadcastID | undefined> => {
 		if (!checkCore()) {
 			return undefined;
 		}
 
-		if (options.broadcast_id) {
-			if (!(broadcastId in core!.Cache.Broadcasts)) {
-				const hit = core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcastId);
-				if (hit) {
-					broadcastId = hit.Id;
-				} else {
-					core!.Module.log('warn', 'Action failed: unknown broadcast ID - not found or invalid');
-					return undefined;
-				}
-			}
-		} else {
+		let broadcastId: BroadcastID | undefined = await getBroadcastIdFromOptions(options, context);
+		if (broadcastId === undefined) {
 			core!.Module.log('warn', 'Action failed: undefined broadcast ID');
 			return undefined;
 		}
 
-		return broadcastId;
-	}
+		if (!(broadcastId in core!.Cache.Broadcasts)) {
+			const hit = core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcastId);
+			if (hit) {
+				broadcastId = hit.Id;
+			} else {
+				core!.Module.log('warn', `Action failed: broadcast ID '${broadcastId}' - not found or invalid`);
+				return undefined;
+			}
+		}
 
-	const actions: { [id in ActionId]: CompanionActionDefinition | undefined } = {
+		return broadcastId;
+	};
+
+	const selectFromAllBroadcasts: SomeCompanionActionInputField[] = [
+		BroadcastIdIsTextCheckbox,
+		broadcastIdDropdownOption([...broadcastEntries, ...broadcastUnfinishedEntries], defaultBroadcast),
+		BroadcastIdFromTextOption,
+	];
+
+	const selectFromUnfinishedBroadcasts: SomeCompanionActionInputField[] = [
+		BroadcastIdIsTextCheckbox,
+		broadcastIdDropdownOption([...broadcastUnfinishedEntries], defaultUnfinishedBroadcast),
+		BroadcastIdFromTextOption,
+	];
+
+	const broadcastCallback = (
+		callback: (broadcastId: BroadcastID, event: CompanionActionEvent, context: CompanionActionContext) => Promise<void>
+	): CompanionActionDefinition['callback'] => {
+		return async (event, context): Promise<void> => {
+			const broadcastId: BroadcastID | undefined = await checkBroadcastId(event.options, context);
+			if (broadcastId === undefined) {
+				return;
+			}
+
+			return callback(broadcastId, event, context);
+		};
+	};
+
+	return {
 		[ActionId.InitBroadcast]: {
 			name: 'Start broadcast test',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
-			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId) {
-					return await core!.startBroadcastTest(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
-				}
-			},
+			options: [...selectFromAllBroadcasts],
+			callback: broadcastCallback(async (broadcastId) => core!.startBroadcastTest(broadcastId)),
 		},
 		[ActionId.StartBroadcast]: {
 			name: 'Go live',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
-			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId) {
-					return core!.makeBroadcastLive(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
-				}
-			},
+			options: [...selectFromAllBroadcasts],
+			callback: broadcastCallback(async (broadcastId) => core!.makeBroadcastLive(broadcastId)),
 		},
 		[ActionId.StopBroadcast]: {
 			name: 'Finish broadcast',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
-			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId) {
-					return core!.finishBroadcast(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
-				}
-			},
+			options: [...selectFromAllBroadcasts],
+			callback: broadcastCallback(async (broadcastId) => core!.finishBroadcast(broadcastId)),
 		},
 		[ActionId.ToggleBroadcast]: {
 			name: 'Advance broadcast to next phase',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
-			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId) {
-					return core!.toggleBroadcast(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
-				}
-			},
+			options: [...selectFromAllBroadcasts],
+			callback: broadcastCallback(async (broadcastId) => core!.toggleBroadcast(broadcastId)),
 		},
 		[ActionId.RefreshFeedbacks]: {
 			name: 'Refresh broadcast/stream feedbacks',
@@ -197,13 +200,7 @@ export function listActions(
 		[ActionId.SendMessage]: {
 			name: 'Send message to live chat',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastUnfinishedEntries],
-					default: defaultUnfinishedBroadcast,
-				},
+				...selectFromUnfinishedBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Message:',
@@ -214,52 +211,29 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				let message = await context.parseVariablesInString(event.options.message_content as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.message_content
-					&& message.length > 0 && message.length <= 200) {
-					return core!.sendLiveChatMessage(broadcastId as BroadcastID, message);
-				} else {
-					throw new Error('Error with given parameters.');
+			callback: broadcastCallback(async (broadcastId, event, context) => {
+				const message = await context.parseVariablesInString(String(event.options.message_content));
+				if (message.length === 0 || 200 < message.length) {
+					throw new Error('Message is empty or too long.');
 				}
-			},
+
+				return core!.sendLiveChatMessage(broadcastId, message);
+			}),
 		},
 		[ActionId.InsertCuePoint]: {
 			name: 'Insert an advertisement cue point (default duration)',
 			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
-			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastUnfinishedEntries],
-					default: defaultUnfinishedBroadcast,
-				},
-			],
-			callback: async (event): Promise<void> => {
-				const broadcastId = checkBroadcastId(event.options);
-
+			options: [...selectFromUnfinishedBroadcasts],
+			callback: broadcastCallback(async (broadcastId) => {
 				if (!checkCore()) throw new Error('Internal module error');
-				if (broadcastId) {
-					return core!.insertCuePoint(broadcastId as BroadcastID);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
-				}
-			},
+				return core!.insertCuePoint(broadcastId);
+			}),
 		},
 		[ActionId.InsertCuePointCustomDuration]: {
 			name: 'Insert an advertisement cue point (custom duration)',
 			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastUnfinishedEntries],
-					default: defaultUnfinishedBroadcast,
-				},
+				...selectFromUnfinishedBroadcasts,
 				{
 					type: 'number',
 					label: 'Duration:',
@@ -269,29 +243,18 @@ export function listActions(
 					max: 120,
 				}
 			],
-			callback: async (event): Promise<void> => {
-				let duration = event.options.duration as number;
-				const broadcastId = checkBroadcastId(event.options);
-
+			callback: broadcastCallback(async (broadcastId, event) => {
 				if (!checkCore()) throw new Error('Internal module error');
-				if (broadcastId) {
-					return core!.insertCuePoint(broadcastId as BroadcastID, duration);
-				} else {
-					throw new Error('Error with given broadcast ID: ' + event.options.broadcast_id);
-				}
-			},
+
+				const duration = Number(event.options.duration);
+				return core!.insertCuePoint(broadcastId, duration);
+			}),
 		},
 		[ActionId.SetTitle]: {
 			name: 'Set title',
 			description: 'Warning: the title of the broadcast will be replaced',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Title:',
@@ -301,29 +264,20 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const title = await context.parseVariablesInString(event.options.title_content as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.title_content
-					&& title.length > 0 && title.length <= 100) {
-					return core!.setTitle(broadcastId as BroadcastID, title);
-				} else {
-					throw new Error('Unable to set title: bad paramaters.');
+			callback: broadcastCallback(async (broadcastId, event, context) => {
+				const title = await context.parseVariablesInString(String(event.options.title_content));
+				if (title.length === 0 || 100 < title.length) {
+					throw new Error('Unable to set title: title is empty or too long.');
 				}
-			},
+
+				return core!.setTitle(broadcastId, title);
+			}),
 		},
 		[ActionId.SetDescription]: {
 			name: 'Set description',
 			description: 'Warning: if a description exists for the selected broadcast, it will be replaced',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Description:',
@@ -333,29 +287,20 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const description = await context.parseVariablesInString(event.options.desc_content as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.desc_content
-					&& description.length > 0 && description.length <= 5000) {
-					return core!.setDescription(broadcastId as BroadcastID, description);
-				} else {
-					throw new Error('Unable to set description: bad paramaters.');
+			callback: broadcastCallback(async (broadcastId, event, context) => {
+				const description = await context.parseVariablesInString(String(event.options.desc_content));
+				if (description.length === 0 || 5000 < description.length) {
+					throw new Error('Unable to set description: description is empty or too long.');
 				}
-			},
+
+				return core!.setDescription(broadcastId, description);
+			}),
 		},
 		[ActionId.PrependToDescription]: {
 			name: 'Prepend text to description',
 			description: 'Insert text at the beginning of the description',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Text:',
@@ -365,29 +310,24 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const text = await context.parseVariablesInString(event.options.text as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.text
-					&& text.length > 0 && text.length <= 5000) {
-					return core!.prependToDescription(broadcastId as BroadcastID, text);
-				} else {
-					throw new Error('Unable to prepend text to description: bad paramaters.');
+			callback: broadcastCallback(async (broadcastId, event, context) => {
+				const text = await context.parseVariablesInString(String(event.options.text));
+				if (text.length === 0) {
+					return;
 				}
-			},
+
+				if (text.length > 5000) {
+					throw new Error('Unable to prepend text to description: text is too long.');
+				}
+
+				return core!.prependToDescription(broadcastId, text);
+			}),
 		},
 		[ActionId.AppendToDescription]: {
 			name: 'Append text to description',
 			description: 'Insert text at the end of the description',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastEntries, ...broadcastUnfinishedEntries],
-					default: defaultBroadcast,
-				},
+				...selectFromAllBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Text:',
@@ -397,28 +337,23 @@ export function listActions(
 					useVariables: true,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
-				const text = await context.parseVariablesInString(event.options.text as string);
-				const broadcastId = checkBroadcastId(event.options);
-
-				if (broadcastId && event.options.text
-					&& text.length > 0 && text.length <= 5000) {
-					return core!.appendToDescription(broadcastId as BroadcastID, text);
-				} else {
-					throw new Error('Unable to append text to description: bad paramaters.');
+			callback: broadcastCallback(async (broadcastId, event, context) => {
+				const text = await context.parseVariablesInString(String(event.options.text));
+				if (text.length === 0) {
+					return;
 				}
-			},
+
+				if (text.length > 5000) {
+					throw new Error('Unable to append text to description: text is too long.');
+				}
+
+				return core!.appendToDescription(broadcastId, text);
+			}),
 		},
 		[ActionId.AddChapterToDescription]: {
 			name: 'Add chapter timecode to description',
 			options: [
-				{
-					type: 'dropdown',
-					label: 'Broadcast:',
-					id: 'broadcast_id',
-					choices: [...broadcastUnfinishedEntries],
-					default: defaultUnfinishedBroadcast,
-				},
+				...selectFromUnfinishedBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Chapter title:',
@@ -450,27 +385,24 @@ export function listActions(
 					default: false,
 				},
 			],
-			callback: async (event, context): Promise<void> => {
+			callback: broadcastCallback(async (broadcastId, event, context) => {
 				const separator = event.options.default_separator
 					? ' - '
 					: await context.parseVariablesInString(event.options.separator as string);
-				const chapterTitle = await context.parseVariablesInString(event.options.title as string);
-				const broadcastId = checkBroadcastId(event.options);
+				const chapterTitle = await context.parseVariablesInString(String(event.options.title));
 				const ensurePresenceOfAllZeroesTimestamp = event.options.ensure_presence_of_all_zeroes_timestamp as boolean;
 
-				if (broadcastId && chapterTitle) {
+				if (chapterTitle) {
 					return core!.addChapterToDescription(
-						broadcastId as BroadcastID,
+						broadcastId,
 						chapterTitle,
 						separator,
 						ensurePresenceOfAllZeroesTimestamp
 					);
 				} else {
-					throw new Error('Unable to prepend text to description: bad paramaters.');
+					throw new Error('Unable to prepend text to description: bad parameters.');
 				}
-			},
+			}),
 		},
 	};
-
-	return actions;
 }
