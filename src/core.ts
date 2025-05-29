@@ -1,4 +1,4 @@
-import { StateMemory, BroadcastID, BroadcastLifecycle, Broadcast } from './cache';
+import { Broadcast, BroadcastID, BroadcastLifecycle, StateMemory } from './cache';
 import { Transition, Visibility, YoutubeAPI } from './youtube';
 import { DetachedPromise, Logger } from './common';
 
@@ -445,9 +445,9 @@ export class Core {
 			if (startTime) {
 				const dateNow = Date.now();
 				const elapsedTime = new Date(dateNow - startTime);
-				let timecode = ('0' + elapsedTime.getUTCHours()).slice(-2) + ':' +
-					('0' + elapsedTime.getMinutes()).slice(-2) + ':' +
-					('0' + elapsedTime.getSeconds()).slice(-2);
+				let timecode = [elapsedTime.getUTCHours(), elapsedTime.getMinutes(), elapsedTime.getSeconds()]
+					.map((value: number): string => ('0' + value).slice(-2))
+					.join(':');
 
 				/** Insert the first 00:00:00 timestamp if it doesn't exist */
 				if (
@@ -460,11 +460,11 @@ export class Core {
 				}
 
 				if (this.LastChapterTimestamp === 0 || new Date(dateNow - this.LastChapterTimestamp).getSeconds() > 10) {
-					this.LastChapterTimestamp = (timecode === '00:00:00' && startTime !== null) ? startTime : dateNow;
+					this.LastChapterTimestamp = timecode === '00:00:00' ? startTime : dateNow;
 					description = description + '\n' + timecode + separator + title;
 					await this.setDescription(id, description);
 				} else {
-					throw new Error(`Cannot add chapter to descripion; chapters must be spaced at least 10 seconds apart`);
+					throw new Error(`Cannot add chapter to description; chapters must be spaced at least 10 seconds apart`);
 				}
 			} else {
 				throw new Error(`Cannot add chapter to description; unable to get the start time of the specified broadcast'`);
