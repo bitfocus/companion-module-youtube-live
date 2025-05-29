@@ -7,7 +7,7 @@ import { listActions, ActionId } from '../actions';
 import { BroadcastLifecycle, BroadcastID, StateMemory } from '../cache';
 import { clone } from '../common';
 import { ModuleBase, Core } from '../core';
-import { YoutubeAPI } from '../youtube';
+import { Visibility, YoutubeAPI } from '../youtube';
 import { MockContext } from '../__mocks__/context';
 
 const SampleMemory: StateMemory = {
@@ -77,8 +77,9 @@ describe('Action callback', () => {
 	coreOK.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.addChapterToDescription = jest.fn(
-		(_a: BroadcastID, _b: string, _c: string, _d: boolean): Promise<void> => Promise.resolve()
+		(_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.resolve()
 	);
+	coreOK.setVisibility = jest.fn((_a: BroadcastID, _b: Visibility): Promise<void> => Promise.resolve());
 
 	// Mocking KO functions
 	coreKO.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('test')));
@@ -581,5 +582,30 @@ describe('Action callback', () => {
 		await expect(actionsKO.add_chapter_to_description.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep, true);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
+	});
+	test('Set visibility success', async () => {
+		const context = new MockContext();
+		const broadcast_id = 'test';
+		const event = makeEvent(ActionId.SetVisibility, {
+			broadcast_id_is_text: false,
+			broadcast_id,
+			visibility: 'public',
+		});
+		await expect(actionsOK.set_visibility.callback(event, context)).resolves.toBeUndefined();
+		expect(coreOK.setVisibility).toHaveBeenLastCalledWith(broadcast_id, Visibility.Public);
+		expect(coreOK.setVisibility).toHaveBeenCalledTimes(1);
+	});
+	test('Set visibility failure', async () => {
+		const context = new MockContext();
+		const broadcast_id = 'test';
+		const event = makeEvent(ActionId.SetVisibility, {
+			broadcast_id_is_text: false,
+			broadcast_id,
+			visibility: 'other',
+		});
+		await expect(actionsOK.set_visibility.callback(event, context)).rejects.toThrowError(
+			'Invalid visibility value provided'
+		);
+		expect(coreOK.setVisibility).not.toHaveBeenCalled();
 	});
 });

@@ -1,5 +1,5 @@
 import { StateMemory, BroadcastID, BroadcastLifecycle, Broadcast } from './cache';
-import { Transition, YoutubeAPI } from './youtube';
+import { Transition, Visibility, YoutubeAPI } from './youtube';
 import { DetachedPromise, Logger } from './common';
 
 /**
@@ -470,6 +470,10 @@ export class Core {
 				throw new Error(`Cannot add chapter to description; unable to get the start time of the specified broadcast'`);
 			}
 		}
+	}
+
+	async setVisibility(id: BroadcastID, visibility: Visibility): Promise<void> {
+		return this.YouTube.setVisibility(id, visibility);
 	}
 }
 

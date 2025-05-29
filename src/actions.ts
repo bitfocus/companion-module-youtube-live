@@ -18,6 +18,7 @@ import {
 	getBroadcastIdFromOptions,
 } from './common';
 import { Core } from './core';
+import { Visibility } from './youtube';
 
 export enum ActionId {
 	InitBroadcast = 'init_broadcast',
@@ -34,6 +35,7 @@ export enum ActionId {
 	PrependToDescription = 'preprend_to_description',
 	AppendToDescription = 'append_to_description',
 	AddChapterToDescription = 'add_chapter_to_description',
+	SetVisibility = 'set_visibility',
 }
 
 export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationAction): boolean {
@@ -401,6 +403,33 @@ export function listActions(
 					);
 				} else {
 					throw new Error('Unable to prepend text to description: bad parameters.');
+				}
+			}),
+		},
+		[ActionId.SetVisibility]: {
+			name: 'Set visibility of the broadcast',
+			options: [
+				...selectFromAllBroadcasts,
+				{
+					type: 'dropdown',
+					label: 'Visibility:',
+					id: 'visibility',
+					choices: Object.values(Visibility).map(
+						(visibility: Visibility): DropdownChoice => ({
+							id: visibility,
+							label: visibility.charAt(0).toUpperCase() + visibility.slice(1),
+						})
+					),
+					default: Visibility.Private,
+				},
+			],
+			callback: broadcastCallback(async (broadcastId, event) => {
+				const visibility = Object.values(Visibility).find((v) => v === event.options.visibility);
+
+				if (visibility) {
+					return core!.setVisibility(broadcastId, visibility);
+				} else {
+					throw new Error('Invalid visibility value provided');
 				}
 			}),
 		},
