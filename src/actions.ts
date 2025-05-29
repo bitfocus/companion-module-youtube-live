@@ -414,12 +414,12 @@ export function listActions(
 				},
 			],
 			callback: broadcastCallback(async (broadcastId, event) => {
-				const visibility = event.options.visibility as Visibility;
+				const visibility = Object.values(Visibility).find((v) => v === event.options.visibility);
 
 				if (visibility) {
 					return core!.setVisibility(broadcastId, visibility);
 				} else {
-					throw new Error('Unable to prepend text to description: bad parameters.');
+					throw new Error('Invalid visibility value provided');
 				}
 			}),
 		},
