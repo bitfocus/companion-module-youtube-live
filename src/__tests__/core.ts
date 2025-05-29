@@ -1,5 +1,5 @@
 //require("leaked-handles");
-import { YoutubeAPI, Transition } from '../youtube';
+import { YoutubeAPI, Transition, Visibility } from '../youtube';
 import { ModuleBase, Core } from '../core';
 import { sleep } from '../common';
 import {
@@ -41,7 +41,10 @@ export function makeMockYT(memory: StateMemory): YoutubeAPI {
 		}),
 		setDescription: jest.fn<Promise<void>, [BroadcastID, string, string, string]>().mockImplementation(() => {
 			return Promise.resolve();
-		})
+		}),
+		setVisibility: jest.fn<Promise<void>, [BroadcastID, Visibility]>().mockImplementation(() => {
+			return Promise.resolve();
+		}),
 	};
 }
 
