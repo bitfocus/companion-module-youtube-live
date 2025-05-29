@@ -518,8 +518,8 @@ describe('Action callback', () => {
 			broadcast_id: 'test',
 			broadcast_id_text: 'BAD',
 			title: ChapterTitle,
-			separator: '$(custom:separator)',
 			default_separator: true,
+			separator: '$(custom:separator)',
 			ensure_presence_of_all_zeroes_timestamp: false,
 		});
 		await expect(actionsOK.add_chapter_to_description.callback(event, context)).resolves.toBeUndefined();
