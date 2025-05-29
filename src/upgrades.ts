@@ -40,32 +40,19 @@ function FeedbackUpdater(
 	};
 }
 
-function add_default_for_ensure_presence_of_all_zeroes_timestamp(
-	_context: CompanionUpgradeContext<YoutubeConfig>,
-	props: CompanionStaticUpgradeProps<YoutubeConfig>
-): CompanionStaticUpgradeResult<YoutubeConfig> {
-	const result: CompanionStaticUpgradeResult<YoutubeConfig> = {
-		updatedConfig: null,
-		updatedActions: [],
-		updatedFeedbacks: [],
-	};
-
-	props.actions
-		.filter(
-			(v) =>
-				v.actionId === ActionId.AddChapterToDescription && !('ensure_presence_of_all_zeroes_timestamp' in v.options)
-		)
-		.forEach((v) => {
-			v.options.ensure_presence_of_all_zeroes_timestamp = true;
-			result.updatedActions.push(v);
-		});
-
-	return result;
-}
-
 export const UpgradeScripts = [
 	// force separate upgrade scripts onto separate lines
 	ActionUpdater(tryUpgradeActionSelectingBroadcastId),
 	FeedbackUpdater(tryUpgradeFeedbackSelectingBroadcastID),
-	add_default_for_ensure_presence_of_all_zeroes_timestamp,
+	ActionUpdater((action) => {
+		if (
+			action.actionId !== ActionId.AddChapterToDescription ||
+			!('ensure_presence_of_all_zeroes_timestamp' in action.options)
+		) {
+			return false;
+		}
+
+		action.options.ensure_presence_of_all_zeroes_timestamp = true;
+		return true;
+	}),
 ] satisfies CompanionStaticUpgradeScript<YoutubeConfig>[];
