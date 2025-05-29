@@ -63,7 +63,7 @@ describe('Action callback', () => {
 	coreOK = new Core(mockModule, mockYT, 100, 100);
 	coreKO = new Core(mockModule, mockYT, 100, 100);
 
-	// Moking OK functions
+	// Mocking OK functions
 	coreOK.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
 	coreOK.makeBroadcastLive = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
 	coreOK.finishBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
@@ -94,7 +94,9 @@ describe('Action callback', () => {
 	coreKO.setDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('setdescription')));
 	coreKO.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('prependtodescription')));
 	coreKO.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('appendtodescription')));
-	coreKO.addChapterToDescription = jest.fn((_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.reject(new Error('addchaptertodescription')));
+	coreKO.addChapterToDescription = jest.fn(
+		(_a: BroadcastID, _b: string, _c: string, _d: boolean): Promise<void> => Promise.reject(new Error('addchaptertodescription'))
+	);
 
 	// Init cores
 	coreOK.init();
@@ -518,11 +520,10 @@ describe('Action callback', () => {
 			title: ChapterTitle,
 			default_separator: true,
 			separator: '$(custom:separator)',
+			ensure_presence_of_all_zeroes_timestamp: false,
 		});
-		await expect(
-			actionsOK.add_chapter_to_description.callback(event, context)
-		).resolves.toBeUndefined();
-		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
+		await expect(actionsOK.add_chapter_to_description.callback(event, context)).resolves.toBeUndefined();
+		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, ' - ', false);
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter to description failure', async () => {
@@ -538,11 +539,10 @@ describe('Action callback', () => {
 			title: ChapterTitle,
 			default_separator: true,
 			separator: '$(bad:bunny)',
+			ensure_presence_of_all_zeroes_timestamp: false,
 		});
-		await expect(
-			actionsKO.add_chapter_to_description.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
-		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
+		await expect(actionsKO.add_chapter_to_description.callback(event, context)).rejects.toBeInstanceOf(Error);
+		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, ' - ', false);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter with custom separator to description success', async () => {
@@ -558,11 +558,10 @@ describe('Action callback', () => {
 			title: ChapterTitle,
 			default_separator: false,
 			separator: Sep,
+			ensure_presence_of_all_zeroes_timestamp: false,
 		});
-		await expect(
-			actionsOK.add_chapter_to_description.callback(event, context)
-		).resolves.toBeUndefined();
-		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep);
+		await expect(actionsOK.add_chapter_to_description.callback(event, context)).resolves.toBeUndefined();
+		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep, false);
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Add chapter with custom separator to description failure', async () => {
@@ -578,11 +577,10 @@ describe('Action callback', () => {
 			title: ChapterTitle,
 			default_separator: false,
 			separator: Sep,
+			ensure_presence_of_all_zeroes_timestamp: true,
 		});
-		await expect(
-			actionsKO.add_chapter_to_description.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
-		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep);
+		await expect(actionsKO.add_chapter_to_description.callback(event, context)).rejects.toBeInstanceOf(Error);
+		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep, true);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
 	test('Set visibility success', async () => {

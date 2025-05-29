@@ -1,15 +1,15 @@
 //require("leaked-handles");
-import { YoutubeAPI, Transition, Visibility } from '../youtube';
-import { ModuleBase, Core } from '../core';
+import { Transition, Visibility, YoutubeAPI } from '../youtube';
+import { Core, ModuleBase } from '../core';
 import { sleep } from '../common';
 import {
-	BroadcastMap,
 	Broadcast,
-	StreamMap,
 	BroadcastID,
-	StateMemory,
 	BroadcastLifecycle,
+	BroadcastMap,
+	StateMemory,
 	StreamHealth,
+	StreamMap,
 } from '../cache';
 import { mocked, MockedShallow } from 'jest-mock';
 
@@ -575,5 +575,118 @@ describe('Toggling live broadcasts', () => {
 			memory.Broadcasts.bA.Status = key;
 			await expect(core.toggleBroadcast('bA')).rejects.toBeInstanceOf(Error);
 		}
+	});
+});
+
+describe("Core - addChapterToDescription", () => {
+	let memory: StateMemory;
+	let mockYT: jest.Mocked<YoutubeAPI>;
+	let mockModule: jest.Mocked<ModuleBase>;
+	let core: Core;
+
+	const broadcastId: BroadcastID = "bA";
+
+	beforeEach(() => {
+		memory = {
+			Broadcasts: {
+				[broadcastId]: {
+					Id: broadcastId,
+					Name: "Broadcast A",
+					Status: BroadcastLifecycle.Live,
+					MonitorStreamEnabled: true,
+					BoundStreamId: "sA",
+					ScheduledStartTime: "2021-11-30T20:00:00",
+					ActualStartTime: new Date(Date.now() - 3600 * 1000).toISOString(), // 1 hour ago
+					LiveChatId: "lcA",
+					LiveConcurrentViewers: "0",
+					Description: "Existing description"
+				}
+			},
+			Streams: {
+				sA: {
+					Id: "sA",
+					Health: StreamHealth.OK,
+				}
+			},
+			UnfinishedBroadcasts: []
+		};
+		mockYT = mocked(makeMockYT(memory));
+
+		mockModule = mocked({
+			reloadAll: jest.fn(),
+			reloadStates: jest.fn(),
+			reloadBroadcast: jest.fn(),
+			log: jest.fn()
+		} as unknown as ModuleBase);
+
+		core = new Core(mockModule, mockYT, 100, 100);
+		core.Cache = memory;
+	});
+
+	afterEach(() => {
+		core.destroy();
+	});
+
+	it("should add a valid chapter to the description", async () => {
+		const title = "Chapter 1";
+		const separator = " - ";
+		await core.addChapterToDescription(broadcastId, title, separator);
+
+		expect(mockYT.setDescription).toHaveBeenCalledWith(
+			broadcastId,
+			memory.Broadcasts[broadcastId].ScheduledStartTime,
+			memory.Broadcasts[broadcastId].Name,
+			expect.stringContaining("00:00:00 - Chapter 1")
+		);
+	});
+
+	it("should not add a chapter if broadcast is not live", async () => {
+		memory.Broadcasts[broadcastId].Status = BroadcastLifecycle.Ready;
+
+		await expect(
+			core.addChapterToDescription(broadcastId, "Chapter 1", " - ")
+		).rejects.toThrow("Cannot add chapter to description; required state is 'live', but current state is 'ready for testing'");
+	});
+
+	it("should throw an error if broadcast does not have a valid start time", async () => {
+		memory.Broadcasts[broadcastId].ActualStartTime = null;
+
+		await expect(
+			core.addChapterToDescription(broadcastId, "Chapter 1", " - ")
+		).rejects.toThrow("unable to get the start time of the specified broadcast");
+	});
+
+	it("should add all-zeroes timestamp if not present", async () => {
+		memory.Broadcasts[broadcastId].Description = "";
+
+		await core.addChapterToDescription(broadcastId, "Intro", " - ", true);
+
+		expect(mockYT.setDescription).toHaveBeenCalledWith(
+			broadcastId,
+			memory.Broadcasts[broadcastId].ScheduledStartTime,
+			memory.Broadcasts[broadcastId].Name,
+			expect.stringContaining("00:00:00 - Intro")
+		);
+	});
+
+	it("should avoid adding consecutive chapters less than 10 seconds apart", async () => {
+		(core as any).LastChapterTimestamp = Date.now();
+
+		await expect(
+			core.addChapterToDescription(broadcastId, "Chapter 2", " - ")
+		).rejects.toThrow("chapters must be spaced at least 10 seconds apart");
+	});
+
+	it("should add a chapter even if elapsed time is greater than 10 seconds", async () => {
+		(core as any).LastChapterTimestamp = Date.now() - 11 * 1000;
+
+		await core.addChapterToDescription(broadcastId, "Next Chapter", " - ");
+
+		expect(mockYT.setDescription).toHaveBeenCalledWith(
+			broadcastId,
+			memory.Broadcasts[broadcastId].ScheduledStartTime,
+			memory.Broadcasts[broadcastId].Name,
+			expect.stringContaining("Next Chapter")
+		);
 	});
 });
