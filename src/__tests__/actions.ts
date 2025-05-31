@@ -55,13 +55,11 @@ describe('Action list', () => {
 
 describe('Action callback', () => {
 	// Create cores for testing
-	let coreOK: Core;
-	let coreKO: Core;
 	const memory: StateMemory = clone(SampleMemory);
 	const mockYT: MockedShallow<YoutubeAPI> = mocked(makeMockYT(memory));
 	const mockModule: MockedShallow<ModuleBase> = mocked(makeMockModule());
-	coreOK = new Core(mockModule, mockYT, 100, 100);
-	coreKO = new Core(mockModule, mockYT, 100, 100);
+	const coreOK = new Core(mockModule, mockYT, 100, 100);
+	const coreKO = new Core(mockModule, mockYT, 100, 100);
 
 	// Moking OK functions
 	coreOK.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
