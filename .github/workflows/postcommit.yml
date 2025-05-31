@@ -30,7 +30,7 @@ jobs:
       - name: Compile module
         run: |
           corepack enable
-          yarn install --frozen-lockfile
+          yarn install --immutable
         working-directory: ./module-local-dev/youtube-live
 
       - name: Run unit tests
