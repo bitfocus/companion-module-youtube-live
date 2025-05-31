@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import { OAuth2Client } from 'google-auth-library';
-import { google, youtube_v3 } from 'googleapis';
+import { youtube, type youtube_v3 } from '@googleapis/youtube';
 import { BroadcastID, BroadcastMap, StreamMap, BroadcastLifecycle, StreamHealth, Broadcast } from './cache';
 
 /**
@@ -111,7 +111,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	 * @param maxBroadcasts Limit on how many broadcasts to fetch
 	 */
 	constructor(auth: OAuth2Client, maxBroadcasts: number) {
-		this.ApiClient = google.youtube({
+		this.ApiClient = youtube({
 			version: 'v3',
 			auth: auth,
 		});
@@ -270,7 +270,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	}
 
 	/**
-	 * @inheritdoc 
+	 * @inheritdoc
 	 */
 	async sendMessageToLiveChat(id: string, message: string): Promise<void> {
 		await this.ApiClient.liveChatMessages.insert({

@@ -1,9 +1,9 @@
 //require("leaked-handles");
 import { OAuth2Client } from 'google-auth-library';
 import { YoutubeConnector, Transition } from '../youtube';
-import { FakeYouTube } from '../__mocks__/googleapis';
+import { FakeYouTube } from '../__mocks__/@googleapis/youtube';
 import { StateMemory, BroadcastLifecycle, StreamHealth } from '../cache';
-jest.mock('googleapis');
+jest.mock('@googleapis/youtube');
 
 const instance: YoutubeConnector = new YoutubeConnector((null as unknown) as OAuth2Client, 10);
 const mock: FakeYouTube = (instance.ApiClient as unknown) as FakeYouTube;
