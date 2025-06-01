@@ -1,8 +1,24 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import { BroadcastMap } from './cache';
-import { CompanionPresetDefinitions, combineRgb } from '@companion-module/base';
+import { Broadcast, BroadcastMap } from './cache';
+import { CompanionOptionValues, CompanionPresetDefinitions, combineRgb } from '@companion-module/base';
 import { FeedbackId } from './feedbacks';
 import { ActionId } from './actions';
+import { BroadcastIdDropdownOptionId, BroadcastIdIsTextOptionId, BroadcastIdTextOptionId } from './common';
+
+function addBroadcastSelectionOptions(
+	// It'd' be nice to only allow options that don't contain any broadcast
+	// options to prevent errors, but TypeScript's structural typing doesn't
+	// really enable this.
+	options: CompanionOptionValues,
+	broadcastId: Broadcast['Id'],
+): CompanionOptionValues {
+	return {
+		...options,
+		[BroadcastIdIsTextOptionId]: false,
+		[BroadcastIdTextOptionId]: broadcastId,
+		[BroadcastIdDropdownOptionId]: broadcastId,
+	}
+}
 
 /**
  * Get a list of presets for this module
@@ -31,13 +47,12 @@ export function listPresets(
 			feedbacks: [
 				{
 					feedbackId: FeedbackId.BroadcastStatus,
-					options: {
+					options: addBroadcastSelectionOptions({
 						bg_live: combineRgb(222, 0, 0),
 						bg_testing: combineRgb(0, 172, 0),
 						bg_complete: combineRgb(0, 0, 168),
 						bg_ready: combineRgb(209, 209, 0),
-						broadcast: item.Id,
-					},
+					}, item.Id),
 				},
 			],
 			steps: [
@@ -45,9 +60,7 @@ export function listPresets(
 					down: [
 						{
 							actionId: ActionId.StartBroadcast,
-							options: {
-								broadcast_id: item.Id,
-							},
+							options: addBroadcastSelectionOptions({}, item.Id),
 						}
 					],
 					up: [],
@@ -68,13 +81,12 @@ export function listPresets(
 			feedbacks: [
 				{
 					feedbackId: FeedbackId.BroadcastStatus,
-					options: {
+					options: addBroadcastSelectionOptions({
 						bg_live: combineRgb(222, 0, 0),
 						bg_testing: combineRgb(0, 172, 0),
 						bg_complete: combineRgb(0, 0, 168),
 						bg_ready: combineRgb(209, 209, 0),
-						broadcast: item.Id,
-					},
+					}, item.Id),
 				},
 			],
 			steps: [
@@ -82,9 +94,7 @@ export function listPresets(
 					down: [
 						{
 							actionId: ActionId.StopBroadcast,
-							options: {
-								broadcast_id: item.Id,
-							},
+							options: addBroadcastSelectionOptions({}, item.Id),
 						},
 					],
 					up: [],
@@ -105,13 +115,12 @@ export function listPresets(
 			feedbacks: [
 				{
 					feedbackId: FeedbackId.BroadcastStatus,
-					options: {
+					options: addBroadcastSelectionOptions({
 						bg_live: combineRgb(222, 0, 0),
 						bg_testing: combineRgb(0, 172, 0),
 						bg_complete: combineRgb(0, 0, 168),
 						bg_ready: combineRgb(209, 209, 0),
-						broadcast: item.Id,
-					},
+					}, item.Id),
 				},
 			],
 			steps: [
@@ -119,9 +128,7 @@ export function listPresets(
 					down: [
 						{
 							actionId: ActionId.ToggleBroadcast,
-							options: {
-								broadcast_id: item.Id,
-							},
+							options: addBroadcastSelectionOptions({}, item.Id),
 						},
 					],
 					up: [],
@@ -142,13 +149,12 @@ export function listPresets(
 			feedbacks: [
 				{
 					feedbackId: FeedbackId.BroadcastStatus,
-					options: {
+					options: addBroadcastSelectionOptions({
 						bg_live: combineRgb(222, 0, 0),
 						bg_testing: combineRgb(0, 172, 0),
 						bg_complete: combineRgb(0, 0, 168),
 						bg_ready: combineRgb(209, 209, 0),
-						broadcast: item.Id,
-					},
+					}, item.Id),
 				},
 			],
 			steps: [
@@ -156,9 +162,7 @@ export function listPresets(
 					down: [
 						{
 							actionId: ActionId.InitBroadcast,
-							options: {
-								broadcast_id: item.Id,
-							},
+							options: addBroadcastSelectionOptions({}, item.Id),
 						},
 					],
 					up: [],
@@ -182,14 +186,13 @@ export function listPresets(
 				feedbacks: [
 					{
 						feedbackId: FeedbackId.BroadcastStatus,
-						options: {
+						options: addBroadcastSelectionOptions({
 							bg_live: combineRgb(222, 0, 0),
 							bg_testing: combineRgb(0, 172, 0),
 							bg_complete: combineRgb(87, 0, 87),
 							text_complete: combineRgb(182, 155, 182),
 							bg_ready: combineRgb(209, 209, 0),
-							broadcast: `unfinished_${i}`,
-						},
+						}, `unfinished_${i}`),
 					},
 				],
 				steps: [],
@@ -207,7 +210,7 @@ export function listPresets(
 				feedbacks: [
 					{
 						feedbackId: FeedbackId.StreamHealth,
-						options: {
+						options: addBroadcastSelectionOptions({
 							bg_good: combineRgb(0, 204, 0),
 							text_good: combineRgb(255, 255, 255),
 							bg_ok: combineRgb(204, 204, 0),
@@ -216,8 +219,7 @@ export function listPresets(
 							text_bad: combineRgb(255, 255, 255),
 							bg_no_data: combineRgb(255, 0, 0),
 							text_no_data: combineRgb(255, 255, 255),
-							broadcast: `unfinished_${i}`,
-						},
+						}, `unfinished_${i}`),
 					},
 				],
 				steps: [],
