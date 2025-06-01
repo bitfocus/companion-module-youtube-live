@@ -380,17 +380,27 @@ export function listActions(
 					regex: '/^.{1,}$/',
 					isVisible: (options) => { return !options.default_separator as boolean }
 				},
+				{
+					type: 'checkbox',
+					label: 'Use "00:00:00" as the timestamp if it is not present yet?',
+					id: 'ensure_presence_of_all_zeroes_timestamp',
+					default: false,
+				},
 			],
 			callback: broadcastCallback(async (broadcastId, event, context) => {
-				const separator = await context.parseVariablesInString(String(event.options.separator));
+				const separator = event.options.default_separator
+					? ' - '
+					: await context.parseVariablesInString(event.options.separator as string);
 				const chapterTitle = await context.parseVariablesInString(String(event.options.title));
+				const ensurePresenceOfAllZeroesTimestamp = event.options.ensure_presence_of_all_zeroes_timestamp as boolean;
 
 				if (chapterTitle) {
-					if (event.options.default_separator) {
-						return core!.addChapterToDescription(broadcastId, chapterTitle);
-					} else {
-						return core!.addChapterToDescription(broadcastId, chapterTitle, separator);
-					}
+					return core!.addChapterToDescription(
+						broadcastId,
+						chapterTitle,
+						separator,
+						ensurePresenceOfAllZeroesTimestamp
+					);
 				} else {
 					throw new Error('Unable to prepend text to description: bad parameters.');
 				}
