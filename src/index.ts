@@ -42,8 +42,13 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 		this.auth = new YoutubeAuthorization(this);
 	}
 
-	async init(config): Promise<void> {
+	override async init(config: YoutubeConfig, _isFirstInit: boolean): Promise<void> {
 		this.log('debug', 'Initializing YT module');
+
+		this.#initInstance(config);
+	}
+
+	#initInstance(config: YoutubeConfig): void {
 		this.updateStatus(InstanceStatus.UnknownWarning, 'Initializing');
 		this.config = config
 
@@ -85,7 +90,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	/**
 	 * Deinitialize this module (i.e. cancel all pending asynchronous operations)
 	 */
-	async destroy(): Promise<void> {
+	override async destroy(): Promise<void> {
 		this.core?.destroy();
 		this.core = undefined;
 		this.auth.cancel();
@@ -95,17 +100,17 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	 * Store new configuration from UI and reload the module
 	 * @param config New module configuration
 	 */
-	async configUpdated(config: YoutubeConfig): Promise<void> {
-		this.config = config;
+	override async configUpdated(config: YoutubeConfig): Promise<void> {
 		this.log('debug', 'Restarting YT module after reconfiguration');
 		this.destroy();
-		this.init(true);
+
+		this.#initInstance(config);
 	}
 
 	/**
 	 * Get a list of config fields that this module wants to store
 	 */
-	getConfigFields(): SomeCompanionConfigField[] {
+	override getConfigFields(): SomeCompanionConfigField[] {
 		return listConfigFields();
 	}
 
