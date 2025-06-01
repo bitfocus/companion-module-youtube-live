@@ -5,7 +5,7 @@ jest.mock('../../auth/httpListener');
 jest.mock('../../auth/oauthclient');
 jest.mock('google-auth-library');
 
-import opn = require('open');
+import opn from 'open';
 import { HttpReceiver } from '../../auth/httpListener';
 import { AppCredentials } from '../../auth/types';
 import { makeOAuth2Client } from '../../auth/oauthclient';

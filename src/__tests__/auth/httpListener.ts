@@ -1,9 +1,9 @@
 //require("leaked-handles");
-jest.mock('http');
+jest.mock('node:http');
 jest.mock('server-destroy');
 
-import _http = require('http');
-import _destroyer = require('server-destroy');
+import * as _http from 'node:http';
+import _destroyer from 'server-destroy';
 import { HttpReceiver } from '../../auth/httpListener';
 import { EventEmitter } from 'events';
 

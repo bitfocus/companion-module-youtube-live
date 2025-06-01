@@ -1,5 +1,5 @@
-import opn = require('open');
-import url = require('url');
+import opn from 'open';
+import * as url from 'node:url';
 import { Logger } from '../common';
 import { HttpReceiver } from './httpListener';
 import { AppCredentials, UserCredentials } from './types';

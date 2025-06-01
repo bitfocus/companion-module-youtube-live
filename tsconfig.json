@@ -29,7 +29,9 @@
     "skipLibCheck": true,
     "lib": ["es6"],
     "types": ["node", "jest"],
-    "typeRoots": ["./node_modules/@types", "./types"]
+    "typeRoots": ["./node_modules/@types", "./types"],
+    // This is needed to perform ECMA imports of 'open' and 'server-destroy'.
+    "esModuleInterop": true,
   },
   "include": ["src/**/*.ts", "src/jest.config.js"],
   "compileOnSave": false,

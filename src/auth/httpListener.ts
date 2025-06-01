@@ -1,6 +1,6 @@
-import http = require('http');
-import url = require('url');
-import destroyer = require('server-destroy');
+import * as http from 'node:http';
+import * as url from 'node:url';
+import destroyer from 'server-destroy';
 import { Logger, DetachedPromise } from '../common';
 
 /**

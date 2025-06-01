@@ -1,4 +1,4 @@
-import url = require('url');
+import * as url from 'node:url';
 import { Logger } from '../common';
 import { AppCredentials, UserCredentials } from './types';
 import { YoutubeConfig } from '../config';
