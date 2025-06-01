@@ -36,6 +36,7 @@ export function listPresets(
 	Object.values(broadcasts).forEach((item) => {
 		presets[`start_broadcast_${item.Id}`] = {
 			type: 'button',
+
 			category: 'Start broadcast',
 			name: `Start ${item.Name}`,
 			style: {
