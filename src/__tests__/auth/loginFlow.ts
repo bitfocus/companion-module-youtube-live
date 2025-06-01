@@ -27,13 +27,11 @@ jest.mocked(HttpReceiver).mockImplementation((host, port, log) => {
 	return _mockHttp;
 });
 
-mockOAuthCtor.mockImplementation(
-	(app2, user2): OAuth2Client => {
-		expect(app2).toBe(app);
-		expect(user2).toBe(null);
-		return _mockOAuth;
-	}
-);
+mockOAuthCtor.mockImplementation((app2, user2): OAuth2Client => {
+	expect(app2).toBe(app);
+	expect(user2).toBe(null);
+	return _mockOAuth;
+});
 
 const app: AppCredentials = {
 	ClientID: 'ClientID',
@@ -62,11 +60,11 @@ describe('Login flow', () => {
 			});
 			return 'https://google.com/this/is/callback';
 		});
-		mockHttp.getCode.mockImplementationOnce((onReady) => {
+		mockHttp.getCode.mockImplementationOnce(async (onReady) => {
 			onReady();
 			return Promise.resolve('authCode');
 		});
-		mockOpn.mockImplementationOnce((target, _) => {
+		mockOpn.mockImplementationOnce(async (target, _) => {
 			expect(target).toBe('https://google.com/this/is/callback');
 			return Promise.resolve({
 				unref: () => {
@@ -74,12 +72,10 @@ describe('Login flow', () => {
 				},
 			} as ChildProcess);
 		});
-		mockOAuth.getToken.mockImplementationOnce(
-			(code): Promise<{ tokens: Credentials }> => {
-				expect(code).toBe('authCode');
-				return Promise.resolve({ tokens: { refresh_token: 'good' } });
-			}
-		);
+		mockOAuth.getToken.mockImplementationOnce(async (code): Promise<{ tokens: Credentials }> => {
+			expect(code).toBe('authCode');
+			return Promise.resolve({ tokens: { refresh_token: 'good' } });
+		});
 
 		const flow = new GoogleLoginForm(app, log);
 		const user = await flow.request();

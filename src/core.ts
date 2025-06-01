@@ -144,7 +144,7 @@ export class Core {
 		switch (status) {
 			case BroadcastLifecycle.Ready:
 				if (hasMonitor) {
-					return this.transitionTo(id, Transition.ToTesting).then(() => {
+					return this.transitionTo(id, Transition.ToTesting).then(async () => {
 						return this.transitionTo(id, Transition.ToLive);
 					});
 				} else {
@@ -257,7 +257,7 @@ export class Core {
 	 */
 	async checkBroadcastStatus(id: BroadcastID): Promise<BroadcastLifecycle> {
 		const broadcast = await this.refreshBroadcast(id);
-		
+
 		return broadcast.Status;
 	}
 
@@ -273,7 +273,7 @@ export class Core {
 		this.RunningTransitions[id] = poller;
 
 		return this.YouTube.transitionBroadcast(id, to)
-			.then(() => {
+			.then(async () => {
 				return poller.startWait();
 			})
 			.then(
@@ -329,7 +329,7 @@ export class Core {
 			);
 		} else {
 			const liveChatID = this.Cache.Broadcasts[id].LiveChatId;
-			return this.YouTube.sendMessageToLiveChat(liveChatID, content)
+			return this.YouTube.sendMessageToLiveChat(liveChatID, content);
 		}
 	}
 
@@ -338,7 +338,7 @@ export class Core {
 	 * @param id Broadcast ID in which the cue point will be inserted
 	 * @param duration Optional duration (in seconds) of the cue point
 	 */
-	async insertCuePoint(id: BroadcastID, duration?: number, ): Promise<void> {
+	async insertCuePoint(id: BroadcastID, duration?: number): Promise<void> {
 		const currentState = await this.checkBroadcastStatus(id);
 		const requiredState = BroadcastLifecycle.Live;
 
@@ -357,18 +357,16 @@ export class Core {
 	 * Set title for the given broadcast
 	 * @param id Broadcast ID
 	 * @param title New title for the broadcast
-	 * @returns 
+	 * @returns
 	 */
 	async setTitle(id: BroadcastID, title: string): Promise<void> {
 		if (this.Cache.Broadcasts[id]) {
 			if (title.length > 0 || title.length <= 100) {
-				return this.YouTube.setTitle(
-					id,
-					this.Cache.Broadcasts[id].ScheduledStartTime,
-					title
-				)
+				return this.YouTube.setTitle(id, this.Cache.Broadcasts[id].ScheduledStartTime, title);
 			} else {
-				throw new Error(`Unable to set title; given description contains '${title.length}' characters (1 to 100 required)`);
+				throw new Error(
+					`Unable to set title; given description contains '${title.length}' characters (1 to 100 required)`
+				);
 			}
 		} else {
 			throw new Error(`Broadcast does not exist: ${id}`);
@@ -382,10 +380,12 @@ export class Core {
 					id,
 					this.Cache.Broadcasts[id].ScheduledStartTime,
 					this.Cache.Broadcasts[id].Name,
-					desc,
-				)
+					desc
+				);
 			} else {
-				throw new Error(`Unable to set description; given description contains '${desc.length}' characters (1 to 5000 required)`);
+				throw new Error(
+					`Unable to set description; given description contains '${desc.length}' characters (1 to 5000 required)`
+				);
 			}
 		} else {
 			throw new Error(`Broadcast does not exist: ${id}`);
@@ -430,26 +430,33 @@ export class Core {
 			const broadcast: Broadcast = await this.refreshBroadcast(id);
 			const startTime = broadcast.ActualStartTime ? Date.parse(broadcast.ActualStartTime) : null;
 			let description: string = broadcast.Description;
-			
+
 			if (startTime) {
 				const dateNow = Date.now();
 				const elapsedTime = new Date(dateNow - startTime);
-				let timecode = ('0' + elapsedTime.getUTCHours()).slice(-2) + ':' +
-					('0' + elapsedTime.getMinutes()).slice(-2) + ':' +
+				let timecode =
+					('0' + elapsedTime.getUTCHours()).slice(-2) +
+					':' +
+					('0' + elapsedTime.getMinutes()).slice(-2) +
+					':' +
 					('0' + elapsedTime.getSeconds()).slice(-2);
 
 				/** Insert the first 00:00:00 timestamp if it doesn't exist */
-				if (!description.includes('00:00:00' + (separator ? separator : " - ")) ||
-					(Number(elapsedTime.getUTCHours()) === 0 && Number(elapsedTime.getMinutes()) === 0 && Number(elapsedTime.getSeconds()) <= 15)) {
-						timecode = '00:00:00';
+				if (
+					!description.includes('00:00:00' + (separator ? separator : ' - ')) ||
+					(Number(elapsedTime.getUTCHours()) === 0 &&
+						Number(elapsedTime.getMinutes()) === 0 &&
+						Number(elapsedTime.getSeconds()) <= 15)
+				) {
+					timecode = '00:00:00';
 				}
 
 				if (this.LastChapterTimestamp === 0 || new Date(dateNow - this.LastChapterTimestamp).getSeconds() > 10) {
-					this.LastChapterTimestamp = (timecode === '00:00:00' && startTime !== null) ? startTime : dateNow;
-					description = description + '\n' + timecode + (separator ? separator : " - ") + title;
+					this.LastChapterTimestamp = timecode === '00:00:00' && startTime !== null ? startTime : dateNow;
+					description = description + '\n' + timecode + (separator ? separator : ' - ') + title;
 					await this.setDescription(id, description);
 				} else {
-					throw new Error(`Cannot add chapter to descripion; chapters must be spaced at least 10 seconds apart `)
+					throw new Error(`Cannot add chapter to descripion; chapters must be spaced at least 10 seconds apart `);
 				}
 			} else {
 				throw new Error(`Cannot add chapter to description; unable to get the start time of the specified broadcast'`);
@@ -502,7 +509,7 @@ class Poller {
 	/**
 	 * Start the polling and return the belonging promise
 	 */
-	startWait(): Promise<void> {
+	async startWait(): Promise<void> {
 		this.Timer = global.setInterval(this.loop.bind(this), this.Interval);
 		return this.Signal.Promise;
 	}

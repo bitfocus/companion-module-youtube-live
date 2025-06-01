@@ -15,34 +15,34 @@ import { mocked, MockedShallow } from 'jest-mock';
 
 export function makeMockYT(memory: StateMemory): YoutubeAPI {
 	return {
-		listBroadcasts: jest.fn<Promise<BroadcastMap>, []>().mockImplementation(() => {
+		listBroadcasts: jest.fn<Promise<BroadcastMap>, []>().mockImplementation(async () => {
 			return Promise.resolve(memory.Broadcasts);
 		}),
-		refreshBroadcastStatus1: jest.fn<Promise<Broadcast>, [Broadcast]>().mockImplementation((b: Broadcast) => {
+		refreshBroadcastStatus1: jest.fn<Promise<Broadcast>, [Broadcast]>().mockImplementation(async (b: Broadcast) => {
 			return Promise.resolve(memory.Broadcasts[b.Id]);
 		}),
-		refreshBroadcastStatus: jest.fn<Promise<BroadcastMap>, [BroadcastMap]>().mockImplementation((_) => {
+		refreshBroadcastStatus: jest.fn<Promise<BroadcastMap>, [BroadcastMap]>().mockImplementation(async (_) => {
 			return Promise.resolve(memory.Broadcasts);
 		}),
-		listBoundStreams: jest.fn<Promise<StreamMap>, [BroadcastMap]>((_) => {
+		listBoundStreams: jest.fn<Promise<StreamMap>, [BroadcastMap]>(async (_) => {
 			return Promise.resolve(memory.Streams);
 		}),
-		transitionBroadcast: jest.fn<Promise<void>, [BroadcastID, Transition]>().mockImplementation(() => {
+		transitionBroadcast: jest.fn<Promise<void>, [BroadcastID, Transition]>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		sendMessageToLiveChat: jest.fn<Promise<void>, [string, string]>().mockImplementation(() => {
+		sendMessageToLiveChat: jest.fn<Promise<void>, [string, string]>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		insertCuePoint: jest.fn<Promise<void>, [BroadcastID, number]>().mockImplementation(() => {
+		insertCuePoint: jest.fn<Promise<void>, [BroadcastID, number]>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		setTitle: jest.fn<Promise<void>, [BroadcastID, string, string]>().mockImplementation(() => {
+		setTitle: jest.fn<Promise<void>, [BroadcastID, string, string]>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		setDescription: jest.fn<Promise<void>, [BroadcastID, string, string, string]>().mockImplementation(() => {
+		setDescription: jest.fn<Promise<void>, [BroadcastID, string, string, string]>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		setVisibility: jest.fn<Promise<void>, [BroadcastID, Visibility]>().mockImplementation(() => {
+		setVisibility: jest.fn<Promise<void>, [BroadcastID, Visibility]>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
 	};
@@ -108,12 +108,12 @@ describe('Miscellaneous', () => {
 
 	afterEach(() => {
 		core.destroy();
-	})
+	});
 
 	afterAll(() => {
 		jest.clearAllMocks();
 		jest.clearAllTimers();
-	})
+	});
 
 	test('Initialization succeeds', async () => {
 		await expect(core.init()).resolves.toBe(undefined);
@@ -232,12 +232,12 @@ describe('Starting tests on broadcasts', () => {
 
 	afterEach(() => {
 		core.destroy();
-	})
+	});
 
 	afterAll(() => {
 		jest.clearAllMocks();
 		jest.clearAllTimers();
-	})
+	});
 
 	test('Starting test on unknown broadcast fails', async () => {
 		await core.init();
@@ -328,12 +328,12 @@ describe('Going live with broadcasts', () => {
 
 	afterEach(() => {
 		core.destroy();
-	})
+	});
 
 	afterAll(() => {
 		jest.clearAllMocks();
 		jest.clearAllTimers();
-	})
+	});
 
 	test('Going live on broadcast in invalid state fails [monitor = on]', async () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;
@@ -430,12 +430,12 @@ describe('Finishing live broadcasts', () => {
 
 	afterEach(() => {
 		core.destroy();
-	})
+	});
 
 	afterAll(() => {
 		jest.clearAllMocks();
 		jest.clearAllTimers();
-	})
+	});
 
 	test('Starting finish on broadcast in invalid state fails', async () => {
 		await core.init();
@@ -495,12 +495,12 @@ describe('Toggling live broadcasts', () => {
 
 	afterEach(() => {
 		core.destroy();
-	})
+	});
 
 	afterAll(() => {
 		jest.clearAllMocks();
 		jest.clearAllTimers();
-	})
+	});
 
 	test('Toggle works for ready stream [monitor = on]', async () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;

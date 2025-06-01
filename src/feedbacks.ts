@@ -59,23 +59,19 @@ interface AdvancedFeedbackWithAsyncCallback extends CompanionAdvancedFeedbackDef
  * @param core Module core
  */
 export function listFeedbacks(
-	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined; }
+	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined }
 ): Record<FeedbackId, AdvancedFeedbackWithAsyncCallback> {
 	const { broadcasts } = getProps();
 	const { unfinishedCount } = getProps();
 	const { core } = getProps();
 
-	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map(
-		(item): DropdownChoice => {
-			return { id: item.Id, label: item.Name };
-		}
-	);
+	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map((item): DropdownChoice => {
+		return { id: item.Id, label: item.Name };
+	});
 
-	const broadcastUnfinishedEntries: DropdownChoice[] = [...Array(unfinishedCount).keys()].map(
-		(i): DropdownChoice => {
-			return { id: `unfinished_${i}`, label: `Unfinished/planned #${i}` };
-		}
-	);
+	const broadcastUnfinishedEntries: DropdownChoice[] = [...Array(unfinishedCount).keys()].map((i): DropdownChoice => {
+		return { id: `unfinished_${i}`, label: `Unfinished/planned #${i}` };
+	});
 
 	const defaultBroadcast = broadcastEntries.length == 0 ? '' : broadcastEntries[0].id;
 
@@ -83,8 +79,8 @@ export function listFeedbacks(
 		if (!core) {
 			return false;
 		}
-		return true
-	}
+		return true;
+	};
 
 	const findBroadcastForOptions = async (
 		options: CompanionFeedbackAdvancedEvent['options'],
@@ -105,7 +101,7 @@ export function listFeedbacks(
 		}
 
 		return core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
-	}
+	};
 
 	const selectFromAllBroadcasts: SomeCompanionFeedbackInputField[] = [
 		BroadcastIdIsTextCheckbox,
@@ -187,8 +183,7 @@ export function listFeedbacks(
 					case BroadcastLifecycle.Live:
 						return { bgcolor: event.options.bg_live as number, color: event.options.text as number };
 					case BroadcastLifecycle.TestStarting:
-						if (dimStarting)
-							return { bgcolor: event.options.bg_ready as number, color: event.options.text as number };
+						if (dimStarting) return { bgcolor: event.options.bg_ready as number, color: event.options.text as number };
 						else return { bgcolor: event.options.bg_testing as number, color: event.options.text as number };
 					case BroadcastLifecycle.Testing:
 						return { bgcolor: event.options.bg_testing as number, color: event.options.text as number };

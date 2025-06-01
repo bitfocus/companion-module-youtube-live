@@ -20,12 +20,10 @@ const mockHttp = jest.mocked(_mockHttp);
 jest.mocked(_http.Server).mockImplementation(() => _mockHttp);
 
 const mockEvent = new EventEmitter();
-mockHttp.on.mockImplementation(
-	(event, listener): _http.Server => {
-		mockEvent.on(event, listener);
-		return _mockHttp;
-	}
-);
+mockHttp.on.mockImplementation((event, listener): _http.Server => {
+	mockEvent.on(event, listener);
+	return _mockHttp;
+});
 mockHttp.emit.mockImplementation((event): boolean => {
 	return mockEvent.emit(event);
 });
@@ -40,7 +38,7 @@ describe('HTTP module interaction', () => {
 
 	afterAll(() => {
 		mockEvent.removeAllListeners();
-	})
+	});
 
 	test('listen', () => {
 		new HttpReceiver('abcd', 1234, log).getCode(jest.fn());

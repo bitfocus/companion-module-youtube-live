@@ -61,7 +61,7 @@ export interface YoutubeAPI {
 	 * @param id Live chat ID
 	 * @param message Content of the message (max. 200 characters)
 	 */
-	sendMessageToLiveChat(id: String, message: String): Promise<void>;
+	sendMessageToLiveChat(id: string, message: string): Promise<void>;
 
 	/**
 	 * Insert a cue point in the specified broadcast
@@ -77,7 +77,7 @@ export interface YoutubeAPI {
 	 * @param title Title of the broadcast
 	 * @param desc Content (to set) of the description
 	 */
-	setDescription(id: BroadcastID, sst: string, title: string, desc: string): Promise<void>
+	setDescription(id: BroadcastID, sst: string, title: string, desc: string): Promise<void>;
 
 	/**
 	 * Set title for the given broadcast
@@ -85,7 +85,7 @@ export interface YoutubeAPI {
 	 * @param sst Scheduled start time of the broadcast
 	 * @param title Title of the broadcast
 	 */
-	setTitle(id: BroadcastID, sst: string, title: string): Promise<void>
+	setTitle(id: BroadcastID, sst: string, title: string): Promise<void>;
 
 	/**
 	 * Set the visibility of the broadcast
@@ -172,10 +172,11 @@ export class YoutubeConnector implements YoutubeAPI {
 		const item = response.data.items[0];
 		const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
 		const concurrentViewers = item.statistics!.concurrentViewers ?? 'n/a';
-		const actualStartTime =
-			broadcast.ActualStartTime
+		const actualStartTime = broadcast.ActualStartTime
 			? broadcast.ActualStartTime
-			: (item.snippet?.actualStartTime ? item.snippet.actualStartTime : null);
+			: item.snippet?.actualStartTime
+				? item.snippet.actualStartTime
+				: null;
 		const description = item.snippet!.description ?? '';
 
 		return {
@@ -186,7 +187,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			MonitorStreamEnabled: broadcast.MonitorStreamEnabled,
 			ScheduledStartTime: broadcast.ScheduledStartTime,
 			ActualStartTime: actualStartTime,
-			LiveChatId: broadcast.LiveChatId!,
+			LiveChatId: broadcast.LiveChatId,
 			LiveConcurrentViewers: concurrentViewers,
 			Description: description,
 		};
@@ -208,10 +209,11 @@ export class YoutubeConnector implements YoutubeAPI {
 			const id = item.id!;
 			const status = item.status!.lifeCycleStatus! as BroadcastLifecycle;
 			const concurrentViewers = item.statistics!.concurrentViewers ?? 'n/a';
-			const actualStartTime =
-				current[id].ActualStartTime
+			const actualStartTime = current[id].ActualStartTime
 				? current[id].ActualStartTime
-				: (item.snippet?.actualStartTime ? item.snippet.actualStartTime : null);
+				: item.snippet?.actualStartTime
+					? item.snippet.actualStartTime
+					: null;
 			const description = item.snippet!.description ?? '';
 
 			mapping[id] = {
@@ -293,7 +295,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	async insertCuePoint(id: string, duration?: number): Promise<void> {
 		const requestBody: youtube_v3.Schema$Cuepoint = {
 			cueType: 'cueTypeAd',
-		}
+		};
 
 		if (duration) requestBody['durationSecs'] = duration;
 		await this.ApiClient.liveBroadcasts.insertCuepoint({
@@ -316,9 +318,9 @@ export class YoutubeConnector implements YoutubeAPI {
 					scheduledStartTime: sst,
 					title: title,
 					description: description,
-				}
-			}
-		})
+				},
+			},
+		});
 	}
 
 	/**
@@ -332,9 +334,9 @@ export class YoutubeConnector implements YoutubeAPI {
 				snippet: {
 					scheduledStartTime: sst,
 					title: title,
-				}
-			}
-		})
+				},
+			},
+		});
 	}
 
 	/**

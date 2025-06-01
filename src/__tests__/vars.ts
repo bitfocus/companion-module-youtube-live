@@ -51,16 +51,16 @@ describe('Variable declarations', () => {
 		expect(result).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					variableId: 'broadcast_broadcastID_lifecycle'
-				})
+					variableId: 'broadcast_broadcastID_lifecycle',
+				}),
 			])
 		);
 
 		expect(result).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					variableId: 'broadcast_broadcastID_health'
-				})
+					variableId: 'broadcast_broadcastID_health',
+				}),
 			])
 		);
 	});
@@ -71,40 +71,40 @@ describe('Variable declarations', () => {
 		expect(result).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					variableId: 'unfinished_0'
-				})
+					variableId: 'unfinished_0',
+				}),
 			])
 		);
 
 		expect(result).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					variableId: 'unfinished_short_0'
-				})
+					variableId: 'unfinished_short_0',
+				}),
 			])
 		);
 
 		expect(result).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					variableId: 'unfinished_state_0'
-				})
+					variableId: 'unfinished_state_0',
+				}),
 			])
 		);
 
 		expect(result).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					variableId: 'unfinished_health_0'
-				})
+					variableId: 'unfinished_health_0',
+				}),
 			])
 		);
 
 		expect(result).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
-					variableId: 'unfinished_concurrent_viewers_0'
-				})
+					variableId: 'unfinished_concurrent_viewers_0',
+				}),
 			])
 		);
 	});
@@ -138,13 +138,11 @@ describe('Variable values', () => {
 	});
 
 	test('All lifecycle strings have nonzero length', () => {
-		const inputs: Broadcast[] = Object.values(BroadcastLifecycle).map(
-			(phase: BroadcastLifecycle): Broadcast => {
-				const broadcast: Broadcast = clone(SampleMemory.Broadcasts.broadcastID);
-				broadcast.Status = phase;
-				return broadcast;
-			}
-		);
+		const inputs: Broadcast[] = Object.values(BroadcastLifecycle).map((phase: BroadcastLifecycle): Broadcast => {
+			const broadcast: Broadcast = clone(SampleMemory.Broadcasts.broadcastID);
+			broadcast.Status = phase;
+			return broadcast;
+		});
 
 		inputs.forEach((memory) => {
 			const output = getBroadcastVars(memory);
@@ -153,13 +151,11 @@ describe('Variable values', () => {
 	});
 
 	test('All health strings have nonzero length', () => {
-		const inputs: StateMemory[] = Object.values(StreamHealth).map(
-			(health: StreamHealth): StateMemory => {
-				const memory: StateMemory = clone(SampleMemory);
-				memory.Streams.streamID.Health = health;
-				return memory;
-			}
-		);
+		const inputs: StateMemory[] = Object.values(StreamHealth).map((health: StreamHealth): StateMemory => {
+			const memory: StateMemory = clone(SampleMemory);
+			memory.Streams.streamID.Health = health;
+			return memory;
+		});
 
 		inputs.forEach((memory) => {
 			const output = getStreamVars(memory.Broadcasts.broadcastID, memory.Streams.streamID);

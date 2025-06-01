@@ -39,7 +39,7 @@ export enum ActionId {
 }
 
 export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationAction): boolean {
-	let options: CompanionMigrationAction['options']
+	let options: CompanionMigrationAction['options'];
 	switch (action.actionId) {
 		case ActionId.InitBroadcast as string:
 		case ActionId.StartBroadcast as string:
@@ -75,23 +75,19 @@ export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationA
  * @returns
  */
 export function listActions(
-	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined; }
+	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined }
 ): Record<ActionId, CompanionActionDefinition> {
 	const { broadcasts } = getProps();
 	const { unfinishedCount } = getProps();
 	const { core } = getProps();
 
-	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map(
-		(item): DropdownChoice => {
-			return { id: item.Id, label: item.Name };
-		}
-	);
+	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map((item): DropdownChoice => {
+		return { id: item.Id, label: item.Name };
+	});
 
-	const broadcastUnfinishedEntries: DropdownChoice[] = [...Array(unfinishedCount).keys()].map(
-		(i): DropdownChoice => {
-			return { id: `unfinished_${i}`, label: `Unfinished/planned #${i}` };
-		}
-	);
+	const broadcastUnfinishedEntries: DropdownChoice[] = [...Array(unfinishedCount).keys()].map((i): DropdownChoice => {
+		return { id: `unfinished_${i}`, label: `Unfinished/planned #${i}` };
+	});
 
 	const defaultBroadcast = broadcastEntries.length == 0 ? '' : broadcastEntries[0].id;
 
@@ -101,8 +97,8 @@ export function listActions(
 		if (!core) {
 			return false;
 		}
-		return true
-	}
+		return true;
+	};
 
 	const checkBroadcastId = async (
 		options: CompanionActionEvent['options'],
@@ -243,7 +239,7 @@ export function listActions(
 					default: 30,
 					min: 1,
 					max: 120,
-				}
+				},
 			],
 			callback: broadcastCallback(async (broadcastId, event) => {
 				if (!checkCore()) throw new Error('Internal module error');
@@ -378,7 +374,9 @@ export function listActions(
 					tooltip: 'The separator must contain at least one character',
 					useVariables: true,
 					regex: '/^.{1,}$/',
-					isVisible: (options) => { return !options.default_separator as boolean }
+					isVisible: (options) => {
+						return !options.default_separator;
+					},
 				},
 			],
 			callback: broadcastCallback(async (broadcastId, event, context) => {

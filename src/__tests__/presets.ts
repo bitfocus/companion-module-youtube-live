@@ -24,7 +24,7 @@ describe('Preset list', () => {
 				Description: '',
 			},
 		};
-		const result = listPresets(() => ({ broadcasts: broadcasts, unfinishedCount: 0 }))
+		const result = listPresets(() => ({ broadcasts: broadcasts, unfinishedCount: 0 }));
 		expect(Object.keys(result).length).toEqual(4);
 		expect(result).toHaveProperty('start_broadcast_test');
 		expect(result).toHaveProperty('stop_broadcast_test');
@@ -50,7 +50,7 @@ describe('Preset list', () => {
 				Description: '',
 			},
 		};
-		const result = listPresets(() => ({ broadcasts: broadcasts, unfinishedCount: 1 }))
+		const result = listPresets(() => ({ broadcasts: broadcasts, unfinishedCount: 1 }));
 		expect(Object.keys(result).length).toEqual(7);
 		expect(result).toHaveProperty('start_broadcast_test');
 		expect(result).toHaveProperty('stop_broadcast_test');

@@ -27,7 +27,7 @@ const SampleMemory: StateMemory = {
 	},
 	Streams: {},
 	UnfinishedBroadcasts: [],
-}
+};
 
 //
 // TEST IF ACTIONS ARE PRESENT
@@ -62,37 +62,52 @@ describe('Action callback', () => {
 	const coreKO = new Core(mockModule, mockYT, 100, 100);
 
 	// Moking OK functions
-	coreOK.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
-	coreOK.makeBroadcastLive = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
-	coreOK.finishBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
-	coreOK.toggleBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.resolve());
-	coreOK.reloadEverything = jest.fn((): Promise<void> => Promise.resolve());
-	coreOK.refreshFeedbacks = jest.fn((): Promise<void> => Promise.resolve());
-	coreOK.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.insertCuePoint = jest.fn((_a: BroadcastID, _b?: number): Promise<void> => Promise.resolve());
-	coreOK.setTitle = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.setDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.startBroadcastTest = jest.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.makeBroadcastLive = jest.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.finishBroadcast = jest.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.toggleBroadcast = jest.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.reloadEverything = jest.fn(async (): Promise<void> => Promise.resolve());
+	coreOK.refreshFeedbacks = jest.fn(async (): Promise<void> => Promise.resolve());
+	coreOK.sendLiveChatMessage = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.insertCuePoint = jest.fn(async (_a: BroadcastID, _b?: number): Promise<void> => Promise.resolve());
+	coreOK.setTitle = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.setDescription = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.prependToDescription = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.appendToDescription = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
 	coreOK.addChapterToDescription = jest.fn(
-		(_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.resolve()
+		async (_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.resolve()
 	);
-	coreOK.setVisibility = jest.fn((_a: BroadcastID, _b: Visibility): Promise<void> => Promise.resolve());
+	coreOK.setVisibility = jest.fn(async (_a: BroadcastID, _b: Visibility): Promise<void> => Promise.resolve());
 
 	// Mocking KO functions
-	coreKO.startBroadcastTest = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('test')));
-	coreKO.makeBroadcastLive = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('live')));
-	coreKO.finishBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('finish')));
-	coreKO.toggleBroadcast = jest.fn((_: BroadcastID): Promise<void> => Promise.reject(new Error('toggle')));
-	coreKO.reloadEverything = jest.fn((): Promise<void> => Promise.reject(new Error('refreshstatus')));
-	coreKO.refreshFeedbacks = jest.fn((): Promise<void> => Promise.reject(new Error('refreshfbcks')));
-	coreKO.sendLiveChatMessage = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('sendmsg')));
-	coreKO.insertCuePoint = jest.fn((_a: BroadcastID, _b?: number): Promise<void> => Promise.reject(new Error('insertcuepoint')));
-	coreKO.setTitle = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('settitle')));
-	coreKO.setDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('setdescription')));
-	coreKO.prependToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('prependtodescription')));
-	coreKO.appendToDescription = jest.fn((_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('appendtodescription')));
-	coreKO.addChapterToDescription = jest.fn((_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.reject(new Error('addchaptertodescription')));
+	coreKO.startBroadcastTest = jest.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('test')));
+	coreKO.makeBroadcastLive = jest.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('live')));
+	coreKO.finishBroadcast = jest.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('finish')));
+	coreKO.toggleBroadcast = jest.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('toggle')));
+	coreKO.reloadEverything = jest.fn(async (): Promise<void> => Promise.reject(new Error('refreshstatus')));
+	coreKO.refreshFeedbacks = jest.fn(async (): Promise<void> => Promise.reject(new Error('refreshfbcks')));
+	coreKO.sendLiveChatMessage = jest.fn(
+		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('sendmsg'))
+	);
+	coreKO.insertCuePoint = jest.fn(
+		async (_a: BroadcastID, _b?: number): Promise<void> => Promise.reject(new Error('insertcuepoint'))
+	);
+	coreKO.setTitle = jest.fn(
+		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('settitle'))
+	);
+	coreKO.setDescription = jest.fn(
+		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('setdescription'))
+	);
+	coreKO.prependToDescription = jest.fn(
+		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('prependtodescription'))
+	);
+	coreKO.appendToDescription = jest.fn(
+		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('appendtodescription'))
+	);
+	coreKO.addChapterToDescription = jest.fn(
+		async (_a: BroadcastID, _b: string, _c?: string): Promise<void> =>
+			Promise.reject(new Error('addchaptertodescription'))
+	);
 
 	// Init cores
 	coreOK.init();
@@ -112,9 +127,9 @@ describe('Action callback', () => {
 			id: 'action0',
 			controlId: 'control0',
 			actionId: actionId,
-			options: options
-		}
-		return event
+			options: options,
+		};
+		return event;
 	}
 
 	afterEach(() => jest.clearAllMocks());
@@ -123,7 +138,7 @@ describe('Action callback', () => {
 		coreOK.destroy();
 		coreKO.destroy();
 		jest.clearAllTimers();
-	})
+	});
 
 	test('Start test success', async () => {
 		const context = new MockContext();
@@ -132,9 +147,7 @@ describe('Action callback', () => {
 			broadcast_id: 'test',
 			broadcast_id_text: 'BAD',
 		});
-		await expect(
-			actionsOK.init_broadcast.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.init_broadcast.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(1);
 		expect(coreOK.startBroadcastTest).toHaveBeenLastCalledWith('test');
 	});
@@ -145,19 +158,15 @@ describe('Action callback', () => {
 			broadcast_id: 'BAD',
 			broadcast_id_text: 'test',
 		});
-		await expect(
-			actionsKO.init_broadcast.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.init_broadcast.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.startBroadcastTest).toHaveBeenLastCalledWith('test');
 		expect(coreKO.startBroadcastTest).toHaveBeenCalledTimes(1);
 	});
 	test('Missing broadcast ID', async () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.InitBroadcast, {});
-		await expect(
-			actionsOK.init_broadcast.callback(event, context)
-		).resolves.toBeUndefined();
-		expect(coreOK.Module.log).toHaveBeenLastCalledWith('warn', 'Action failed: undefined broadcast ID')
+		await expect(actionsOK.init_broadcast.callback(event, context)).resolves.toBeUndefined();
+		expect(coreOK.Module.log).toHaveBeenLastCalledWith('warn', 'Action failed: undefined broadcast ID');
 		expect(coreOK.startBroadcastTest).toHaveBeenCalledTimes(0);
 	});
 	test('Unknown broadcast ID', async () => {
@@ -167,9 +176,7 @@ describe('Action callback', () => {
 			broadcast_id: 'unknown-broadcast-id',
 			broadcast_id_text: 'test',
 		});
-		await expect(
-			actionsOK.init_broadcast.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.init_broadcast.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.Module.log).toHaveBeenLastCalledWith(
 			'warn',
 			"Action failed: broadcast ID 'unknown-broadcast-id' - not found or invalid"
@@ -184,9 +191,7 @@ describe('Action callback', () => {
 			broadcast_id: 'test',
 			broadcast_id_text: 'BAD',
 		});
-		await expect(
-			actionsOK.start_broadcast.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.start_broadcast.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.makeBroadcastLive).toHaveBeenLastCalledWith('test');
 		expect(coreOK.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
@@ -197,9 +202,7 @@ describe('Action callback', () => {
 			broadcast_id: 'test',
 			broadcast_id_text: 'BAD',
 		});
-		await expect(
-			actionsKO.start_broadcast.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.start_broadcast.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.makeBroadcastLive).toHaveBeenLastCalledWith('test');
 		expect(coreKO.makeBroadcastLive).toHaveBeenCalledTimes(1);
 	});
@@ -213,9 +216,7 @@ describe('Action callback', () => {
 			broadcast_id: 'BAD',
 			broadcast_id_text: '$(mod:var)t',
 		});
-		await expect(
-			actionsOK.stop_broadcast.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.stop_broadcast.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.finishBroadcast).toHaveBeenLastCalledWith('test');
 		expect(coreOK.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
@@ -226,9 +227,7 @@ describe('Action callback', () => {
 			broadcast_id: 'test',
 			broadcast_id_text: 'BAD',
 		});
-		await expect(
-			actionsKO.stop_broadcast.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.stop_broadcast.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.finishBroadcast).toHaveBeenLastCalledWith('test');
 		expect(coreKO.finishBroadcast).toHaveBeenCalledTimes(1);
 	});
@@ -240,9 +239,7 @@ describe('Action callback', () => {
 			broadcast_id: 'test',
 			broadcast_id_text: 'BAD',
 		});
-		await expect(
-			actionsOK.toggle_broadcast.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.toggle_broadcast.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.toggleBroadcast).toHaveBeenLastCalledWith('test');
 		expect(coreOK.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
@@ -253,9 +250,7 @@ describe('Action callback', () => {
 			broadcast_id: 'test',
 			broadcast_id_text: 'BAD',
 		});
-		await expect(
-			actionsKO.toggle_broadcast.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.toggle_broadcast.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.toggleBroadcast).toHaveBeenLastCalledWith('test');
 		expect(coreKO.toggleBroadcast).toHaveBeenCalledTimes(1);
 	});
@@ -263,34 +258,26 @@ describe('Action callback', () => {
 	test('Reload all success', async () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshStatus, {});
-		await expect(
-			actionsOK.refresh_status.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.refresh_status.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.reloadEverything).toHaveBeenCalledTimes(1);
 	});
 	test('Reload all failure', async () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshStatus, {});
-		await expect(
-			actionsKO.refresh_status.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.refresh_status.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.reloadEverything).toHaveBeenCalledTimes(1);
 	});
 
 	test('Feedback refresh success', async () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshFeedbacks, {});
-		await expect(
-			actionsOK.refresh_feedbacks.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.refresh_feedbacks.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 	test('Feedback refresh failure', async () => {
 		const context = new MockContext();
 		const event = makeEvent(ActionId.RefreshFeedbacks, {});
-		await expect(
-			actionsKO.refresh_feedbacks.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.refresh_feedbacks.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.refreshFeedbacks).toHaveBeenCalledTimes(1);
 	});
 
@@ -302,9 +289,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'BAD',
 			message_content: 'testing message',
 		});
-		await expect(
-			actionsOK.send_livechat_message.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.send_livechat_message.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.sendLiveChatMessage).toHaveBeenLastCalledWith('test', 'testing message');
 		expect(coreOK.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
@@ -319,9 +304,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 't$(semi:punctuation)st',
 			message_content: 'tes$(ex:lax)sage',
 		});
-		await expect(
-			actionsKO.send_livechat_message.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.send_livechat_message.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.sendLiveChatMessage).toHaveBeenLastCalledWith('test', 'testing message');
 		expect(coreKO.sendLiveChatMessage).toHaveBeenCalledTimes(1);
 	});
@@ -333,9 +316,7 @@ describe('Action callback', () => {
 			broadcast_id: 'test',
 			broadcast_id_text: 'BAD',
 		});
-		await expect(
-			actionsOK.insert_cue_point.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.insert_cue_point.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.insertCuePoint).toHaveBeenLastCalledWith('test');
 		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
@@ -346,9 +327,7 @@ describe('Action callback', () => {
 			broadcast_id: 'test',
 			broadcast_id_text: 'BAD',
 		});
-		await expect(
-			actionsKO.insert_cue_point.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.insert_cue_point.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.insertCuePoint).toHaveBeenLastCalledWith('test');
 		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
@@ -360,9 +339,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'test',
 			duration: 10,
 		});
-		await expect(
-			actionsOK.insert_cue_point_custom_duration.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.insert_cue_point_custom_duration.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.insertCuePoint).toHaveBeenLastCalledWith('test', 10);
 		expect(coreOK.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
@@ -374,9 +351,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'test',
 			duration: 10,
 		});
-		await expect(
-			actionsKO.insert_cue_point_custom_duration.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.insert_cue_point_custom_duration.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.insertCuePoint).toHaveBeenLastCalledWith('test', 10);
 		expect(coreKO.insertCuePoint).toHaveBeenCalledTimes(1);
 	});
@@ -390,9 +365,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'test',
 			title_content: UpdatedTitle,
 		});
-		await expect(
-			actionsOK.set_title.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.set_title.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.setTitle).toHaveBeenLastCalledWith('test', UpdatedTitle);
 		expect(coreOK.setTitle).toHaveBeenCalledTimes(1);
 	});
@@ -405,9 +378,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'BAD',
 			title_content: UpdatedTitle,
 		});
-		await expect(
-			actionsKO.set_title.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.set_title.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.setTitle).toHaveBeenLastCalledWith('test', UpdatedTitle);
 		expect(coreKO.setTitle).toHaveBeenCalledTimes(1);
 	});
@@ -420,9 +391,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'test',
 			desc_content: 'description',
 		});
-		await expect(
-			actionsOK.set_description.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.set_description.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.setDescription).toHaveBeenLastCalledWith('test', 'description');
 		expect(coreOK.setDescription).toHaveBeenCalledTimes(1);
 	});
@@ -434,9 +403,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'BAD',
 			desc_content: 'description',
 		});
-		await expect(
-			actionsKO.set_description.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.set_description.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.setDescription).toHaveBeenLastCalledWith('test', 'description');
 		expect(coreKO.setDescription).toHaveBeenCalledTimes(1);
 	});
@@ -450,9 +417,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'te$(mod:var)t',
 			text: 'text$(mod:var) to prepend',
 		});
-		await expect(
-			actionsOK.preprend_to_description.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.preprend_to_description.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.prependToDescription).toHaveBeenLastCalledWith('test', 'texts to prepend');
 		expect(coreOK.prependToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -464,9 +429,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'BAD',
 			text: 'text to prepend',
 		});
-		await expect(
-			actionsKO.preprend_to_description.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.preprend_to_description.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.prependToDescription).toHaveBeenLastCalledWith('test', 'text to prepend');
 		expect(coreKO.prependToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -481,9 +444,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'te$(hello:hello)',
 			text: TextToAppend,
 		});
-		await expect(
-			actionsOK.append_to_description.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.append_to_description.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.appendToDescription).toHaveBeenLastCalledWith('test', TextToAppend);
 		expect(coreOK.appendToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -498,9 +459,7 @@ describe('Action callback', () => {
 			broadcast_id_text: '$(hello:hello)',
 			text: TextToAppend,
 		});
-		await expect(
-			actionsKO.append_to_description.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.append_to_description.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.appendToDescription).toHaveBeenLastCalledWith('test', TextToAppend);
 		expect(coreKO.appendToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -517,9 +476,7 @@ describe('Action callback', () => {
 			default_separator: true,
 			separator: '$(custom:separator)',
 		});
-		await expect(
-			actionsOK.add_chapter_to_description.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.add_chapter_to_description.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -537,9 +494,7 @@ describe('Action callback', () => {
 			default_separator: true,
 			separator: '$(bad:bunny)',
 		});
-		await expect(
-			actionsKO.add_chapter_to_description.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.add_chapter_to_description.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -557,9 +512,7 @@ describe('Action callback', () => {
 			default_separator: false,
 			separator: Sep,
 		});
-		await expect(
-			actionsOK.add_chapter_to_description.callback(event, context)
-		).resolves.toBeUndefined();
+		await expect(actionsOK.add_chapter_to_description.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep);
 		expect(coreOK.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});
@@ -577,9 +530,7 @@ describe('Action callback', () => {
 			default_separator: false,
 			separator: Sep,
 		});
-		await expect(
-			actionsKO.add_chapter_to_description.callback(event, context)
-		).rejects.toBeInstanceOf(Error);
+		await expect(actionsKO.add_chapter_to_description.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle, Sep);
 		expect(coreKO.addChapterToDescription).toHaveBeenCalledTimes(1);
 	});

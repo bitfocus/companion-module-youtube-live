@@ -6,12 +6,7 @@ import {
 	loadRefreshInterval,
 	loadMaxUnfinishedBroadcastCount,
 } from './config';
-import {
-	InstanceBase,
-	InstanceStatus,
-	SomeCompanionConfigField,
-	runEntrypoint,
-} from '@companion-module/base';
+import { InstanceBase, InstanceStatus, SomeCompanionConfigField, runEntrypoint } from '@companion-module/base';
 import { Core, ModuleBase } from './core';
 import { StateMemory, Broadcast } from './cache';
 import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateVars } from './vars';
@@ -26,7 +21,6 @@ import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow'
  * Main Companion integration class of this module
  */
 export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements ModuleBase, AuthorizationEnvironment {
-
 	/** Executive core of the module */
 	private core?: Core;
 	/** YouTube authorization flow */
@@ -50,16 +44,18 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 
 	#initInstance(config: YoutubeConfig): void {
 		this.updateStatus(InstanceStatus.UnknownWarning, 'Initializing');
-		this.config = config
+		this.config = config;
 
-		this.auth.authorize(this.config)
-			.then((googleAuth) => {
+		this.auth
+			.authorize(this.config)
+			.then(async (googleAuth) => {
 				this.saveToken(JSON.stringify(googleAuth.credentials));
 
 				const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(this.config));
 
 				this.core = new Core(this, api, loadRefreshInterval(this.config));
-				return this.core.init()
+				return this.core
+					.init()
 					.then(() => {
 						this.log('info', 'YT Module initialized successfully');
 						this.updateStatus(InstanceStatus.Ok);
@@ -127,9 +123,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 			vars[`${item.name}`] = item.value;
 		}
 		this.setVariableValues(vars);
-		this.setPresetDefinitions(
-			listPresets(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt }))
-		);
+		this.setPresetDefinitions(listPresets(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt })));
 		this.setFeedbackDefinitions(
 			listFeedbacks(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt, core: this.core }))
 		);

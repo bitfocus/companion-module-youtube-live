@@ -1,5 +1,5 @@
 //require("leaked-handles");
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /* eslint-disable @typescript-eslint/camelcase */
 jest.mock('../../auth/loginFlow');
 jest.mock('../../auth/oauthclient');
@@ -94,16 +94,14 @@ describe('User credentials', () => {
 			expect(app.RedirectURL).toBe(mock.config.client_redirect_url);
 		});
 		mockForm.request.mockResolvedValueOnce({ Token: { refresh_token: 'good' } });
-		mocked(makeOAuth2Client).mockImplementationOnce(
-			(app, user): OAuth2Client => {
-				expect(app.ClientID).toBe(mock.config.client_id);
-				expect(app.ClientSecret).toBe(mock.config.client_secret);
-				expect(app.RedirectURL).toBe(mock.config.client_redirect_url);
-				expect(user).toBeTruthy();
-				expect(user!.Token.refresh_token).toBe('good');
-				return new OAuth2Client();
-			}
-		);
+		mocked(makeOAuth2Client).mockImplementationOnce((app, user): OAuth2Client => {
+			expect(app.ClientID).toBe(mock.config.client_id);
+			expect(app.ClientSecret).toBe(mock.config.client_secret);
+			expect(app.RedirectURL).toBe(mock.config.client_redirect_url);
+			expect(user).toBeTruthy();
+			expect(user!.Token.refresh_token).toBe('good');
+			return new OAuth2Client();
+		});
 
 		const tested = new YoutubeAuthorization(mock);
 		await expect(tested.authorize(true)).resolves.toBeInstanceOf(OAuth2Client);
@@ -122,7 +120,7 @@ describe('User credentials', () => {
 
 	test('Cancellation is passed through to the login form', async () => {
 		const promise = new DetachedPromise<UserCredentials>();
-		mockForm.request.mockImplementationOnce(() => promise.Promise);
+		mockForm.request.mockImplementationOnce(async () => promise.Promise);
 		mockForm.abort.mockImplementationOnce(() => promise.Reject(new Error('cancelled')));
 
 		const tested = new YoutubeAuthorization(mock);

@@ -11,12 +11,10 @@ const _mockOAuth = new OAuth2Client();
 const mockOAuth = mocked(_mockOAuth);
 
 const mockOAuthCtor = jest.fn<void, [string?, string?, string?]>();
-jest.mocked(OAuth2Client).mockImplementation(
-	(cid, cpwd, url): OAuth2Client => {
-		mockOAuthCtor(cid, cpwd, url);
-		return _mockOAuth;
-	}
-);
+jest.mocked(OAuth2Client).mockImplementation((cid, cpwd, url): OAuth2Client => {
+	mockOAuthCtor(cid, cpwd, url);
+	return _mockOAuth;
+});
 
 const app: AppCredentials = {
 	ClientID: 'ClientID',

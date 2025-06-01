@@ -36,7 +36,10 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 		result.push({ variableId: `unfinished_short_${i}`, name: `Unfinished/planned broadcast name shortened #${i}` });
 		result.push({ variableId: `unfinished_state_${i}`, name: `Unfinished/planned broadcast state #${i}` });
 		result.push({ variableId: `unfinished_health_${i}`, name: `Unfinished/planned broadcast's stream health #${i}` });
-		result.push({ variableId: `unfinished_concurrent_viewers_${i}`, name: `Unfinished/planned broadcast's concurrent viewers #${i}` });
+		result.push({
+			variableId: `unfinished_concurrent_viewers_${i}`,
+			name: `Unfinished/planned broadcast's concurrent viewers #${i}`,
+		});
 	});
 
 	return result;

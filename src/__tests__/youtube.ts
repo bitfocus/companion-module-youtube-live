@@ -5,8 +5,8 @@ import { FakeYouTube } from '../__mocks__/@googleapis/youtube';
 import { StateMemory, BroadcastLifecycle, StreamHealth } from '../cache';
 jest.mock('@googleapis/youtube');
 
-const instance: YoutubeConnector = new YoutubeConnector((null as unknown) as OAuth2Client, 10);
-const mock: FakeYouTube = (instance.ApiClient as unknown) as FakeYouTube;
+const instance: YoutubeConnector = new YoutubeConnector(null as unknown as OAuth2Client, 10);
+const mock: FakeYouTube = instance.ApiClient as unknown as FakeYouTube;
 const memory: StateMemory = {
 	Broadcasts: {
 		bA: {
@@ -96,7 +96,7 @@ describe('Queries', () => {
 	});
 
 	test('load all', async () => {
-		mock.liveBroadcasts.list.mockImplementation(({ part, mine }) => {
+		mock.liveBroadcasts.list.mockImplementation(async ({ part, mine }) => {
 			expect(part).toContain('status');
 			expect(part).toContain('snippet');
 			expect(part).toContain('contentDetails');
@@ -160,7 +160,7 @@ describe('Queries', () => {
 	});
 
 	test('refresh many', async () => {
-		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
+		mock.liveBroadcasts.list.mockImplementation(async ({ part, id: localID }) => {
 			expect(part).toContain('status');
 			expect(part).toContain('statistics');
 			expect(part).toContain('snippet');
@@ -202,7 +202,7 @@ describe('Queries', () => {
 	});
 
 	test('refresh one - does not exist', async () => {
-		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
+		mock.liveBroadcasts.list.mockImplementation(async ({ part, id: localID }) => {
 			expect(part).toContain('status');
 			expect(part).toContain('statistics');
 			expect(part).toContain('snippet');
@@ -217,7 +217,7 @@ describe('Queries', () => {
 	});
 
 	test('refresh one - exists', async () => {
-		mock.liveBroadcasts.list.mockImplementation(({ part, id: localID }) => {
+		mock.liveBroadcasts.list.mockImplementation(async ({ part, id: localID }) => {
 			expect(part).toContain('status');
 			expect(part).toContain('statistics');
 			expect(part).toContain('snippet');
@@ -249,7 +249,7 @@ describe('Queries', () => {
 	});
 
 	test('get bound streams', async () => {
-		mock.liveStreams.list.mockImplementation(({ part, id: localID }) => {
+		mock.liveStreams.list.mockImplementation(async ({ part, id: localID }) => {
 			expect(part).toContain('status');
 			expect(localID).toHaveLength(2);
 			Object.values(memory.Streams).forEach((item) => {
@@ -275,7 +275,7 @@ describe('Transition', () => {
 	});
 
 	test('to testing state', async () => {
-		mock.liveBroadcasts.transition.mockImplementation(({ id: localID, broadcastStatus }) => {
+		mock.liveBroadcasts.transition.mockImplementation(async ({ id: localID, broadcastStatus }) => {
 			expect(localID).toBe('abcd1234');
 			expect(broadcastStatus).toBe('testing');
 			return Promise.resolve();
@@ -285,7 +285,7 @@ describe('Transition', () => {
 	});
 
 	test('to live state', async () => {
-		mock.liveBroadcasts.transition.mockImplementation(({ id: localID, broadcastStatus }) => {
+		mock.liveBroadcasts.transition.mockImplementation(async ({ id: localID, broadcastStatus }) => {
 			expect(localID).toBe('abcd1234');
 			expect(broadcastStatus).toBe('live');
 			return Promise.resolve();
@@ -295,7 +295,7 @@ describe('Transition', () => {
 	});
 
 	test('to finished state', async () => {
-		mock.liveBroadcasts.transition.mockImplementation(({ id: localID, broadcastStatus }) => {
+		mock.liveBroadcasts.transition.mockImplementation(async ({ id: localID, broadcastStatus }) => {
 			expect(localID).toBe('abcd1234');
 			expect(broadcastStatus).toBe('complete');
 			return Promise.resolve();
@@ -305,7 +305,7 @@ describe('Transition', () => {
 	});
 
 	test('failure', async () => {
-		mock.liveBroadcasts.transition.mockImplementation(({ id: localID, broadcastStatus }) => {
+		mock.liveBroadcasts.transition.mockImplementation(async ({ id: localID, broadcastStatus }) => {
 			expect(localID).toBe('abcd1234');
 			expect(broadcastStatus).toBe('live');
 			return Promise.reject(new Error('mock error'));
@@ -322,7 +322,7 @@ describe('Insert cue point', () => {
 
 	describe('success', () => {
 		test('default duration', async () => {
-			mock.liveBroadcasts.insertCuepoint.mockImplementation(({ id: localID, requestBody: localRequestBody }) => {
+			mock.liveBroadcasts.insertCuepoint.mockImplementation(async ({ id: localID, requestBody: localRequestBody }) => {
 				expect(localID).toBe('bB');
 				expect(localRequestBody).toStrictEqual({
 					cueType: 'cueTypeAd',
@@ -339,7 +339,7 @@ describe('Insert cue point', () => {
 		});
 
 		test('custom duration', async () => {
-			mock.liveBroadcasts.insertCuepoint.mockImplementation(({ id: localID, requestBody: localRequestBody }) => {
+			mock.liveBroadcasts.insertCuepoint.mockImplementation(async ({ id: localID, requestBody: localRequestBody }) => {
 				expect(localID).toBe('bB');
 				expect(localRequestBody).toStrictEqual({
 					cueType: 'cueTypeAd',
@@ -358,7 +358,7 @@ describe('Insert cue point', () => {
 	});
 
 	test('failure', async () => {
-		mock.liveBroadcasts.insertCuepoint.mockImplementation(({ id: localID, requestBody: localRequestBody }) => {
+		mock.liveBroadcasts.insertCuepoint.mockImplementation(async ({ id: localID, requestBody: localRequestBody }) => {
 			expect(localID).toBe('xX');
 			expect(localRequestBody).toBe({
 				cueType: 'cueTypeAd',
@@ -376,14 +376,14 @@ describe('Set title', () => {
 	});
 
 	test('success', async () => {
-		mock.liveBroadcasts.update.mockImplementation(({ part, requestBody: localRequestBody }) => {
-			expect(part).toContain('snippet')
+		mock.liveBroadcasts.update.mockImplementation(async ({ part, requestBody: localRequestBody }) => {
+			expect(part).toContain('snippet');
 			expect(localRequestBody).toStrictEqual({
 				id: 'bB',
 				snippet: {
 					scheduledStartTime: '2022-22-22T22:22:22',
 					title: 'Broadcast X',
-				}
+				},
 			});
 			return Promise.resolve({
 				kind: 'youtube#liveBroadcast',
@@ -398,22 +398,22 @@ describe('Set title', () => {
 					actualStartTime: '2022-22-22T22:42:42',
 					isDefaultBroadcast: false,
 					liveChatId: 'lcB',
-				}
-			})
+				},
+			});
 		});
 		await expect(instance.setTitle('bB', '2022-22-22T22:22:22', 'Broadcast X')).resolves.toBeUndefined();
 		expect(mock.liveBroadcasts.update).toHaveBeenCalledTimes(1);
 	});
 
 	test('failure', async () => {
-		mock.liveBroadcasts.update.mockImplementation(({ part, requestBody: localRequestBody }) => {
-			expect(part).toContain('snippet')
+		mock.liveBroadcasts.update.mockImplementation(async ({ part, requestBody: localRequestBody }) => {
+			expect(part).toContain('snippet');
 			expect(localRequestBody).toStrictEqual({
 				id: 'bB',
 				snippet: {
 					scheduledStartTime: '2022-22-22T21:21:21',
 					title: 'Broadcast X',
-				}
+				},
 			});
 			return Promise.reject(new Error('set title error'));
 		});
@@ -428,15 +428,15 @@ describe('Set description', () => {
 	});
 
 	test('success', async () => {
-		mock.liveBroadcasts.update.mockImplementation(({ part, requestBody: localRequestBody }) => {
-			expect(part).toContain('snippet')
+		mock.liveBroadcasts.update.mockImplementation(async ({ part, requestBody: localRequestBody }) => {
+			expect(part).toContain('snippet');
 			expect(localRequestBody).toStrictEqual({
 				id: 'bB',
 				snippet: {
 					scheduledStartTime: '2022-22-22T22:22:22',
 					title: 'Broadcast B',
 					description: 'Test description',
-				}
+				},
 			});
 			return Promise.resolve({
 				kind: 'youtube#liveBroadcast',
@@ -451,27 +451,31 @@ describe('Set description', () => {
 					actualStartTime: '2022-22-22T22:42:42',
 					isDefaultBroadcast: false,
 					liveChatId: 'lcB',
-				}
-			})
+				},
+			});
 		});
-		await expect(instance.setDescription('bB', '2022-22-22T22:22:22', 'Broadcast B', 'Test description')).resolves.toBeUndefined();
+		await expect(
+			instance.setDescription('bB', '2022-22-22T22:22:22', 'Broadcast B', 'Test description')
+		).resolves.toBeUndefined();
 		expect(mock.liveBroadcasts.update).toHaveBeenCalledTimes(1);
 	});
 
 	test('failure', async () => {
-		mock.liveBroadcasts.update.mockImplementation(({ part, requestBody: localRequestBody }) => {
-			expect(part).toContain('snippet')
+		mock.liveBroadcasts.update.mockImplementation(async ({ part, requestBody: localRequestBody }) => {
+			expect(part).toContain('snippet');
 			expect(localRequestBody).toStrictEqual({
 				id: 'bB',
 				snippet: {
 					scheduledStartTime: '2022-22-22T21:21:21',
 					title: 'Broadcast B',
 					description: 'Test description',
-				}
+				},
 			});
 			return Promise.reject(new Error('set description error'));
 		});
-		await expect(instance.setDescription('bB', '2022-22-22T21:21:21', 'Broadcast B', 'Test description')).rejects.toBeInstanceOf(Error);
+		await expect(
+			instance.setDescription('bB', '2022-22-22T21:21:21', 'Broadcast B', 'Test description')
+		).rejects.toBeInstanceOf(Error);
 		expect(mock.liveBroadcasts.update).toHaveBeenCalledTimes(1);
 	});
 });

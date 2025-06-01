@@ -10,14 +10,14 @@ function addBroadcastSelectionOptions(
 	// options to prevent errors, but TypeScript's structural typing doesn't
 	// really enable this.
 	options: CompanionOptionValues,
-	broadcastId: Broadcast['Id'],
+	broadcastId: Broadcast['Id']
 ): CompanionOptionValues {
 	return {
 		...options,
 		[BroadcastIdIsTextOptionId]: false,
 		[BroadcastIdTextOptionId]: broadcastId,
 		[BroadcastIdDropdownOptionId]: broadcastId,
-	}
+	};
 }
 
 /**
@@ -26,7 +26,7 @@ function addBroadcastSelectionOptions(
  * @param unfinishedCount Number of unfinished broadcast
  */
 export function listPresets(
-	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; }
+	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number }
 ): CompanionPresetDefinitions {
 	const { broadcasts } = getProps();
 	const { unfinishedCount } = getProps();
@@ -47,12 +47,15 @@ export function listPresets(
 			feedbacks: [
 				{
 					feedbackId: FeedbackId.BroadcastStatus,
-					options: addBroadcastSelectionOptions({
-						bg_live: combineRgb(222, 0, 0),
-						bg_testing: combineRgb(0, 172, 0),
-						bg_complete: combineRgb(0, 0, 168),
-						bg_ready: combineRgb(209, 209, 0),
-					}, item.Id),
+					options: addBroadcastSelectionOptions(
+						{
+							bg_live: combineRgb(222, 0, 0),
+							bg_testing: combineRgb(0, 172, 0),
+							bg_complete: combineRgb(0, 0, 168),
+							bg_ready: combineRgb(209, 209, 0),
+						},
+						item.Id
+					),
 				},
 			],
 			steps: [
@@ -61,7 +64,7 @@ export function listPresets(
 						{
 							actionId: ActionId.StartBroadcast,
 							options: addBroadcastSelectionOptions({}, item.Id),
-						}
+						},
 					],
 					up: [],
 				},
@@ -81,12 +84,15 @@ export function listPresets(
 			feedbacks: [
 				{
 					feedbackId: FeedbackId.BroadcastStatus,
-					options: addBroadcastSelectionOptions({
-						bg_live: combineRgb(222, 0, 0),
-						bg_testing: combineRgb(0, 172, 0),
-						bg_complete: combineRgb(0, 0, 168),
-						bg_ready: combineRgb(209, 209, 0),
-					}, item.Id),
+					options: addBroadcastSelectionOptions(
+						{
+							bg_live: combineRgb(222, 0, 0),
+							bg_testing: combineRgb(0, 172, 0),
+							bg_complete: combineRgb(0, 0, 168),
+							bg_ready: combineRgb(209, 209, 0),
+						},
+						item.Id
+					),
 				},
 			],
 			steps: [
@@ -115,12 +121,15 @@ export function listPresets(
 			feedbacks: [
 				{
 					feedbackId: FeedbackId.BroadcastStatus,
-					options: addBroadcastSelectionOptions({
-						bg_live: combineRgb(222, 0, 0),
-						bg_testing: combineRgb(0, 172, 0),
-						bg_complete: combineRgb(0, 0, 168),
-						bg_ready: combineRgb(209, 209, 0),
-					}, item.Id),
+					options: addBroadcastSelectionOptions(
+						{
+							bg_live: combineRgb(222, 0, 0),
+							bg_testing: combineRgb(0, 172, 0),
+							bg_complete: combineRgb(0, 0, 168),
+							bg_ready: combineRgb(209, 209, 0),
+						},
+						item.Id
+					),
 				},
 			],
 			steps: [
@@ -149,12 +158,15 @@ export function listPresets(
 			feedbacks: [
 				{
 					feedbackId: FeedbackId.BroadcastStatus,
-					options: addBroadcastSelectionOptions({
-						bg_live: combineRgb(222, 0, 0),
-						bg_testing: combineRgb(0, 172, 0),
-						bg_complete: combineRgb(0, 0, 168),
-						bg_ready: combineRgb(209, 209, 0),
-					}, item.Id),
+					options: addBroadcastSelectionOptions(
+						{
+							bg_live: combineRgb(222, 0, 0),
+							bg_testing: combineRgb(0, 172, 0),
+							bg_complete: combineRgb(0, 0, 168),
+							bg_ready: combineRgb(209, 209, 0),
+						},
+						item.Id
+					),
 				},
 			],
 			steps: [
@@ -186,13 +198,16 @@ export function listPresets(
 				feedbacks: [
 					{
 						feedbackId: FeedbackId.BroadcastStatus,
-						options: addBroadcastSelectionOptions({
-							bg_live: combineRgb(222, 0, 0),
-							bg_testing: combineRgb(0, 172, 0),
-							bg_complete: combineRgb(87, 0, 87),
-							text_complete: combineRgb(182, 155, 182),
-							bg_ready: combineRgb(209, 209, 0),
-						}, `unfinished_${i}`),
+						options: addBroadcastSelectionOptions(
+							{
+								bg_live: combineRgb(222, 0, 0),
+								bg_testing: combineRgb(0, 172, 0),
+								bg_complete: combineRgb(87, 0, 87),
+								text_complete: combineRgb(182, 155, 182),
+								bg_ready: combineRgb(209, 209, 0),
+							},
+							`unfinished_${i}`
+						),
 					},
 				],
 				steps: [],
@@ -210,16 +225,19 @@ export function listPresets(
 				feedbacks: [
 					{
 						feedbackId: FeedbackId.StreamHealth,
-						options: addBroadcastSelectionOptions({
-							bg_good: combineRgb(0, 204, 0),
-							text_good: combineRgb(255, 255, 255),
-							bg_ok: combineRgb(204, 204, 0),
-							text_ok: combineRgb(255, 255, 255),
-							bg_bad: combineRgb(255, 102, 0),
-							text_bad: combineRgb(255, 255, 255),
-							bg_no_data: combineRgb(255, 0, 0),
-							text_no_data: combineRgb(255, 255, 255),
-						}, `unfinished_${i}`),
+						options: addBroadcastSelectionOptions(
+							{
+								bg_good: combineRgb(0, 204, 0),
+								text_good: combineRgb(255, 255, 255),
+								bg_ok: combineRgb(204, 204, 0),
+								text_ok: combineRgb(255, 255, 255),
+								bg_bad: combineRgb(255, 102, 0),
+								text_bad: combineRgb(255, 255, 255),
+								bg_no_data: combineRgb(255, 0, 0),
+								text_no_data: combineRgb(255, 255, 255),
+							},
+							`unfinished_${i}`
+						),
 					},
 				],
 				steps: [],

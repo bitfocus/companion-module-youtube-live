@@ -59,7 +59,7 @@ const SampleBroadcastCheck: CompanionFeedbackAdvancedEvent = {
 	_page: 0,
 	_bank: 0,
 	_rawBank: 'test' as any,
-	controlId: 'control0'
+	controlId: 'control0',
 };
 
 const SampleStreamCheck: CompanionFeedbackAdvancedEvent = {
@@ -78,7 +78,7 @@ const SampleStreamCheck: CompanionFeedbackAdvancedEvent = {
 	_page: 0,
 	_bank: 0,
 	_rawBank: 'test' as any,
-	controlId: 'control0'
+	controlId: 'control0',
 };
 
 //
@@ -87,7 +87,11 @@ const SampleStreamCheck: CompanionFeedbackAdvancedEvent = {
 
 describe('Common tests', () => {
 	test('Module has required feedbacks', () => {
-		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 1, core: undefined }));
+		const feedbacks = listFeedbacks(() => ({
+			broadcasts: SampleMemory.Broadcasts,
+			unfinishedCount: 1,
+			core: undefined,
+		}));
 		expect(feedbacks).toHaveProperty('broadcast_status');
 		expect(feedbacks).toHaveProperty('broadcast_bound_stream_health');
 	});
@@ -106,7 +110,7 @@ async function tryBroadcast(phase: BroadcastLifecycle, core: Core): Promise<Comp
 
 async function tryStream(health: StreamHealth, core: Core): Promise<CompanionAdvancedFeedbackResult> {
 	await core.init();
-	core.Cache.Streams['abcd'].Health = health
+	core.Cache.Streams['abcd'].Health = health;
 	const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
 	return feedbacks.broadcast_bound_stream_health.callback(SampleStreamCheck, SampleContext);
 }
@@ -126,13 +130,13 @@ describe('Broadcast lifecycle feedback', () => {
 	});
 
 	afterEach(() => {
-		core.destroy()
-	})
+		core.destroy();
+	});
 
 	afterAll(() => {
 		jest.clearAllMocks();
 		jest.clearAllTimers();
-	})
+	});
 
 	test('Created state', async () => {
 		const result = await tryBroadcast(BroadcastLifecycle.Created, core);
@@ -148,10 +152,9 @@ describe('Broadcast lifecycle feedback', () => {
 
 	test('TestStarting state', async () => {
 		const result = await tryBroadcast(BroadcastLifecycle.TestStarting, core);
-		const checking: boolean = (
+		const checking: boolean =
 			result.bgcolor === SampleBroadcastCheck.options.bg_testing ||
-			result.bgcolor === SampleBroadcastCheck.options.bg_ready
-		);
+			result.bgcolor === SampleBroadcastCheck.options.bg_ready;
 		expect(checking).toBe(true);
 	});
 
@@ -162,10 +165,9 @@ describe('Broadcast lifecycle feedback', () => {
 
 	test('LiveStarting state', async () => {
 		const result = await tryBroadcast(BroadcastLifecycle.LiveStarting, core);
-		const checking: boolean = (
+		const checking: boolean =
 			result.bgcolor === SampleBroadcastCheck.options.bg_live ||
-			result.bgcolor === SampleBroadcastCheck.options.bg_testing
-		);
+			result.bgcolor === SampleBroadcastCheck.options.bg_testing;
 		expect(checking).toBe(true);
 	});
 
@@ -197,7 +199,7 @@ describe('Broadcast lifecycle feedback', () => {
 			_page: 0,
 			_bank: 0,
 			_rawBank: 'test' as any,
-			controlId: 'control0'
+			controlId: 'control0',
 		};
 
 		await core.init();
@@ -225,7 +227,7 @@ describe('Broadcast lifecycle feedback', () => {
 			_page: 0,
 			_bank: 0,
 			_rawBank: 'test' as any,
-			controlId: 'control0'
+			controlId: 'control0',
 		};
 
 		await core.init();
@@ -252,7 +254,7 @@ describe('Broadcast lifecycle feedback', () => {
 			_page: 0,
 			_bank: 0,
 			_rawBank: 'test' as any,
-			controlId: 'control0'
+			controlId: 'control0',
 		};
 
 		await core.init();
@@ -285,12 +287,12 @@ describe('Stream health feedback', () => {
 
 	afterEach(() => {
 		core.destroy();
-	})
+	});
 
 	afterAll(() => {
 		jest.clearAllMocks();
 		jest.clearAllTimers();
-	})
+	});
 
 	test('Good health', async () => {
 		const result = await tryStream(StreamHealth.Good, core);
@@ -325,7 +327,7 @@ describe('Stream health feedback', () => {
 			_page: 0,
 			_bank: 0,
 			_rawBank: 'test' as any,
-			controlId: 'control0'
+			controlId: 'control0',
 		};
 
 		await core.init();
@@ -353,7 +355,7 @@ describe('Stream health feedback', () => {
 			_page: 0,
 			_bank: 0,
 			_rawBank: 'test' as any,
-			controlId: 'control0'
+			controlId: 'control0',
 		};
 
 		await core.init();
@@ -399,7 +401,7 @@ describe('Stream health feedback', () => {
 			_page: 0,
 			_bank: 0,
 			_rawBank: 'test' as any,
-			controlId: 'control0'
+			controlId: 'control0',
 		};
 
 		await core.init();
@@ -426,7 +428,7 @@ describe('Stream health feedback', () => {
 			_page: 0,
 			_bank: 0,
 			_rawBank: 'test' as any,
-			controlId: 'control0'
+			controlId: 'control0',
 		};
 
 		await core.init();
