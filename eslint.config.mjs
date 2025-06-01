@@ -45,6 +45,15 @@ const customConfig = [
 
 	permitLimitedUnpublishedImports(allTestFilePatterns, ['jest']),
 	permitLimitedUnpublishedImports(['eslint.config.mjs'], ['@companion-module/tools']),
+
+	{
+		files: allTestFilePatterns,
+		rules: {
+			// These currently are ubiquitous in test code, so turn them off to
+			// get them out of sight while remaining linting errors are fixed.
+			'@typescript-eslint/unbound-method': 'off',
+		},
+	},
 ];
 
 export default customConfig;
