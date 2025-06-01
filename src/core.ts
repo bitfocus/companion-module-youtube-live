@@ -365,7 +365,7 @@ export class Core {
 	 * @param title New title for the broadcast
 	 * @returns 
 	 */
-	async setTitle(id: BroadcastID, title: string) {
+	async setTitle(id: BroadcastID, title: string): Promise<void> {
 		if (this.Cache.Broadcasts[id]) {
 			if (title.length > 0 || title.length <= 100) {
 				return this.YouTube.setTitle(
@@ -381,7 +381,7 @@ export class Core {
 		}
 	}
 
-	async setDescription(id: BroadcastID, desc: string) {
+	async setDescription(id: BroadcastID, desc: string): Promise<void> {
 		if (this.Cache.Broadcasts[id]) {
 			if (desc.length > 0 || desc.length <= 5000) {
 				return this.YouTube.setDescription(
@@ -398,7 +398,7 @@ export class Core {
 		}
 	}
 
-	async prependToDescription(id: BroadcastID, text: string) {
+	async prependToDescription(id: BroadcastID, text: string): Promise<void> {
 		const broadcast: Broadcast = await this.refreshBroadcast(id);
 		let description: string = broadcast.Description;
 
@@ -410,7 +410,7 @@ export class Core {
 		}
 	}
 
-	async appendToDescription(id: BroadcastID, text: string) {
+	async appendToDescription(id: BroadcastID, text: string): Promise<void> {
 		const broadcast: Broadcast = await this.refreshBroadcast(id);
 		let description: string = broadcast.Description;
 
@@ -422,7 +422,7 @@ export class Core {
 		}
 	}
 
-	async addChapterToDescription(id: BroadcastID, title: string, separator?: string) {
+	async addChapterToDescription(id: BroadcastID, title: string, separator?: string): Promise<void> {
 		const currentState = await this.checkBroadcastStatus(id);
 		const requiredState = BroadcastLifecycle.Live;
 
