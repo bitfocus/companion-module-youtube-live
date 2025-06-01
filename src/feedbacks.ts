@@ -28,8 +28,8 @@ export enum FeedbackId {
 
 export function tryUpgradeFeedbackSelectingBroadcastID(feedback: CompanionMigrationFeedback): boolean {
 	switch (feedback.feedbackId) {
-		case FeedbackId.BroadcastStatus:
-		case FeedbackId.StreamHealth:
+		case FeedbackId.BroadcastStatus as string:
+		case FeedbackId.StreamHealth as string:
 			if (BroadcastIdIsTextOptionId in feedback.options) {
 				return false;
 			}

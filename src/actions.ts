@@ -41,18 +41,18 @@ export enum ActionId {
 export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationAction): boolean {
 	let options: CompanionMigrationAction['options']
 	switch (action.actionId) {
-		case ActionId.InitBroadcast:
-		case ActionId.StartBroadcast:
-		case ActionId.StopBroadcast:
-		case ActionId.ToggleBroadcast:
-		case ActionId.SendMessage:
-		case ActionId.InsertCuePoint:
-		case ActionId.InsertCuePointCustomDuration:
-		case ActionId.SetTitle:
-		case ActionId.SetDescription:
-		case ActionId.PrependToDescription:
-		case ActionId.AppendToDescription:
-		case ActionId.AddChapterToDescription:
+		case ActionId.InitBroadcast as string:
+		case ActionId.StartBroadcast as string:
+		case ActionId.StopBroadcast as string:
+		case ActionId.ToggleBroadcast as string:
+		case ActionId.SendMessage as string:
+		case ActionId.InsertCuePoint as string:
+		case ActionId.InsertCuePointCustomDuration as string:
+		case ActionId.SetTitle as string:
+		case ActionId.SetDescription as string:
+		case ActionId.PrependToDescription as string:
+		case ActionId.AppendToDescription as string:
+		case ActionId.AddChapterToDescription as string:
 			options = action.options;
 			if (BroadcastIdIsTextOptionId in options) {
 				return false;
