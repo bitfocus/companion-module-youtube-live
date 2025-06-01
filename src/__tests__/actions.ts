@@ -1,5 +1,5 @@
 //require("leaked-handles");
-/* eslint-disable @typescript-eslint/camelcase */
+/* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import { CompanionActionEvent, CompanionOptionValues } from '@companion-module/base';
 import { mocked, MockedShallow } from 'jest-mock';
 import { makeMockModule, makeMockYT } from './core';

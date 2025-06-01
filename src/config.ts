@@ -5,24 +5,31 @@ import { SomeCompanionConfigField } from '@companion-module/base';
  */
 export interface YoutubeConfig {
 	/** OAuth2 app client ID */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	client_id?: string;
 
 	/** OAuth2 app client secret */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	client_secret?: string;
 
 	/** OAuth2 app redirect URL */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	client_redirect_url?: string;
 
 	/** OAuth2 user token */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	auth_token?: string;
 
 	/** How many broadcasts to fetch */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	fetch_max_count?: number;
 
 	/** How often (in seconds) to refresh status of broadcasts & streams */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	refresh_interval?: number;
 
 	/** How many unfinished broadcasts store into variables */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	unfinished_max_cnt?: number;
 }
 

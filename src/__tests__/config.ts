@@ -1,5 +1,4 @@
 //require("leaked-handles");
-/* eslint-disable @typescript-eslint/camelcase */
 import { YoutubeConfig, loadRefreshInterval, loadMaxBroadcastCount, listConfigFields } from '../config';
 
 describe('Refresh interval', () => {
@@ -11,6 +10,7 @@ describe('Refresh interval', () => {
 
 	test('Refresh interval filters negative numbers', () => {
 		const config: YoutubeConfig = {
+			// eslint-disable-next-line @typescript-eslint/naming-convention
 			refresh_interval: -1,
 		};
 
@@ -19,6 +19,7 @@ describe('Refresh interval', () => {
 
 	test('Refresh interval is in milliseconds', () => {
 		const config: YoutubeConfig = {
+			// eslint-disable-next-line @typescript-eslint/naming-convention
 			refresh_interval: 40,
 		};
 
@@ -35,6 +36,7 @@ describe('Broadcast limit', () => {
 
 	test('Broadcast limit filters negative numbers', () => {
 		const config: YoutubeConfig = {
+			// eslint-disable-next-line @typescript-eslint/naming-convention
 			fetch_max_count: -1,
 		};
 

@@ -1,5 +1,4 @@
 //require("leaked-handles");
-/* eslint-disable @typescript-eslint/camelcase */
 jest.mock('google-auth-library');
 
 import { makeOAuth2Client } from '../../auth/oauthclient';
@@ -24,7 +23,10 @@ const app: AppCredentials = {
 };
 
 const user: UserCredentials = {
-	Token: { refresh_token: 'good' },
+	Token: {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		refresh_token: 'good',
+	},
 };
 
 describe('OAuth2Client interaction', () => {

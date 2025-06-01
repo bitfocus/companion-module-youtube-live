@@ -1,5 +1,4 @@
 //require("leaked-handles");
-/* eslint-disable @typescript-eslint/camelcase */
 jest.mock('open');
 jest.mock('../../auth/httpListener');
 jest.mock('../../auth/oauthclient');
@@ -74,7 +73,12 @@ describe('Login flow', () => {
 		});
 		mockOAuth.getToken.mockImplementationOnce(async (code): Promise<{ tokens: Credentials }> => {
 			expect(code).toBe('authCode');
-			return Promise.resolve({ tokens: { refresh_token: 'good' } });
+			return Promise.resolve({
+				tokens: {
+					// eslint-disable-next-line @typescript-eslint/naming-convention
+					refresh_token: 'good',
+				},
+			});
 		});
 
 		const flow = new GoogleLoginForm(app, log);

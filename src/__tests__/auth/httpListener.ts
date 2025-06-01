@@ -2,8 +2,11 @@
 jest.mock('node:http');
 jest.mock('server-destroy');
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as _http from 'node:http';
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import _destroyer from 'server-destroy';
+
 import { HttpReceiver } from '../../auth/httpListener';
 import { EventEmitter } from 'events';
 

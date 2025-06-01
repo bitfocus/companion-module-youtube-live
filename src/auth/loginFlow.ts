@@ -41,7 +41,7 @@ export class GoogleLoginForm {
 	 */
 	async request(): Promise<UserCredentials> {
 		const consentScreenUrl = this.AuthClient.generateAuthUrl({
-			// eslint-disable-next-line @typescript-eslint/camelcase
+			// eslint-disable-next-line @typescript-eslint/naming-convention
 			access_type: 'offline',
 			prompt: 'consent',
 			scope: this.Scopes,

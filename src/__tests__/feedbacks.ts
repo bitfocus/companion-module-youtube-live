@@ -1,5 +1,5 @@
 //require("leaked-handles");
-/* eslint-disable @typescript-eslint/camelcase */
+/* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import { listFeedbacks } from '../feedbacks';
 import { BroadcastLifecycle, StreamHealth, StateMemory } from '../cache';
 import { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult, combineRgb } from '@companion-module/base';

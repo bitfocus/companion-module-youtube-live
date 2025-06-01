@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/camelcase */
+/* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import { Broadcast, BroadcastMap } from './cache';
 import { CompanionOptionValues, CompanionPresetDefinitions, combineRgb } from '@companion-module/base';
 import { FeedbackId } from './feedbacks';

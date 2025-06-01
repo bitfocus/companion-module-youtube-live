@@ -1,6 +1,5 @@
 //require("leaked-handles");
 
-/* eslint-disable @typescript-eslint/camelcase */
 jest.mock('../../auth/loginFlow');
 jest.mock('../../auth/oauthclient');
 
@@ -93,7 +92,12 @@ describe('User credentials', () => {
 			expect(app.ClientSecret).toBe(mock.config.client_secret);
 			expect(app.RedirectURL).toBe(mock.config.client_redirect_url);
 		});
-		mockForm.request.mockResolvedValueOnce({ Token: { refresh_token: 'good' } });
+		mockForm.request.mockResolvedValueOnce({
+			Token: {
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				refresh_token: 'good',
+			},
+		});
 		mocked(makeOAuth2Client).mockImplementationOnce((app, user): OAuth2Client => {
 			expect(app.ClientID).toBe(mock.config.client_id);
 			expect(app.ClientSecret).toBe(mock.config.client_secret);

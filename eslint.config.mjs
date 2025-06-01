@@ -36,6 +36,64 @@ const customConfig = [
 	...baseConfig,
 
 	{
+		files: ['**/*.ts'],
+		rules: {
+			'@typescript-eslint/naming-convention': [
+				'error',
+
+				{
+					selector: 'import',
+					format: ['camelCase', 'PascalCase'],
+				},
+
+				{
+					selector: 'typeLike',
+					format: ['PascalCase'],
+				},
+
+				{
+					selector: 'variable',
+					format: ['camelCase'],
+					leadingUnderscore: 'allow',
+					trailingUnderscore: 'allow',
+				},
+
+				{
+					selector: 'variable',
+					modifiers: ['const'],
+					format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+					leadingUnderscore: 'allow',
+					trailingUnderscore: 'allow',
+				},
+
+				{
+					selector: 'enumMember',
+					format: ['PascalCase'],
+				},
+
+				{
+					selector: 'objectLiteralProperty',
+					format: ['camelCase', 'PascalCase'],
+					filter: {
+						// Also allow likely HTTP headers.
+						regex: '^[A-Z][a-z0-9]*(?:-[A-Z][a-z0-9]+)*$',
+						match: false,
+					},
+				},
+
+				{
+					selector: 'classProperty',
+					format: ['camelCase', 'PascalCase'],
+				},
+				{
+					selector: 'typeProperty',
+					format: ['camelCase', 'PascalCase'],
+				},
+			],
+		},
+	},
+
+	{
 		ignores: ['eslint.config.{js,mjs,mts,ts}', 'jest.config.{js,ts}'],
 		rules: {
 			'n/no-missing-import': 'off',
