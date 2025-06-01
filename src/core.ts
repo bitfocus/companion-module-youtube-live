@@ -70,25 +70,19 @@ export class Core {
 	async init(): Promise<void> {
 		this.Cache.Broadcasts = await this.YouTube.listBroadcasts();
 		this.Cache.Streams = await this.YouTube.listBoundStreams(this.Cache.Broadcasts);
-		const unfinished = Object.values(this.Cache.Broadcasts).filter(this.filterUnfinishedBroadcast);
-		unfinished.sort(this.sortByScheduledStartTime);
+
+		const unfinished = Object.values(this.Cache.Broadcasts).filter((broadcast: Broadcast): boolean => {
+			// Filter only unfinished broadcasts.
+			return broadcast.Status != BroadcastLifecycle.Complete && broadcast.Status != BroadcastLifecycle.Revoked;
+		});
+		unfinished.sort((a: Broadcast, b: Broadcast): number => {
+			// Sort by date.
+			return new Date(a.ScheduledStartTime).valueOf() - new Date(b.ScheduledStartTime).valueOf();
+		});
+
 		this.Cache.UnfinishedBroadcasts = unfinished;
 		this.Module.reloadAll(this.Cache);
 		this.RefreshTimer = global.setInterval(this.refresher.bind(this), this.RefreshInterval);
-	}
-
-	/**
-	 * Filter only unfinished broadcasts
-	 */
-	filterUnfinishedBroadcast(broadcast: Broadcast): boolean {
-		return broadcast.Status != BroadcastLifecycle.Complete && broadcast.Status != BroadcastLifecycle.Revoked;
-	}
-
-	/**
-	 * Sort by date
-	 */
-	sortByScheduledStartTime(a: Broadcast, b: Broadcast): number {
-		return new Date(a.ScheduledStartTime).valueOf() - new Date(b.ScheduledStartTime).valueOf();
 	}
 
 	/**
