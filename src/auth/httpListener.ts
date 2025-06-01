@@ -54,20 +54,13 @@ export class HttpReceiver {
 	 * @param res HTTP response
 	 */
 	private handleRequest(req: http.IncomingMessage, res: http.ServerResponse): void {
-		if (typeof req.url == 'undefined') return;
+		if (req.url === undefined) return;
 
-		const address = url.parse(req.url, true);
-
+		const address = new url.URL(req.url, `http://${this.ListenHost}:${this.ListenPort}/`);
 		this.Log('debug', `Received HTTP request at ${address.pathname}`);
 
-		const codeFrag: string | string[] | undefined = address.query['code'];
-		let code: string;
-
-		if (typeof codeFrag == 'string') {
-			code = codeFrag;
-		} else if (Array.isArray(codeFrag) && codeFrag.length > 0) {
-			code = codeFrag[0];
-		} else {
+		const code = address.searchParams.get('code');
+		if (code === null) {
 			this.Log('debug', 'HTTP request does not contain authorization code');
 			res.writeHead(400, { 'Content-Type': 'text/plain' });
 			res.end('Authorization token required');
