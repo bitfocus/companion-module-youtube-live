@@ -109,9 +109,10 @@ describe('Action callback', () => {
 			Promise.reject(new Error('addchaptertodescription'))
 	);
 
-	// Init cores
-	coreOK.init();
-	coreKO.init();
+	// Init cores.  (So much is mocked in test code that we don't need to await
+	// these and so simply ignore them.)
+	void coreOK.init();
+	void coreKO.init();
 
 	// List actions
 	const actionsOK = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreOK }));
