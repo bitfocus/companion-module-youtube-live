@@ -33,6 +33,11 @@ jobs:
           yarn install --immutable
         working-directory: ./module-local-dev/youtube-live
 
+      - name: Lint
+        run: |
+          yarn lint
+        working-directory: ./module-local-dev/youtube-live
+
       - name: Run unit tests
         run: |
           yarn test
