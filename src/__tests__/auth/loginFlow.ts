@@ -8,7 +8,7 @@ import opn from 'open';
 import { HttpReceiver } from '../../auth/httpListener';
 import { AppCredentials } from '../../auth/types';
 import { makeOAuth2Client } from '../../auth/oauthclient';
-import { OAuth2Client, Credentials } from 'google-auth-library';
+import { OAuth2Client } from 'google-auth-library';
 import { GoogleLoginForm } from '../../auth/loginFlow';
 import { Logger } from '../../common';
 import { ChildProcess } from 'child_process';
@@ -71,7 +71,16 @@ describe('Login flow', () => {
 				},
 			} as ChildProcess);
 		});
-		mockOAuth.getToken.mockImplementationOnce(async (code): Promise<{ tokens: Credentials }> => {
+		// This ought only be the `(code: string) => Promise<GetTokenResponse>`
+		// overload, but that overload is listed last so TypeScript doesn't
+		// select it by default and unfortunately `GetTokenResponse` isn't
+		// publicly exported so it's hard to spell out the proper narrowing cast
+		// here.
+		//
+		// Either that or it in fact isn't all that hard and the author of this
+		// line of code just doesn't know Jest well enough to do it.  😅  Please
+		// correct for his inadequacy if you know how!
+		mockOAuth.getToken.mockImplementationOnce((code: any): any => {
 			expect(code).toBe('authCode');
 			return Promise.resolve({
 				tokens: {
