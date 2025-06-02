@@ -82,13 +82,17 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 		this.saveConfig(this.config);
 	}
 
+	#shutdown() {
+		this.core?.destroy();
+		this.core = undefined;
+		this.auth.cancel();
+	}
+
 	/**
 	 * Deinitialize this module (i.e. cancel all pending asynchronous operations)
 	 */
 	override async destroy(): Promise<void> {
-		this.core?.destroy();
-		this.core = undefined;
-		this.auth.cancel();
+		this.#shutdown();
 	}
 
 	/**
@@ -97,7 +101,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	 */
 	override async configUpdated(config: YoutubeConfig): Promise<void> {
 		this.log('debug', 'Restarting YT module after reconfiguration');
-		this.destroy();
+		this.#shutdown();
 
 		this.#initInstance(config);
 	}
