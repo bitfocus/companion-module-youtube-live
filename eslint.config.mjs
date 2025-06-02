@@ -1,6 +1,7 @@
 // @ts-check
 
 import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs';
+import jest from 'eslint-plugin-jest';
 
 const baseConfig = await generateEslintConfig({
 	enableJest: true,
@@ -102,14 +103,21 @@ const customConfig = [
 	},
 
 	permitLimitedUnpublishedImports(allTestFilePatterns, ['jest']),
-	permitLimitedUnpublishedImports(['eslint.config.mjs'], ['@companion-module/tools']),
+	permitLimitedUnpublishedImports(['eslint.config.mjs'], ['@companion-module/tools', 'eslint-plugin-jest']),
 
 	{
 		files: allTestFilePatterns,
+		plugins: {
+			jest,
+		},
 		rules: {
-			// These currently are ubiquitous in test code, so turn them off to
-			// get them out of sight while remaining linting errors are fixed.
+			// The TypeScript eslint rule that flags references to unbound
+			// functions that discard a proper `this`, also flags
+			// `expect(obj.nonStaticFunc).toHaveBeenCalled()` and similar test
+			// patterns.  Disable the rule in tests in favor of a Jest-specific
+			// rule that doesn't flag valid `expect`-related operations.
 			'@typescript-eslint/unbound-method': 'off',
+			'jest/unbound-method': 'error',
 		},
 	},
 ];
