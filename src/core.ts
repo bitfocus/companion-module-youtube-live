@@ -33,7 +33,16 @@ export class Core {
 	Module: ModuleBase;
 
 	/** Periodic timer for refreshing broadcast state and stream health */
-	private RefreshTimer?: NodeJS.Timeout;
+	private RefreshTimer: NodeJS.Timeout | null = null;
+
+	/** Create an interval timer that regularly refreshes YouTube data. */
+	#newRefreshTimer(): NodeJS.Timeout {
+		return global.setInterval(() => {
+			this.refresher().catch(() => {
+				// `refresher()` already logs in case of error.
+			});
+		}, this.RefreshInterval);
+	}
 
 	/** How often to check for broadcast state and stream health (in ms) */
 	private RefreshInterval: number;
@@ -82,16 +91,16 @@ export class Core {
 
 		this.Cache.UnfinishedBroadcasts = unfinished;
 		this.Module.reloadAll(this.Cache);
-		this.RefreshTimer = global.setInterval(this.refresher.bind(this), this.RefreshInterval);
+		this.RefreshTimer = this.#newRefreshTimer();
 	}
 
 	/**
 	 * Stop and clean up operations running in the background
 	 */
 	destroy(): void {
-		if (this.RefreshTimer) {
+		if (this.RefreshTimer !== null) {
 			global.clearInterval(this.RefreshTimer);
-			this.RefreshTimer = undefined;
+			this.RefreshTimer = null;
 		}
 		// pollers have a .then() that removes them from RunningTransitions
 		Object.values(this.RunningTransitions).forEach((poller) => poller.cancel());
@@ -302,7 +311,7 @@ export class Core {
 	async refreshFeedbacks(): Promise<void> {
 		if (this.RefreshTimer) {
 			global.clearInterval(this.RefreshTimer);
-			this.RefreshTimer = global.setInterval(this.refresher.bind(this), this.RefreshInterval);
+			this.RefreshTimer = this.#newRefreshTimer();
 		}
 		return this.refresher();
 	}
