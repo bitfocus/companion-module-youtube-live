@@ -55,5 +55,5 @@
 	"resolutions": {
 		"eslint/inquirer": "~7.2.0"
 	},
-	"packageManager": "yarn@4.8.1"
+	"packageManager": "yarn@4.9.1"
 }
