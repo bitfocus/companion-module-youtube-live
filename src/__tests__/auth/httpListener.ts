@@ -43,14 +43,16 @@ describe('HTTP module interaction', () => {
 		mockEvent.removeAllListeners();
 	});
 
-	test('listen', () => {
-		new HttpReceiver('abcd', 1234, log).getCode(jest.fn());
+	test('listen', async () => {
+		const code = new HttpReceiver('abcd', 1234, log).getCode(jest.fn());
+		void code; // not resolved by this test
 		expect(mockHttp.listen).toHaveBeenCalled();
 	});
 
-	test('listening is forwarded', () => {
+	test('listening is forwarded', async () => {
 		const ready = jest.fn();
-		new HttpReceiver('abcd', 1234, log).getCode(ready);
+		const code = new HttpReceiver('abcd', 1234, log).getCode(ready);
+		void code; // not resolved by this test
 		mockEvent.emit('listening');
 		expect(mockHttp.listen).toHaveBeenCalled();
 		expect(mockHttp.on).toHaveBeenCalled();
