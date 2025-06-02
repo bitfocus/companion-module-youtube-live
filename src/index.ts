@@ -21,9 +21,11 @@ import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow'
  */
 export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements ModuleBase, AuthorizationEnvironment {
 	/** Executive core of the module */
-	private core?: Core;
+	#core?: Core;
+
 	/** YouTube authorization flow */
 	private auth: YoutubeAuthorization;
+
 	/** Configuration */
 	config;
 
@@ -42,35 +44,36 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	}
 
 	#initInstance(config: YoutubeConfig): void {
+		this.#initializeInstance(config).catch((reason) => {
+			this.saveToken('');
+			this.log('warn', `Authorization failed: ${reason}`);
+			this.updateStatus(InstanceStatus.UnknownError, `Authorization failed: ${reason}`);
+		});
+	}
+
+	async #initializeInstance(config: YoutubeConfig): Promise<void> {
 		this.updateStatus(InstanceStatus.UnknownWarning, 'Initializing');
 		this.config = config;
 
-		this.auth
-			.authorize(this.config)
-			.then(async (googleAuth) => {
-				this.saveToken(JSON.stringify(googleAuth.credentials));
+		const googleAuth = await this.auth.authorize(this.config);
+		this.saveToken(JSON.stringify(googleAuth.credentials));
 
-				const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(this.config));
+		const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(this.config));
 
-				this.core = new Core(this, api, loadRefreshInterval(this.config));
-				return this.core
-					.init()
-					.then(() => {
-						this.log('info', 'YT Module initialized successfully');
-						this.updateStatus(InstanceStatus.Ok);
-					})
-					.catch((err) => {
-						this.log('warn', `YT Broadcast query failed: ${err}`);
-						this.updateStatus(InstanceStatus.UnknownError, `YT Broadcast query failed: ${err}`);
-						this.core?.destroy();
-						this.core = undefined;
-					});
-			})
-			.catch((reason) => {
-				this.saveToken('');
-				this.log('warn', `Authorization failed: ${reason}`);
-				this.updateStatus(InstanceStatus.UnknownError, `Authorization failed: ${reason}`);
-			});
+		const core = new Core(this, api, loadRefreshInterval(this.config));
+		this.#core = core;
+		try {
+			await core.init();
+
+			this.log('info', 'YT Module initialized successfully');
+			this.updateStatus(InstanceStatus.Ok);
+		} catch (err) {
+			this.log('warn', `YT Broadcast query failed: ${err}`);
+			this.updateStatus(InstanceStatus.UnknownError, `YT Broadcast query failed: ${err}`);
+
+			core.destroy();
+			this.#core = undefined;
+		}
 	}
 
 	/**
@@ -83,8 +86,8 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	}
 
 	#shutdown() {
-		this.core?.destroy();
-		this.core = undefined;
+		this.#core?.destroy();
+		this.#core = undefined;
 		this.auth.cancel();
 	}
 
@@ -128,10 +131,18 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 		this.setVariableValues(vars);
 		this.setPresetDefinitions(listPresets(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt })));
 		this.setFeedbackDefinitions(
-			listFeedbacks(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt, core: this.core }))
+			listFeedbacks(() => ({
+				broadcasts: memory.Broadcasts,
+				unfinishedCount: unfinishedCnt,
+				core: this.#core ?? undefined,
+			}))
 		);
 		this.setActionDefinitions(
-			listActions(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt, core: this.core }))
+			listActions(() => ({
+				broadcasts: memory.Broadcasts,
+				unfinishedCount: unfinishedCnt,
+				core: this.#core ?? undefined,
+			}))
 		);
 		this.checkFeedbacks();
 	}
