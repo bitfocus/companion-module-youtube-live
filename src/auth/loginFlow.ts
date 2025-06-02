@@ -49,7 +49,14 @@ export class GoogleLoginForm {
 
 		const code = await this.CallbackServer.getCode(() => {
 			this.Log('info', `Opening browser at '${consentScreenUrl}'`);
-			opn(consentScreenUrl, { wait: false }).then((cp) => cp.unref());
+			opn(consentScreenUrl, { wait: false }).then(
+				(cp) => {
+					cp.unref();
+				},
+				(reason: any) => {
+					this.Log('error', `Error opening authentication consent screen: ${reason}`);
+				}
+			);
 		});
 
 		const token = await this.AuthClient.getToken(code);
