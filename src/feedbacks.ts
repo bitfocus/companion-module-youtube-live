@@ -64,7 +64,7 @@ export function listFeedbacks({
 }: {
 	broadcasts: BroadcastMap;
 	unfinishedCount: number;
-	core: Core | undefined;
+	core: Core | null;
 }): Record<FeedbackId, AdvancedFeedbackWithAsyncCallback> {
 	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map((item): DropdownChoice => {
 		return { id: item.Id, label: item.Name };

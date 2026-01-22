@@ -90,7 +90,7 @@ describe('Common tests', () => {
 		const feedbacks = listFeedbacks({
 			broadcasts: SampleMemory.Broadcasts,
 			unfinishedCount: 1,
-			core: undefined,
+			core: null,
 		});
 		expect(feedbacks).toHaveProperty('broadcast_status');
 		expect(feedbacks).toHaveProperty('broadcast_bound_stream_health');
