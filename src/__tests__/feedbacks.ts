@@ -87,11 +87,11 @@ const SampleStreamCheck: CompanionFeedbackAdvancedEvent = {
 
 describe('Common tests', () => {
 	test('Module has required feedbacks', () => {
-		const feedbacks = listFeedbacks(() => ({
+		const feedbacks = listFeedbacks({
 			broadcasts: SampleMemory.Broadcasts,
 			unfinishedCount: 1,
 			core: undefined,
-		}));
+		});
 		expect(feedbacks).toHaveProperty('broadcast_status');
 		expect(feedbacks).toHaveProperty('broadcast_bound_stream_health');
 	});
@@ -104,14 +104,14 @@ describe('Common tests', () => {
 async function tryBroadcast(phase: BroadcastLifecycle, core: Core): Promise<CompanionAdvancedFeedbackResult> {
 	await core.init();
 	core.Cache.Broadcasts.test.Status = phase;
-	const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+	const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core });
 	return feedbacks.broadcast_status.callback(SampleBroadcastCheck, SampleContext);
 }
 
 async function tryStream(health: StreamHealth, core: Core): Promise<CompanionAdvancedFeedbackResult> {
 	await core.init();
 	core.Cache.Streams['abcd'].Health = health;
-	const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+	const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core });
 	return feedbacks.broadcast_bound_stream_health.callback(SampleStreamCheck, SampleContext);
 }
 
@@ -204,7 +204,7 @@ describe('Broadcast lifecycle feedback', () => {
 
 		await core.init();
 
-		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core });
 		const result = await feedbacks.broadcast_status.callback(event, SampleContext);
 
 		expect(result).toHaveProperty('bgcolor');
@@ -233,7 +233,7 @@ describe('Broadcast lifecycle feedback', () => {
 		await core.init();
 		core.Cache = data;
 
-		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core });
 		const result = await feedbacks.broadcast_status.callback(event, SampleContext);
 
 		expect(Object.keys(result)).toHaveLength(0);
@@ -260,7 +260,7 @@ describe('Broadcast lifecycle feedback', () => {
 		await core.init();
 		core.Cache = data;
 
-		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core });
 		const result = await feedbacks.broadcast_status.callback(event, SampleContext);
 
 		expect(Object.keys(result)).toHaveLength(0);
@@ -332,7 +332,7 @@ describe('Stream health feedback', () => {
 
 		await core.init();
 
-		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core });
 		const result = await feedbacks.broadcast_bound_stream_health.callback(event, SampleContext);
 
 		expect(result).toHaveProperty('bgcolor');
@@ -361,7 +361,7 @@ describe('Stream health feedback', () => {
 		await core.init();
 		core.Cache = data;
 
-		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core });
 		const result = await feedbacks.broadcast_bound_stream_health.callback(event, SampleContext);
 
 		expect(Object.keys(result)).toHaveLength(0);
@@ -407,7 +407,7 @@ describe('Stream health feedback', () => {
 		await core.init();
 		core.Cache = data;
 
-		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core });
 		const result = await feedbacks.broadcast_bound_stream_health.callback(event, SampleContext);
 
 		expect(Object.keys(result)).toHaveLength(0);
@@ -434,7 +434,7 @@ describe('Stream health feedback', () => {
 		await core.init();
 		core.Cache = data;
 
-		const feedbacks = listFeedbacks(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core }));
+		const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: core });
 		const result = await feedbacks.broadcast_bound_stream_health.callback(event, SampleContext);
 
 		expect(Object.keys(result)).toHaveLength(0);

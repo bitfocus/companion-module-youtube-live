@@ -57,13 +57,15 @@ interface AdvancedFeedbackWithAsyncCallback extends CompanionAdvancedFeedbackDef
  * @param unfinishedCount Number of unfinished broadcast
  * @param core Module core
  */
-export function listFeedbacks(
-	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined }
-): Record<FeedbackId, AdvancedFeedbackWithAsyncCallback> {
-	const { broadcasts } = getProps();
-	const { unfinishedCount } = getProps();
-	const { core } = getProps();
-
+export function listFeedbacks({
+	broadcasts,
+	unfinishedCount,
+	core,
+}: {
+	broadcasts: BroadcastMap;
+	unfinishedCount: number;
+	core: Core | undefined;
+}): Record<FeedbackId, AdvancedFeedbackWithAsyncCallback> {
 	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map((item): DropdownChoice => {
 		return { id: item.Id, label: item.Name };
 	});

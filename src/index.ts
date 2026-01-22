@@ -131,11 +131,11 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 		this.setVariableValues(vars);
 		this.setPresetDefinitions(listPresets(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt })));
 		this.setFeedbackDefinitions(
-			listFeedbacks(() => ({
+			listFeedbacks({
 				broadcasts: memory.Broadcasts,
 				unfinishedCount: unfinishedCnt,
 				core: this.#core ?? undefined,
-			}))
+			})
 		);
 		this.setActionDefinitions(
 			listActions(() => ({
