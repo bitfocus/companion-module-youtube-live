@@ -94,33 +94,30 @@ export function listActions({
 
 	const defaultUnfinishedBroadcast = broadcastUnfinishedEntries.length == 0 ? '' : broadcastUnfinishedEntries[0].id;
 
-	const checkCore = (): boolean => {
-		if (!core) {
-			return false;
-		}
-		return true;
+	const noModuleCore: () => never = () => {
+		throw new Error('Error: module core undefined.');
 	};
 
 	const checkBroadcastId = async (
 		options: CompanionActionEvent['options'],
 		context: CompanionActionContext
 	): Promise<BroadcastID | undefined> => {
-		if (!checkCore()) {
+		if (!core) {
 			return undefined;
 		}
 
 		let broadcastId: BroadcastID | undefined = await getBroadcastIdFromOptions(options, context);
 		if (broadcastId === undefined) {
-			core!.Module.log('warn', 'Action failed: undefined broadcast ID');
+			core.Module.log('warn', 'Action failed: undefined broadcast ID');
 			return undefined;
 		}
 
-		if (!(broadcastId in core!.Cache.Broadcasts)) {
-			const hit = core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcastId);
+		if (!(broadcastId in core.Cache.Broadcasts)) {
+			const hit = core.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === broadcastId);
 			if (hit) {
 				broadcastId = hit.Id;
 			} else {
-				core!.Module.log('warn', `Action failed: broadcast ID '${broadcastId}' - not found or invalid`);
+				core.Module.log('warn', `Action failed: broadcast ID '${broadcastId}' - not found or invalid`);
 				return undefined;
 			}
 		}
@@ -178,22 +175,18 @@ export function listActions({
 			name: 'Refresh broadcast/stream feedbacks',
 			options: [],
 			callback: async (): Promise<void> => {
-				if (checkCore()) {
-					return core!.refreshFeedbacks();
-				} else {
-					throw new Error('Error: module core undefined.');
-				}
+				if (!core) noModuleCore();
+
+				return core.refreshFeedbacks();
 			},
 		},
 		[ActionId.RefreshStatus]: {
 			name: 'Reload everything from YouTube',
 			options: [],
 			callback: async (): Promise<void> => {
-				if (checkCore()) {
-					return core!.reloadEverything();
-				} else {
-					throw new Error('Error: module core undefined.');
-				}
+				if (!core) noModuleCore();
+
+				return core.reloadEverything();
 			},
 		},
 		[ActionId.SendMessage]: {
@@ -216,7 +209,9 @@ export function listActions({
 					throw new Error('Message is empty or too long.');
 				}
 
-				return core!.sendLiveChatMessage(broadcastId, message);
+				if (!core) noModuleCore();
+
+				return core.sendLiveChatMessage(broadcastId, message);
 			}),
 		},
 		[ActionId.InsertCuePoint]: {
@@ -224,8 +219,9 @@ export function listActions({
 			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
 			options: [...selectFromUnfinishedBroadcasts],
 			callback: broadcastCallback(async (broadcastId) => {
-				if (!checkCore()) throw new Error('Internal module error');
-				return core!.insertCuePoint(broadcastId);
+				if (!core) noModuleCore();
+
+				return core.insertCuePoint(broadcastId);
 			}),
 		},
 		[ActionId.InsertCuePointCustomDuration]: {
@@ -243,10 +239,10 @@ export function listActions({
 				},
 			],
 			callback: broadcastCallback(async (broadcastId, event) => {
-				if (!checkCore()) throw new Error('Internal module error');
+				if (!core) noModuleCore();
 
 				const duration = Number(event.options.duration);
-				return core!.insertCuePoint(broadcastId, duration);
+				return core.insertCuePoint(broadcastId, duration);
 			}),
 		},
 		[ActionId.SetTitle]: {
@@ -269,7 +265,9 @@ export function listActions({
 					throw new Error('Unable to set title: title is empty or too long.');
 				}
 
-				return core!.setTitle(broadcastId, title);
+				if (!core) noModuleCore();
+
+				return core.setTitle(broadcastId, title);
 			}),
 		},
 		[ActionId.SetDescription]: {
@@ -292,7 +290,9 @@ export function listActions({
 					throw new Error('Unable to set description: description is empty or too long.');
 				}
 
-				return core!.setDescription(broadcastId, description);
+				if (!core) noModuleCore();
+
+				return core.setDescription(broadcastId, description);
 			}),
 		},
 		[ActionId.PrependToDescription]: {
@@ -319,7 +319,9 @@ export function listActions({
 					throw new Error('Unable to prepend text to description: text is too long.');
 				}
 
-				return core!.prependToDescription(broadcastId, text);
+				if (!core) noModuleCore();
+
+				return core.prependToDescription(broadcastId, text);
 			}),
 		},
 		[ActionId.AppendToDescription]: {
@@ -346,7 +348,9 @@ export function listActions({
 					throw new Error('Unable to append text to description: text is too long.');
 				}
 
-				return core!.appendToDescription(broadcastId, text);
+				if (!core) noModuleCore();
+
+				return core.appendToDescription(broadcastId, text);
 			}),
 		},
 		[ActionId.AddChapterToDescription]: {
@@ -384,14 +388,16 @@ export function listActions({
 				const separator = await context.parseVariablesInString(String(event.options.separator));
 				const chapterTitle = await context.parseVariablesInString(String(event.options.title));
 
-				if (chapterTitle) {
-					if (event.options.default_separator) {
-						return core!.addChapterToDescription(broadcastId, chapterTitle);
-					} else {
-						return core!.addChapterToDescription(broadcastId, chapterTitle, separator);
-					}
-				} else {
+				if (!chapterTitle) {
 					throw new Error('Unable to prepend text to description: bad parameters.');
+				}
+
+				if (!core) noModuleCore();
+
+				if (event.options.default_separator) {
+					return core.addChapterToDescription(broadcastId, chapterTitle);
+				} else {
+					return core.addChapterToDescription(broadcastId, chapterTitle, separator);
 				}
 			}),
 		},
@@ -414,12 +420,13 @@ export function listActions({
 			],
 			callback: broadcastCallback(async (broadcastId, event) => {
 				const visibility = Object.values(Visibility).find((v) => v === event.options.visibility);
-
-				if (visibility) {
-					return core!.setVisibility(broadcastId, visibility);
-				} else {
+				if (!visibility) {
 					throw new Error('Invalid visibility value provided');
 				}
+
+				if (!core) noModuleCore();
+
+				return core.setVisibility(broadcastId, visibility);
 			}),
 		},
 	};
