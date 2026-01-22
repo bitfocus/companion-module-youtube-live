@@ -76,32 +76,25 @@ export function listFeedbacks({
 
 	const defaultBroadcast = broadcastEntries.length == 0 ? '' : broadcastEntries[0].id;
 
-	const checkCore = (): boolean => {
-		if (!core) {
-			return false;
-		}
-		return true;
-	};
-
 	const findBroadcastForOptions = async (
 		options: CompanionFeedbackAdvancedEvent['options'],
 		context: CompanionFeedbackContext
 	): Promise<Broadcast | undefined> => {
-		if (!checkCore()) {
+		if (!core) {
 			return undefined;
 		}
 
 		const id = await getBroadcastIdFromOptions(options, context);
 		if (id === undefined) {
-			core!.Module.log('warn', 'Feedback failed: undefined broadcast ID');
+			core.Module.log('warn', 'Feedback failed: undefined broadcast ID');
 			return undefined;
 		}
 
-		if (id in core!.Cache.Broadcasts) {
-			return core!.Cache.Broadcasts[id];
+		if (id in core.Cache.Broadcasts) {
+			return core.Cache.Broadcasts[id];
 		}
 
-		return core!.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
+		return core.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
 	};
 
 	const selectFromAllBroadcasts: SomeCompanionFeedbackInputField[] = [
@@ -155,7 +148,7 @@ export function listFeedbacks({
 				...selectFromAllBroadcasts,
 			],
 			callback: async (event, context): Promise<CompanionAdvancedFeedbackResult> => {
-				if (!checkCore) return {};
+				if (!core) return {};
 				const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
 
 				let broadcastStatus: BroadcastLifecycle;
@@ -253,7 +246,7 @@ export function listFeedbacks({
 				...selectFromAllBroadcasts,
 			],
 			callback: async (event, context): Promise<CompanionAdvancedFeedbackResult> => {
-				if (!checkCore) return {};
+				if (!core) return {};
 
 				let stream: Stream;
 				let broadcastStatus: BroadcastLifecycle;
@@ -264,11 +257,11 @@ export function listFeedbacks({
 					}
 
 					const streamId = broadcast.BoundStreamId;
-					if (!(streamId in core!.Cache.Streams)) {
+					if (!(streamId in core.Cache.Streams)) {
 						return {};
 					}
 
-					stream = core!.Cache.Streams[streamId];
+					stream = core.Cache.Streams[streamId];
 					broadcastStatus = broadcast.Status;
 				}
 
