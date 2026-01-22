@@ -21,7 +21,7 @@ import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow'
  */
 export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements ModuleBase, AuthorizationEnvironment {
 	/** Executive core of the module */
-	#core?: Core;
+	#core: Core | null = null;
 
 	/** YouTube authorization flow */
 	private auth: YoutubeAuthorization;
@@ -72,7 +72,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 			this.updateStatus(InstanceStatus.UnknownError, `YT Broadcast query failed: ${err}`);
 
 			core.destroy();
-			this.#core = undefined;
+			this.#core = null;
 		}
 	}
 
@@ -87,7 +87,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 
 	#shutdown() {
 		this.#core?.destroy();
-		this.#core = undefined;
+		this.#core = null;
 		this.auth.cancel();
 	}
 
@@ -134,14 +134,14 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 			listFeedbacks({
 				broadcasts: memory.Broadcasts,
 				unfinishedCount: unfinishedCnt,
-				core: this.#core ?? null,
+				core: this.#core,
 			})
 		);
 		this.setActionDefinitions(
 			listActions({
 				broadcasts: memory.Broadcasts,
 				unfinishedCount: unfinishedCnt,
-				core: this.#core ?? null,
+				core: this.#core,
 			})
 		);
 		this.checkFeedbacks();
