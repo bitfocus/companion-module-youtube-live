@@ -138,11 +138,11 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 			})
 		);
 		this.setActionDefinitions(
-			listActions(() => ({
+			listActions({
 				broadcasts: memory.Broadcasts,
 				unfinishedCount: unfinishedCnt,
 				core: this.#core ?? undefined,
-			}))
+			})
 		);
 		this.checkFeedbacks();
 	}

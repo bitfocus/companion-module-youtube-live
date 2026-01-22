@@ -35,7 +35,7 @@ const SampleMemory: StateMemory = {
 
 describe('Action list', () => {
 	test('Module has required actions', () => {
-		const result = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 3, core: undefined }));
+		const result = listActions({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 3, core: undefined });
 		expect(result).toHaveProperty(ActionId.InitBroadcast);
 		expect(result).toHaveProperty(ActionId.StartBroadcast);
 		expect(result).toHaveProperty(ActionId.StopBroadcast);
@@ -115,8 +115,8 @@ describe('Action callback', () => {
 	void coreKO.init();
 
 	// List actions
-	const actionsOK = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreOK }));
-	const actionsKO = listActions(() => ({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreKO }));
+	const actionsOK = listActions({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreOK });
+	const actionsKO = listActions({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core: coreKO });
 
 	// Make event
 	function makeEvent(actionId: string, options: CompanionOptionValues): CompanionActionEvent {

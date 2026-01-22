@@ -73,13 +73,15 @@ export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationA
  * @param core Module core
  * @returns
  */
-export function listActions(
-	getProps: () => { broadcasts: BroadcastMap; unfinishedCount: number; core: Core | undefined }
-): Record<ActionId, CompanionActionDefinition> {
-	const { broadcasts } = getProps();
-	const { unfinishedCount } = getProps();
-	const { core } = getProps();
-
+export function listActions({
+	broadcasts,
+	unfinishedCount,
+	core,
+}: {
+	broadcasts: BroadcastMap;
+	unfinishedCount: number;
+	core: Core | undefined;
+}): Record<ActionId, CompanionActionDefinition> {
 	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map((item): DropdownChoice => {
 		return { id: item.Id, label: item.Name };
 	});
