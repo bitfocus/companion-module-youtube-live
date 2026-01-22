@@ -141,7 +141,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 			listActions({
 				broadcasts: memory.Broadcasts,
 				unfinishedCount: unfinishedCnt,
-				core: this.#core ?? undefined,
+				core: this.#core ?? null,
 			})
 		);
 		this.checkFeedbacks();

@@ -35,7 +35,7 @@ const SampleMemory: StateMemory = {
 
 describe('Action list', () => {
 	test('Module has required actions', () => {
-		const result = listActions({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 3, core: undefined });
+		const result = listActions({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 3, core: null });
 		expect(result).toHaveProperty(ActionId.InitBroadcast);
 		expect(result).toHaveProperty(ActionId.StartBroadcast);
 		expect(result).toHaveProperty(ActionId.StopBroadcast);
