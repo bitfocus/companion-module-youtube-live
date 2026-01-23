@@ -1,5 +1,4 @@
 import {
-	CompanionActionContext,
 	CompanionInputFieldCheckbox,
 	CompanionInputFieldDropdown,
 	CompanionInputFieldTextInput,
@@ -94,9 +93,18 @@ export const BroadcastIdFromTextOption: CompanionInputFieldTextInput = {
 	isVisible: (options) => !!options.broadcast_id_is_text,
 } as const;
 
+/**
+ * Context interface for parsing variables (works with both action and feedback contexts).
+ * Note: After upgrading to @companion-module/base 1.14+, this can be replaced with
+ * CompanionCommonCallbackContext which is exported from the package.
+ */
+interface VariableParsingContext {
+	parseVariablesInString(text: string): Promise<string>;
+}
+
 export async function getBroadcastIdFromOptions(
 	options: CompanionOptionValues,
-	context: CompanionActionContext
+	context: VariableParsingContext
 ): Promise<BroadcastID | undefined> {
 	const defineBroadcastIdFromText = Boolean(options[BroadcastIdIsTextOptionId]);
 	let broadcastId: BroadcastID;
