@@ -28,7 +28,7 @@
 		"node": "^18"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.14.0",
+		"@companion-module/base": "~1.13.0",
 		"@googleapis/youtube": "^25.1.0",
 		"@types/jest": "^29.5.0",
 		"@types/node": "^20.10.6",
