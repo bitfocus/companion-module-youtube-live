@@ -1,5 +1,5 @@
 import {
-	CompanionActionContext,
+	CompanionCommonCallbackContext,
 	CompanionInputFieldCheckbox,
 	CompanionInputFieldDropdown,
 	CompanionInputFieldTextInput,
@@ -96,7 +96,7 @@ export const BroadcastIdFromTextOption: CompanionInputFieldTextInput = {
 
 export async function getBroadcastIdFromOptions(
 	options: CompanionOptionValues,
-	context: CompanionActionContext
+	context: CompanionCommonCallbackContext
 ): Promise<BroadcastID | undefined> {
 	const defineBroadcastIdFromText = Boolean(options[BroadcastIdIsTextOptionId]);
 	let broadcastId: BroadcastID;

@@ -122,9 +122,6 @@ describe('Action callback', () => {
 	function makeEvent(actionId: string, options: CompanionOptionValues): CompanionActionEvent {
 		const event: CompanionActionEvent = {
 			surfaceId: 'surface0',
-			_deviceId: 'device0',
-			_page: 0,
-			_bank: 0,
 			id: 'action0',
 			controlId: 'control0',
 			actionId: actionId,

@@ -56,9 +56,6 @@ const SampleBroadcastCheck: CompanionFeedbackAdvancedEvent = {
 		broadcast_id: 'test',
 		broadcast_id_text: '$(string:bad)',
 	},
-	_page: 0,
-	_bank: 0,
-	_rawBank: 'test' as any,
 	controlId: 'control0',
 };
 
@@ -75,9 +72,6 @@ const SampleStreamCheck: CompanionFeedbackAdvancedEvent = {
 		broadcast_id: 'BAD',
 		broadcast_id_text: 't$(letter:e)st',
 	},
-	_page: 0,
-	_bank: 0,
-	_rawBank: 'test' as any,
 	controlId: 'control0',
 };
 
@@ -196,9 +190,6 @@ describe('Broadcast lifecycle feedback', () => {
 				broadcast_id: 'BAD',
 				broadcast_id_text: '$(string:test)',
 			},
-			_page: 0,
-			_bank: 0,
-			_rawBank: 'test' as any,
 			controlId: 'control0',
 		};
 
@@ -224,9 +215,6 @@ describe('Broadcast lifecycle feedback', () => {
 				bg_complete: combineRgb(0, 0, 255),
 				broadcast: 'test',
 			},
-			_page: 0,
-			_bank: 0,
-			_rawBank: 'test' as any,
 			controlId: 'control0',
 		};
 
@@ -251,9 +239,6 @@ describe('Broadcast lifecycle feedback', () => {
 				bg_live: combineRgb(255, 0, 0),
 				bg_complete: combineRgb(0, 0, 255),
 			},
-			_page: 0,
-			_bank: 0,
-			_rawBank: 'test' as any,
 			controlId: 'control0',
 		};
 
@@ -324,9 +309,6 @@ describe('Stream health feedback', () => {
 				broadcast_id: 'test',
 				broadcast_id_text: '$(string:bad)',
 			},
-			_page: 0,
-			_bank: 0,
-			_rawBank: 'test' as any,
 			controlId: 'control0',
 		};
 
@@ -352,9 +334,6 @@ describe('Stream health feedback', () => {
 				bg_complete: combineRgb(0, 0, 255),
 				broadcast: 'test',
 			},
-			_page: 0,
-			_bank: 0,
-			_rawBank: 'test' as any,
 			controlId: 'control0',
 		};
 
@@ -398,9 +377,6 @@ describe('Stream health feedback', () => {
 				bg_complete: combineRgb(0, 0, 255),
 				broadcast: 'test',
 			},
-			_page: 0,
-			_bank: 0,
-			_rawBank: 'test' as any,
 			controlId: 'control0',
 		};
 
@@ -425,9 +401,6 @@ describe('Stream health feedback', () => {
 				bg_live: combineRgb(255, 0, 0),
 				bg_complete: combineRgb(0, 0, 255),
 			},
-			_page: 0,
-			_bank: 0,
-			_rawBank: 'test' as any,
 			controlId: 'control0',
 		};
 
