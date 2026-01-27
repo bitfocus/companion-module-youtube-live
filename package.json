@@ -39,7 +39,7 @@
 	},
 	"devDependencies": {
 		"@companion-module/tools": "~2.0.4",
-		"@eslint/eslintrc": "^3.3.1",
+		"@eslint/eslintrc": "^3.3.3",
 		"@eslint/js": "^9.28.0",
 		"eslint": "~9.22.0",
 		"eslint-plugin-jest": "~28.12.0",
