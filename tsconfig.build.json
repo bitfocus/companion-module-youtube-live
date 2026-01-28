@@ -15,20 +15,12 @@
 		// The options below all preexisted extending the recommended config and are
 		// varyingly dodgy and potentially removable as explained.
 
-		// The default is to not generate declarations.  It's not obvious anything
-		// actually needs these declarations to be generated!
-		"declaration": true,
-
 		// This is *probably* vestigial if tsconfig docs are correct.
 		"baseUrl": "./",
 
 		// Module code currently uses certain inadequately-typed objects as dicts
 		// so currently *requires* this be false.
 		"noImplicitAny": false,
-
-		// The necessity of these options is entirely unclear.
-		"strictPropertyInitialization": true,
-		"noImplicitThis": true,
 
 		// The recommended setting is ["node"].  This might be necessary to avoid
 		// explicitly importing `jest` types, as the module is written at time this
