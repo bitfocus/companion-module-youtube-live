@@ -25,10 +25,6 @@
 		// The recommended setting is ["node"].  This might be necessary to avoid
 		// explicitly importing `jest` types, as the module is written at time this
 		// comment was added.  Investigation needed!
-		"types": ["node", "jest"],
-
-		// The default considers "./node_modules/@types".  It looks like "./types"
-		// doesn't actually exist and this isn't needed.  Investigation needed!
-		"typeRoots": ["./node_modules/@types", "./types"]
+		"types": ["node", "jest"]
 	}
 }
