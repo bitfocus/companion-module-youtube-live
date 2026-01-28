@@ -15,9 +15,6 @@
 		// The options below all preexisted extending the recommended config and are
 		// varyingly dodgy and potentially removable as explained.
 
-		// This is *probably* vestigial if tsconfig docs are correct.
-		"baseUrl": "./",
-
 		// Module code currently uses certain inadequately-typed objects as dicts
 		// so currently *requires* this be false.
 		"noImplicitAny": false,
