@@ -33,6 +33,10 @@ mockHttp.emit.mockImplementation((event): boolean => {
 
 const log = jest.fn();
 
+type HttpHeaders = {
+	readonly [key in string]: string;
+};
+
 describe('HTTP module interaction', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
@@ -72,7 +76,7 @@ describe('HTTP module interaction', () => {
 
 		const req1 = { url: '/favicon.ico' };
 		const res1 = {
-			writeHead: jest.fn().mockImplementation((status: number, headers: object) => {
+			writeHead: jest.fn().mockImplementation((status: number, headers: HttpHeaders) => {
 				expect(status).toBe(400);
 				expect(headers['Content-Type']).toBe('text/plain');
 			}),
@@ -84,7 +88,7 @@ describe('HTTP module interaction', () => {
 
 		const req2 = { url: '/callback?code=authCode' };
 		const res2 = {
-			writeHead: jest.fn().mockImplementation((status: number, headers: object) => {
+			writeHead: jest.fn().mockImplementation((status: number, headers: HttpHeaders) => {
 				expect(status).toBe(200);
 				expect(headers['Content-Type']).toBe('text/plain');
 			}),
