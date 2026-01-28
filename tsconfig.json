@@ -1,39 +1,6 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es6",
-		"strict": true,
-		"alwaysStrict": false,
-		"strictNullChecks": true,
-		"strictFunctionTypes": true,
-		"strictPropertyInitialization": true,
-		"forceConsistentCasingInFileNames": true,
-		"noFallthroughCasesInSwitch": true,
-		"noImplicitAny": false,
-		"noImplicitReturns": true,
-		"noImplicitThis": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
-		"moduleResolution": "node",
-		"sourceMap": true,
-		"outDir": "dist",
-		"baseUrl": "./",
-		"paths": {
-			"*": ["node_modules/*"]
-		},
-		"declaration": true,
-		"importHelpers": false,
-		"listFiles": false,
-		"traceResolution": false,
-		"pretty": true,
-		"skipLibCheck": true,
-		"lib": ["es6"],
-		"types": ["node", "jest"],
-		"typeRoots": ["./node_modules/@types", "./types"],
-		// This is needed to perform ECMA imports of 'open' and 'server-destroy'.
-		"esModuleInterop": true
-	},
-	"include": ["src/**/*.ts", "src/jest.config.js"],
-	"compileOnSave": false,
-	"exclude": ["node_modules/**"]
+	"extends": "./tsconfig.build.json",
+	"include": ["src/**/*.ts", "eslint.config.mjs", "jest.config.json"],
+	"exclude": ["node_modules/**"],
+	"compilerOptions": {}
 }
