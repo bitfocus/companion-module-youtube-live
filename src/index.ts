@@ -5,7 +5,13 @@ import {
 	loadRefreshInterval,
 	loadMaxUnfinishedBroadcastCount,
 } from './config';
-import { InstanceBase, InstanceStatus, SomeCompanionConfigField, runEntrypoint } from '@companion-module/base';
+import {
+	CompanionVariableValues,
+	InstanceBase,
+	InstanceStatus,
+	SomeCompanionConfigField,
+	runEntrypoint,
+} from '@companion-module/base';
 import { Core, ModuleBase } from './core';
 import { StateMemory, Broadcast } from './cache';
 import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateVars } from './vars';
@@ -122,7 +128,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	 */
 	reloadAll(memory: StateMemory): void {
 		const unfinishedCnt = loadMaxUnfinishedBroadcastCount(this.config);
-		const vars = {};
+		const vars: CompanionVariableValues = {};
 
 		this.setVariableDefinitions(declareVars(memory, unfinishedCnt));
 		for (const item of exportVars(memory, unfinishedCnt)) {
@@ -152,7 +158,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	 * @param memory Known streams and broadcasts
 	 */
 	reloadStates(memory: StateMemory): void {
-		const vars = {};
+		const vars: CompanionVariableValues = {};
 
 		for (const item of exportVars(memory, loadMaxUnfinishedBroadcastCount(this.config))) {
 			vars[`${item.name}`] = item.value;
@@ -166,7 +172,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	 * @param broadcast Broadcast to reload for
 	 */
 	reloadBroadcast(broadcast: Broadcast, memory: StateMemory): void {
-		const vars = {};
+		const vars: CompanionVariableValues = {};
 
 		if (broadcast.Id in memory.Broadcasts) {
 			for (const item of getBroadcastVars(broadcast)) {
