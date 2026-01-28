@@ -33,6 +33,11 @@ jobs:
           yarn install --immutable
         working-directory: ./module-local-dev/youtube-live
 
+      - name: Type-check module and test code
+        run: |
+          yarn check-types
+        working-directory: ./module-local-dev/youtube-live
+
       - name: Lint
         run: |
           yarn lint
