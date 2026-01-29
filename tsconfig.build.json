@@ -12,16 +12,10 @@
 		// This is needed to perform ECMA imports of 'open' and 'server-destroy'.
 		"esModuleInterop": true,
 
-		// The options below all preexisted extending the recommended config and are
-		// varyingly dodgy and potentially removable as explained.
-
-		// Module code currently uses certain inadequately-typed objects as dicts
-		// so currently *requires* this be false.
-		"noImplicitAny": false,
-
-		// The recommended setting is ["node"].  This might be necessary to avoid
-		// explicitly importing `jest` types, as the module is written at time this
-		// comment was added.  Investigation needed!
+		// The setting inherited from the recommended config is ["node"].  The
+		// addition of "jest" is currently necessary to avoid explicitly importing
+		// `jest` helper functions.  It's probably worth just adding the imports to
+		// every test file to remove this customization.
 		"types": ["node", "jest"]
 	}
 }

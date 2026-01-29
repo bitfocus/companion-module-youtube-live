@@ -2,8 +2,11 @@ import {
 	YoutubeConfig,
 	listConfigFields,
 	loadMaxBroadcastCount,
-	loadRefreshInterval,
+	loadRefreshIntervalMs,
 	loadMaxUnfinishedBroadcastCount,
+	validateConfig,
+	noConnectionConfig,
+	RawConfig,
 } from './config';
 import {
 	CompanionVariableValues,
@@ -25,7 +28,7 @@ import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow'
 /**
  * Main Companion integration class of this module
  */
-export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements ModuleBase, AuthorizationEnvironment {
+export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBase, AuthorizationEnvironment {
 	/** Executive core of the module */
 	#core: Core | null = null;
 
@@ -33,7 +36,7 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 	private auth: YoutubeAuthorization;
 
 	/** Configuration */
-	config;
+	config: YoutubeConfig = noConnectionConfig();
 
 	/**
 	 * Create a new instance of this module
@@ -59,14 +62,16 @@ export class YoutubeInstance extends InstanceBase<YoutubeConfig> implements Modu
 
 	async #initializeInstance(config: YoutubeConfig): Promise<void> {
 		this.updateStatus(InstanceStatus.UnknownWarning, 'Initializing');
+
+		validateConfig(config);
 		this.config = config;
 
-		const googleAuth = await this.auth.authorize(this.config);
+		const googleAuth = await this.auth.authorize(true);
 		this.saveToken(JSON.stringify(googleAuth.credentials));
 
 		const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(this.config));
 
-		const core = new Core(this, api, loadRefreshInterval(this.config));
+		const core = new Core(this, api, loadRefreshIntervalMs(this.config));
 		this.#core = core;
 		try {
 			await core.init();

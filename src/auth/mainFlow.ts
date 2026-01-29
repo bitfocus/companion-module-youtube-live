@@ -55,7 +55,7 @@ export class YoutubeAuthorization {
 	private initAppCredentials(): AppCredentials {
 		const conf = this.Environment.config;
 
-		if (!conf.client_id || !conf.client_secret || !conf.client_redirect_url) {
+		if (conf.client_id === '' || conf.client_secret === '' || conf.client_redirect_url === '') {
 			throw new Error('OAuth2 application parameters are not configured');
 		}
 
@@ -96,7 +96,7 @@ export class YoutubeAuthorization {
 	 * Try loading the stored OAuth2 authorization token.
 	 */
 	private tryStoredUser(): UserCredentials | null {
-		if (!this.Environment.config.auth_token) {
+		if (this.Environment.config.auth_token === '') {
 			this.Environment.log('info', 'Cannot load OAuth2 user token: not present');
 			return null;
 		}

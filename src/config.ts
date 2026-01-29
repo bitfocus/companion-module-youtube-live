@@ -1,36 +1,114 @@
-import { SomeCompanionConfigField } from '@companion-module/base';
+import { InputValue, SomeCompanionConfigField } from '@companion-module/base';
+
+/**
+ * The `TConfig` object type used to store instance configuration info.
+ *
+ * Nothing ensures that Companion config objects conform to the `TConfig` type
+ * specified by a module.  Therefore we leave this type underdefined, not
+ * well-defined, so that configuration info will be defensively processed.  (We
+ * use `YoutubeConfig` to store configuration choices as well-typed values
+ * for the long haul.  See `validateConfig` for explanation of the field/types
+ * we expect to find in config objects.)
+ */
+export interface RawConfig {
+	[key: string]: InputValue | undefined;
+}
+
+const ClientIdOptionId = 'client_id';
+const ClientSecretOptionId = 'client_secret';
+const ClientRedirectURLOptionId = 'client_redirect_url';
+const AuthTokenOptionId = 'auth_token';
+const FetchMaxCountOptionId = 'fetch_max_count';
+const RefreshIntervalOptionId = 'refresh_interval';
+const UnfinishedMaxCountOptionId = 'unfinished_max_cnt';
 
 /**
  * Module configuration structure.
  */
-export interface YoutubeConfig {
+export type YoutubeConfig = {
 	/** OAuth2 app client ID */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	client_id?: string;
+	[ClientIdOptionId]: string;
 
 	/** OAuth2 app client secret */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	client_secret?: string;
+	[ClientSecretOptionId]: string;
 
 	/** OAuth2 app redirect URL */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	client_redirect_url?: string;
+	[ClientRedirectURLOptionId]: string;
 
 	/** OAuth2 user token */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	auth_token?: string;
+	[AuthTokenOptionId]: string;
 
 	/** How many broadcasts to fetch */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	fetch_max_count?: number;
+	[FetchMaxCountOptionId]: number;
 
 	/** How often (in seconds) to refresh status of broadcasts & streams */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	refresh_interval?: number;
+	[RefreshIntervalOptionId]: number;
 
 	/** How many unfinished broadcasts store into variables */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	unfinished_max_cnt?: number;
+	[UnfinishedMaxCountOptionId]: number;
+};
+
+function toNumberDefaultZero(v: RawConfig[string]): number {
+	if (v === undefined) {
+		return 0;
+	}
+
+	return Number(v);
+}
+
+function toStringDefaultEmpty(v: RawConfig[string]): string {
+	return v ? String(v) : '';
+}
+
+const toClientId = toStringDefaultEmpty;
+const toClientSecret = toStringDefaultEmpty;
+const toClientRedirectURL = toStringDefaultEmpty;
+const toAuthToken = toStringDefaultEmpty;
+
+function toFetchMaxCount(raw: RawConfig[typeof FetchMaxCountOptionId]): number {
+	let items = raw !== undefined ? Number(raw) : 10;
+	if (items < 1) items = 1;
+	return items;
+}
+
+function toRefreshInterval(raw: RawConfig[typeof RefreshIntervalOptionId]): number {
+	let seconds = toNumberDefaultZero(raw);
+
+	if (seconds < 1) seconds = 1;
+
+	return seconds;
+}
+
+function toUnfinishedMaxCount(raw: RawConfig[typeof UnfinishedMaxCountOptionId]): number {
+	let items = raw !== undefined ? Number(raw) : 3;
+	if (items < 0) items = 0;
+	return items;
+}
+
+/**
+ * Validate 'config' as a validly-encoded configuration, massaging it into type
+ * conformance as necessary.
+ */
+export function validateConfig(config: RawConfig): asserts config is YoutubeConfig {
+	config[ClientIdOptionId] = toClientId(config[ClientIdOptionId]);
+	config[ClientSecretOptionId] = toClientSecret(config[ClientSecretOptionId]);
+	config[ClientRedirectURLOptionId] = toClientRedirectURL(config[ClientRedirectURLOptionId]);
+	config[AuthTokenOptionId] = toAuthToken(config[AuthTokenOptionId]);
+	config[FetchMaxCountOptionId] = toFetchMaxCount(config[FetchMaxCountOptionId]);
+	config[RefreshIntervalOptionId] = toRefreshInterval(config[RefreshIntervalOptionId]);
+	config[UnfinishedMaxCountOptionId] = toUnfinishedMaxCount(config[UnfinishedMaxCountOptionId]);
+}
+
+export function noConnectionConfig(): YoutubeConfig {
+	return {
+		[ClientIdOptionId]: '',
+		[ClientSecretOptionId]: '',
+		[ClientRedirectURLOptionId]: '',
+		[AuthTokenOptionId]: '',
+		[FetchMaxCountOptionId]: 10,
+		[RefreshIntervalOptionId]: 60,
+		[UnfinishedMaxCountOptionId]: 3,
+	};
 }
 
 /**
@@ -38,12 +116,8 @@ export interface YoutubeConfig {
  * @param config Module configuration
  * @returns Refresh interval in milliseconds.
  */
-export function loadRefreshInterval(config: YoutubeConfig): number {
-	let seconds = config.refresh_interval ?? 60;
-
-	if (seconds < 1) seconds = 1;
-
-	return seconds * 1000;
+export function loadRefreshIntervalMs(config: YoutubeConfig): number {
+	return config[RefreshIntervalOptionId] * 1000;
 }
 
 /**
@@ -52,11 +126,7 @@ export function loadRefreshInterval(config: YoutubeConfig): number {
  * @returns How many broadcasts to fetch from YouTube.
  */
 export function loadMaxBroadcastCount(config: YoutubeConfig): number {
-	let items = config.fetch_max_count ?? 10;
-
-	if (items < 1) items = 1;
-
-	return items;
+	return config[FetchMaxCountOptionId];
 }
 
 /**
@@ -65,9 +135,7 @@ export function loadMaxBroadcastCount(config: YoutubeConfig): number {
  * @returns How many unfinished broadcasts store into variables.
  */
 export function loadMaxUnfinishedBroadcastCount(config: YoutubeConfig): number {
-	let items = config.unfinished_max_cnt ?? 3;
-
-	if (items < 0) items = 0;
+	let items = config[UnfinishedMaxCountOptionId];
 	const max = loadMaxBroadcastCount(config);
 	if (items > max) items = max;
 
@@ -82,7 +150,7 @@ export function listConfigFields(): SomeCompanionConfigField[] {
 		{
 			type: 'number',
 			label: 'How many broadcasts to fetch from YouTube',
-			id: 'fetch_max_count',
+			id: FetchMaxCountOptionId,
 			min: 1,
 			max: 50,
 			default: 10,
@@ -92,7 +160,7 @@ export function listConfigFields(): SomeCompanionConfigField[] {
 		{
 			type: 'number',
 			label: 'Interval between refreshments of broadcasts statuses and streams health (in seconds)',
-			id: 'refresh_interval',
+			id: RefreshIntervalOptionId,
 			min: 1,
 			max: 300,
 			default: 60,
@@ -102,7 +170,7 @@ export function listConfigFields(): SomeCompanionConfigField[] {
 		{
 			type: 'number',
 			label: 'How many unfinished/planned broadcasts store into unfinished_* variables',
-			id: 'unfinished_max_cnt',
+			id: UnfinishedMaxCountOptionId,
 			min: 0,
 			max: 50,
 			default: 3,
@@ -119,19 +187,19 @@ export function listConfigFields(): SomeCompanionConfigField[] {
 		},
 		{
 			type: 'textinput',
-			id: 'client_id',
+			id: ClientIdOptionId,
 			label: 'OAuth client ID',
 			width: 12,
 		},
 		{
 			type: 'textinput',
-			id: 'client_secret',
+			id: ClientSecretOptionId,
 			label: 'OAuth client secret',
 			width: 12,
 		},
 		{
 			type: 'textinput',
-			id: 'client_redirect_url',
+			id: ClientRedirectURLOptionId,
 			label: 'OAuth redirect url',
 			default: 'http://localhost:3000',
 			width: 12,
@@ -146,7 +214,7 @@ export function listConfigFields(): SomeCompanionConfigField[] {
 		},
 		{
 			type: 'textinput',
-			id: 'auth_token',
+			id: AuthTokenOptionId,
 			label: 'Authorization token (empty to re-authenticate)',
 			width: 12,
 		},

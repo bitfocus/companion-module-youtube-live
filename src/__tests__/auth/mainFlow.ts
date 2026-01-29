@@ -4,7 +4,7 @@ jest.mock('../../auth/loginFlow');
 jest.mock('../../auth/oauthclient');
 
 import { OAuth2Client } from 'google-auth-library';
-import { YoutubeConfig } from '../../config';
+import { noConnectionConfig, YoutubeConfig } from '../../config';
 import { DetachedPromise, Logger } from '../../common';
 import { UserCredentials, AppCredentials } from '../../auth/types';
 import { AuthorizationEnvironment, YoutubeAuthorization } from '../../auth/mainFlow';
@@ -26,7 +26,7 @@ jest.mocked(GoogleLoginForm).mockImplementation((how, log) => {
 
 class MockEnv implements AuthorizationEnvironment {
 	log = jest.fn();
-	config: YoutubeConfig = {};
+	config: YoutubeConfig = noConnectionConfig();
 }
 
 describe('Application credentials', () => {
