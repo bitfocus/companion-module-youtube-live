@@ -39,7 +39,7 @@
 		"server-destroy": "^1.0.1"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "~2.0.4",
+		"@companion-module/tools": "^2.6.1",
 		"@eslint/eslintrc": "^3.3.3",
 		"@eslint/js": "^9.28.0",
 		"eslint": "~9.22.0",
