@@ -42,7 +42,6 @@
 		"@companion-module/tools": "^2.6.1",
 		"@eslint/js": "^9.39.2",
 		"eslint": "~9.36.0",
-		"globals": "^16.2.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^13.2.0",
 		"prettier": "^3.8.1",
