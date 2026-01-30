@@ -5,43 +5,58 @@ on:
   pull_request:
 
 jobs:
-  build:
+  test:
+    name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Stay consistent with package.json.
+        node-version: [~18.12]
+
     steps:
-      - name: Download Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
+      - uses: actions/checkout@v4
 
-      - name: Checkout Companion
-        uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
-          repository: bitfocus/companion
-          path: ./
-          submodules: false
+          node-version: ${{ matrix.node-version }}
 
-      - name: Checkout this commit
-        uses: actions/checkout@v3
-        with:
-          path: ./module-local-dev/youtube-live
-
-      - name: Compile module
+      - name: Prepare Environment
         run: |
           corepack enable
           yarn install --immutable
-        working-directory: ./module-local-dev/youtube-live
+        env:
+          CI: true
 
       - name: Type-check module and test code
         run: |
           yarn check-types
-        working-directory: ./module-local-dev/youtube-live
+        env:
+          CI: true
 
-      - name: Lint
+      - name: Lint module code
         run: |
           yarn lint
-        working-directory: ./module-local-dev/youtube-live
+        env:
+          CI: true
 
-      - name: Run unit tests
+      - name: Compile module code
+        run: |
+          yarn build
+        env:
+          CI: true
+
+      - name: Run module tests
         run: |
           yarn test
-        working-directory: ./module-local-dev/youtube-live
+        env:
+          CI: true
+
+      - name: Build Companion package
+        run: |
+          yarn companion-module-build
+        env:
+          CI: true
