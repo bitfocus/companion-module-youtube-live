@@ -1,28 +1,30 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+
 //require("leaked-handles");
-jest.mock('open');
-jest.mock('../../auth/httpListener');
-jest.mock('../../auth/oauthclient');
-jest.mock('google-auth-library');
+vi.mock('open');
+vi.mock('../../auth/httpListener.js');
+vi.mock('../../auth/oauthclient.js');
+vi.mock('google-auth-library');
 
 import opn from 'open';
-import { HttpReceiver } from '../../auth/httpListener';
-import { AppCredentials } from '../../auth/types';
-import { makeOAuth2Client } from '../../auth/oauthclient';
+import { HttpReceiver } from '../../auth/httpListener.js';
+import { AppCredentials } from '../../auth/types.js';
+import { makeOAuth2Client } from '../../auth/oauthclient.js';
 import { OAuth2Client } from 'google-auth-library';
-import { GoogleLoginForm } from '../../auth/loginFlow';
-import { Logger } from '../../common';
+import { GoogleLoginForm } from '../../auth/loginFlow.js';
+import { Logger } from '../../common.js';
 import { ChildProcess } from 'child_process';
 
 const _mockHttp = new HttpReceiver('blah', 1234, (_1, _2) => undefined);
 const _mockOAuth = new OAuth2Client();
-const mockOpn = jest.mocked(opn);
-const mockHttp = jest.mocked(_mockHttp);
-const mockOAuth = jest.mocked(_mockOAuth);
-const mockOAuthCtor = jest.mocked(makeOAuth2Client);
-const mockHttpCtor = jest.fn<void, [string, number, Logger]>();
+const mockOpn = vi.mocked(opn);
+const mockHttp = vi.mocked(_mockHttp);
+const mockOAuth = vi.mocked(_mockOAuth);
+const mockOAuthCtor = vi.mocked(makeOAuth2Client);
+const mockHttpCtor = vi.fn<typeof HttpReceiver>();
 
-jest.mocked(HttpReceiver).mockImplementation((host, port, log) => {
-	mockHttpCtor(host, port, log);
+vi.mocked(HttpReceiver).mockImplementation(function (host: string, port: number, log: Logger) {
+	new mockHttpCtor(host, port, log);
 	return _mockHttp;
 });
 
@@ -40,14 +42,14 @@ const app: AppCredentials = {
 };
 
 describe('Login flow', () => {
-	const log = jest.fn();
+	const log = vi.fn<Logger>();
 
 	beforeEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	test('Standard flow works well', async () => {
-		mockHttpCtor.mockImplementationOnce((host, port, _) => {
+		mockHttpCtor.mockImplementationOnce(function (host, port, _) {
 			expect(host).toBe('localhost');
 			expect(port).toBe(1234);
 		});
@@ -78,8 +80,8 @@ describe('Login flow', () => {
 		// here.
 		//
 		// Either that or it in fact isn't all that hard and the author of this
-		// line of code just doesn't know Jest well enough to do it.  😅  Please
-		// correct for his inadequacy if you know how!
+		// line of code just doesn't know vitest well enough to do it.  😅
+		// Please correct for his inadequacy if you know how!
 		mockOAuth.getToken.mockImplementationOnce((code: any): any => {
 			expect(code).toBe('authCode');
 			return Promise.resolve({

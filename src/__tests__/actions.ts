@@ -1,14 +1,15 @@
+import { afterAll, afterEach, describe, expect, MockedObject, test, vi } from 'vitest';
+
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import { CompanionActionEvent, CompanionOptionValues } from '@companion-module/base';
-import { mocked, MockedShallow } from 'jest-mock';
-import { makeMockModule, makeMockYT } from './core';
-import { listActions, ActionId } from '../actions';
-import { BroadcastLifecycle, BroadcastID, StateMemory } from '../cache';
-import { clone } from '../common';
-import { ModuleBase, Core } from '../core';
-import { Visibility, YoutubeAPI } from '../youtube';
-import { MockContext } from '../__mocks__/context';
+import { makeMockModule, makeMockYT } from './core.js';
+import { listActions, ActionId } from '../actions.js';
+import { BroadcastLifecycle, BroadcastID, StateMemory } from '../cache.js';
+import { clone } from '../common.js';
+import { ModuleBase, Core } from '../core.js';
+import { Visibility, YoutubeAPI } from '../youtube.js';
+import { MockContext } from '../__mocks__/context.js';
 
 const SampleMemory: StateMemory = {
 	Broadcasts: {
@@ -56,55 +57,53 @@ describe('Action list', () => {
 describe('Action callback', () => {
 	// Create cores for testing
 	const memory: StateMemory = clone(SampleMemory);
-	const mockYT: MockedShallow<YoutubeAPI> = mocked(makeMockYT(memory));
-	const mockModule: MockedShallow<ModuleBase> = mocked(makeMockModule());
+	const mockYT: MockedObject<YoutubeAPI> = vi.mocked(makeMockYT(memory));
+	const mockModule: MockedObject<ModuleBase> = vi.mocked(makeMockModule());
 	const coreOK = new Core(mockModule, mockYT, 100, 100);
 	const coreKO = new Core(mockModule, mockYT, 100, 100);
 
 	// Moking OK functions
-	coreOK.startBroadcastTest = jest.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
-	coreOK.makeBroadcastLive = jest.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
-	coreOK.finishBroadcast = jest.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
-	coreOK.toggleBroadcast = jest.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
-	coreOK.reloadEverything = jest.fn(async (): Promise<void> => Promise.resolve());
-	coreOK.refreshFeedbacks = jest.fn(async (): Promise<void> => Promise.resolve());
-	coreOK.sendLiveChatMessage = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.insertCuePoint = jest.fn(async (_a: BroadcastID, _b?: number): Promise<void> => Promise.resolve());
-	coreOK.setTitle = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.setDescription = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.prependToDescription = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.appendToDescription = jest.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
-	coreOK.addChapterToDescription = jest.fn(
+	coreOK.startBroadcastTest = vi.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.makeBroadcastLive = vi.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.finishBroadcast = vi.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.toggleBroadcast = vi.fn(async (_: BroadcastID): Promise<void> => Promise.resolve());
+	coreOK.reloadEverything = vi.fn(async (): Promise<void> => Promise.resolve());
+	coreOK.refreshFeedbacks = vi.fn(async (): Promise<void> => Promise.resolve());
+	coreOK.sendLiveChatMessage = vi.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.insertCuePoint = vi.fn(async (_a: BroadcastID, _b?: number): Promise<void> => Promise.resolve());
+	coreOK.setTitle = vi.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.setDescription = vi.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.prependToDescription = vi.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.appendToDescription = vi.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.resolve());
+	coreOK.addChapterToDescription = vi.fn(
 		async (_a: BroadcastID, _b: string, _c?: string): Promise<void> => Promise.resolve()
 	);
-	coreOK.setVisibility = jest.fn(async (_a: BroadcastID, _b: Visibility): Promise<void> => Promise.resolve());
+	coreOK.setVisibility = vi.fn(async (_a: BroadcastID, _b: Visibility): Promise<void> => Promise.resolve());
 
 	// Mocking KO functions
-	coreKO.startBroadcastTest = jest.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('test')));
-	coreKO.makeBroadcastLive = jest.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('live')));
-	coreKO.finishBroadcast = jest.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('finish')));
-	coreKO.toggleBroadcast = jest.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('toggle')));
-	coreKO.reloadEverything = jest.fn(async (): Promise<void> => Promise.reject(new Error('refreshstatus')));
-	coreKO.refreshFeedbacks = jest.fn(async (): Promise<void> => Promise.reject(new Error('refreshfbcks')));
-	coreKO.sendLiveChatMessage = jest.fn(
+	coreKO.startBroadcastTest = vi.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('test')));
+	coreKO.makeBroadcastLive = vi.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('live')));
+	coreKO.finishBroadcast = vi.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('finish')));
+	coreKO.toggleBroadcast = vi.fn(async (_: BroadcastID): Promise<void> => Promise.reject(new Error('toggle')));
+	coreKO.reloadEverything = vi.fn(async (): Promise<void> => Promise.reject(new Error('refreshstatus')));
+	coreKO.refreshFeedbacks = vi.fn(async (): Promise<void> => Promise.reject(new Error('refreshfbcks')));
+	coreKO.sendLiveChatMessage = vi.fn(
 		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('sendmsg'))
 	);
-	coreKO.insertCuePoint = jest.fn(
+	coreKO.insertCuePoint = vi.fn(
 		async (_a: BroadcastID, _b?: number): Promise<void> => Promise.reject(new Error('insertcuepoint'))
 	);
-	coreKO.setTitle = jest.fn(
-		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('settitle'))
-	);
-	coreKO.setDescription = jest.fn(
+	coreKO.setTitle = vi.fn(async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('settitle')));
+	coreKO.setDescription = vi.fn(
 		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('setdescription'))
 	);
-	coreKO.prependToDescription = jest.fn(
+	coreKO.prependToDescription = vi.fn(
 		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('prependtodescription'))
 	);
-	coreKO.appendToDescription = jest.fn(
+	coreKO.appendToDescription = vi.fn(
 		async (_a: BroadcastID, _b: string): Promise<void> => Promise.reject(new Error('appendtodescription'))
 	);
-	coreKO.addChapterToDescription = jest.fn(
+	coreKO.addChapterToDescription = vi.fn(
 		async (_a: BroadcastID, _b: string, _c?: string): Promise<void> =>
 			Promise.reject(new Error('addchaptertodescription'))
 	);
@@ -130,12 +129,12 @@ describe('Action callback', () => {
 		return event;
 	}
 
-	afterEach(() => jest.clearAllMocks());
+	afterEach(() => vi.clearAllMocks());
 
 	afterAll(() => {
 		coreOK.destroy();
 		coreKO.destroy();
-		jest.clearAllTimers();
+		vi.clearAllTimers();
 	});
 
 	test('Start test success', async () => {

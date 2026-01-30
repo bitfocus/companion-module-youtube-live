@@ -1,6 +1,8 @@
+import { describe, expect, test } from 'vitest';
+
 //require("leaked-handles");
-import { listPresets } from '../presets';
-import { BroadcastMap, BroadcastLifecycle } from '../cache';
+import { listPresets } from '../presets.js';
+import { BroadcastMap, BroadcastLifecycle } from '../cache.js';
 
 describe('Preset list', () => {
 	test('There are no broadcast-independent presets', () => {

@@ -1,5 +1,7 @@
+import { beforeEach, describe, expect, test } from 'vitest';
+
 //require("leaked-handles");
-import { DetachedPromise, clone } from '../common';
+import { DetachedPromise, clone } from '../common.js';
 
 describe('DetachedPromise', () => {
 	let container: DetachedPromise<void>;

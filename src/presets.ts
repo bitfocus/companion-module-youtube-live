@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
-import { Broadcast, BroadcastMap } from './cache';
+import { Broadcast, BroadcastMap } from './cache.js';
 import { CompanionOptionValues, CompanionPresetDefinitions, combineRgb } from '@companion-module/base';
-import { FeedbackId } from './feedbacks';
-import { ActionId } from './actions';
-import { BroadcastIdDropdownOptionId, BroadcastIdIsTextOptionId, BroadcastIdTextOptionId } from './common';
+import { FeedbackId } from './feedbacks.js';
+import { ActionId } from './actions.js';
+import { BroadcastIdDropdownOptionId, BroadcastIdIsTextOptionId, BroadcastIdTextOptionId } from './common.js';
 
 function addBroadcastSelectionOptions(
 	// It'd' be nice to only allow options that don't contain any broadcast

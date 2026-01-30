@@ -1,14 +1,15 @@
+import { afterAll, afterEach, beforeEach, describe, expect, MockedObject, test, vi } from 'vitest';
+
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
-import { listFeedbacks } from '../feedbacks';
-import { BroadcastLifecycle, StreamHealth, StateMemory } from '../cache';
+import { listFeedbacks } from '../feedbacks.js';
+import { BroadcastLifecycle, StreamHealth, StateMemory } from '../cache.js';
 import { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult, combineRgb } from '@companion-module/base';
-import { clone } from '../common';
-import { ModuleBase, Core } from '../core';
-import { mocked, MockedShallow } from 'jest-mock';
-import { YoutubeAPI } from '../youtube';
-import { makeMockModule, makeMockYT } from './core';
-import { MockContext } from '../__mocks__/context';
+import { clone } from '../common.js';
+import { ModuleBase, Core } from '../core.js';
+import { YoutubeAPI } from '../youtube.js';
+import { makeMockModule, makeMockYT } from './core.js';
+import { MockContext } from '../__mocks__/context.js';
 
 //
 // SAMPLE DATA
@@ -111,14 +112,14 @@ async function tryStream(health: StreamHealth, core: Core): Promise<CompanionAdv
 
 describe('Broadcast lifecycle feedback', () => {
 	let memory: StateMemory;
-	let mockYT: MockedShallow<YoutubeAPI>;
-	let mockModule: MockedShallow<ModuleBase>;
+	let mockYT: MockedObject<YoutubeAPI>;
+	let mockModule: MockedObject<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
 		memory = clone(SampleMemory);
-		mockYT = mocked(makeMockYT(memory));
-		mockModule = mocked(makeMockModule());
+		mockYT = vi.mocked(makeMockYT(memory));
+		mockModule = vi.mocked(makeMockModule());
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
@@ -128,8 +129,8 @@ describe('Broadcast lifecycle feedback', () => {
 	});
 
 	afterAll(() => {
-		jest.clearAllMocks();
-		jest.clearAllTimers();
+		vi.clearAllMocks();
+		vi.clearAllTimers();
 	});
 
 	test('Created state', async () => {
@@ -258,14 +259,14 @@ describe('Broadcast lifecycle feedback', () => {
 
 describe('Stream health feedback', () => {
 	let memory: StateMemory;
-	let mockYT: MockedShallow<YoutubeAPI>;
-	let mockModule: MockedShallow<ModuleBase>;
+	let mockYT: MockedObject<YoutubeAPI>;
+	let mockModule: MockedObject<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
 		memory = clone(SampleMemory);
-		mockYT = mocked(makeMockYT(memory));
-		mockModule = mocked(makeMockModule());
+		mockYT = vi.mocked(makeMockYT(memory));
+		mockModule = vi.mocked(makeMockModule());
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
@@ -275,8 +276,8 @@ describe('Stream health feedback', () => {
 	});
 
 	afterAll(() => {
-		jest.clearAllMocks();
-		jest.clearAllTimers();
+		vi.clearAllMocks();
+		vi.clearAllTimers();
 	});
 
 	test('Good health', async () => {

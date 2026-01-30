@@ -1,17 +1,22 @@
-//require("leaked-handles");
-jest.mock('google-auth-library');
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { makeOAuth2Client } from '../../auth/oauthclient';
+//require("leaked-handles");
+vi.mock('google-auth-library');
+
+import { makeOAuth2Client } from '../../auth/oauthclient.js';
 import { OAuth2Client, OAuth2ClientOptions } from 'google-auth-library';
-import { mocked } from 'jest-mock';
-import { AppCredentials, UserCredentials } from '../../auth/types';
+import { AppCredentials, UserCredentials } from '../../auth/types.js';
 
 const _mockOAuth = new OAuth2Client();
-const mockOAuth = mocked(_mockOAuth);
+const mockOAuth = vi.mocked(_mockOAuth);
 
-const mockOAuthCtor = jest.fn<void, [(string | OAuth2ClientOptions)?, string?, string?]>();
-jest.mocked(OAuth2Client).mockImplementation((cid, cpwd, url): OAuth2Client => {
-	mockOAuthCtor(cid, cpwd, url);
+const mockOAuthCtor = vi.fn<typeof OAuth2Client>();
+vi.mocked(OAuth2Client).mockImplementation(function (
+	cid: OAuth2ClientOptions | string | undefined,
+	cpwd: string | undefined,
+	url: string | undefined
+) {
+	new mockOAuthCtor(cid, cpwd, url);
 	return _mockOAuth;
 });
 
@@ -31,11 +36,11 @@ const user: UserCredentials = {
 
 describe('OAuth2Client interaction', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	test('App credentials passed through', () => {
-		mockOAuthCtor.mockImplementationOnce((cid, cpwd, url) => {
+		mockOAuthCtor.mockImplementationOnce(function (cid, cpwd, url) {
 			expect(cid).toBe(app.ClientID);
 			expect(cpwd).toBe(app.ClientSecret);
 			expect(url).toBe(app.RedirectURL);

@@ -8,13 +8,9 @@
 			"*": ["./node_modules/*"]
 		},
 
-		// This is needed to perform ECMA imports of 'open' and 'server-destroy'.
-		"esModuleInterop": true,
+		"module": "es2022",
 
-		// The setting inherited from the recommended config is ["node"].  The
-		// addition of "jest" is currently necessary to avoid explicitly importing
-		// `jest` helper functions.  It's probably worth just adding the imports to
-		// every test file to remove this customization.
-		"types": ["node", "jest"]
+		// This is needed to perform ECMA imports of 'open' and 'server-destroy'.
+		"esModuleInterop": true
 	}
 }

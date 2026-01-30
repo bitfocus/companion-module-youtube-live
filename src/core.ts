@@ -1,6 +1,6 @@
-import { StateMemory, BroadcastID, BroadcastLifecycle, Broadcast } from './cache';
-import { Transition, Visibility, YoutubeAPI } from './youtube';
-import { DetachedPromise, Logger } from './common';
+import { StateMemory, BroadcastID, BroadcastLifecycle, Broadcast } from './cache.js';
+import { Transition, Visibility, YoutubeAPI } from './youtube.js';
+import { DetachedPromise, Logger } from './common.js';
 
 /**
  * Interface between executive core and the Companion module glue

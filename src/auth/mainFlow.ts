@@ -1,10 +1,10 @@
 import * as url from 'node:url';
-import { Logger } from '../common';
-import { AppCredentials, UserCredentials } from './types';
-import { YoutubeConfig } from '../config';
+import { Logger } from '../common.js';
+import { AppCredentials, UserCredentials } from './types.js';
+import { YoutubeConfig } from '../config.js';
 
-import { GoogleLoginForm } from './loginFlow';
-import { makeOAuth2Client, OAuth2Client } from './oauthclient';
+import { GoogleLoginForm } from './loginFlow.js';
+import { makeOAuth2Client, OAuth2Client } from './oauthclient.js';
 
 /**
  * Dependency injector for authorization flow

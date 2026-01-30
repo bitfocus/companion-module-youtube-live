@@ -1,10 +1,8 @@
 // @ts-check
 
 import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs';
-import jest from 'eslint-plugin-jest';
 
 const baseConfig = await generateEslintConfig({
-	enableJest: true,
 	enableTypescript: true,
 });
 
@@ -95,29 +93,33 @@ const customConfig = [
 	},
 
 	{
-		ignores: ['eslint.config.{js,mjs,mts,ts}', 'jest.config.{js,ts}'],
+		ignores: ['eslint.config.mjs', 'vitest.config.ts'],
 		rules: {
 			'n/no-missing-import': 'off',
 			'n/no-unpublished-import': 'error',
 		},
 	},
 
-	permitLimitedUnpublishedImports(allTestFilePatterns, ['jest']),
-	permitLimitedUnpublishedImports(['eslint.config.mjs'], ['@companion-module/tools', 'eslint-plugin-jest']),
+	permitLimitedUnpublishedImports(allTestFilePatterns, ['vitest']),
+	permitLimitedUnpublishedImports(['eslint.config.mjs'], ['@companion-module/tools']),
+	permitLimitedUnpublishedImports(['vitest.config.ts'], ['vitest']),
 
 	{
 		files: allTestFilePatterns,
-		plugins: {
-			jest,
-		},
 		rules: {
 			// The TypeScript eslint rule that flags references to unbound
 			// functions that discard a proper `this`, also flags
 			// `expect(obj.nonStaticFunc).toHaveBeenCalled()` and similar test
-			// patterns.  Disable the rule in tests in favor of a Jest-specific
-			// rule that doesn't flag valid `expect`-related operations.
+			// patterns.
+			//
+			// Jest has the jest/unbound-method rule which will exempt the Jest
+			// pattern from consideration.  Unfortunately, vitest doesn't yet
+			// have such a rule exempting the pattern written for vitest.
+			// https://github.com/vitest-dev/eslint-plugin-vitest/issues/591
+			// So for now we turn off the TypeScript eslint rule and wait for
+			// that vitest-aware version to be created.
 			'@typescript-eslint/unbound-method': 'off',
-			'jest/unbound-method': 'error',
+			// 'vitest/unbound-method': 'error',
 		},
 	},
 ];

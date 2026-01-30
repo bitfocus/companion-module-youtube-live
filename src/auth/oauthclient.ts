@@ -1,6 +1,6 @@
 export { OAuth2Client } from 'google-auth-library';
 import { OAuth2Client } from 'google-auth-library';
-import { AppCredentials, UserCredentials } from './types';
+import { AppCredentials, UserCredentials } from './types.js';
 
 /**
  * Create a Google OAuth2 API client.

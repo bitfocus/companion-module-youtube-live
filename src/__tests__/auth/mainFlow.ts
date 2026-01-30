@@ -1,31 +1,32 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+
 //require("leaked-handles");
 
-jest.mock('../../auth/loginFlow');
-jest.mock('../../auth/oauthclient');
+vi.mock('../../auth/loginFlow.js');
+vi.mock('../../auth/oauthclient.js');
 
 import { OAuth2Client } from 'google-auth-library';
-import { noConnectionConfig, YoutubeConfig } from '../../config';
-import { DetachedPromise, Logger } from '../../common';
-import { UserCredentials, AppCredentials } from '../../auth/types';
-import { AuthorizationEnvironment, YoutubeAuthorization } from '../../auth/mainFlow';
-import { mocked } from 'jest-mock';
+import { noConnectionConfig, YoutubeConfig } from '../../config.js';
+import { DetachedPromise, Logger } from '../../common.js';
+import { UserCredentials, AppCredentials } from '../../auth/types.js';
+import { AuthorizationEnvironment, YoutubeAuthorization } from '../../auth/mainFlow.js';
 
-import { GoogleLoginForm } from '../../auth/loginFlow';
-import { makeOAuth2Client } from '../../auth/oauthclient';
+import { GoogleLoginForm } from '../../auth/loginFlow.js';
+import { makeOAuth2Client } from '../../auth/oauthclient.js';
 
 const _mockForm = new GoogleLoginForm(
 	{ ClientID: '', ClientSecret: '', RedirectURL: '', Scopes: [] },
 	(_1, _2) => undefined
 );
-const mockForm = mocked(_mockForm);
-const mockFormCtor = jest.fn<void, [AppCredentials, Logger]>();
-jest.mocked(GoogleLoginForm).mockImplementation((how, log) => {
-	mockFormCtor(how, log);
+const mockForm = vi.mocked(_mockForm);
+const mockFormCtor = vi.fn<typeof GoogleLoginForm>();
+vi.mocked(GoogleLoginForm).mockImplementation(function (how: AppCredentials, log: Logger) {
+	new mockFormCtor(how, log);
 	return _mockForm;
 });
 
 class MockEnv implements AuthorizationEnvironment {
-	log = jest.fn();
+	log = vi.fn<Logger>();
 	config: YoutubeConfig = noConnectionConfig();
 }
 
@@ -83,11 +84,11 @@ describe('User credentials', () => {
 		mock.config.client_redirect_url = 'http://localhost:3000/';
 		mock.config.auth_token = '';
 
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	test('Generic login flow', async () => {
-		mockFormCtor.mockImplementationOnce((app: AppCredentials, _) => {
+		mockFormCtor.mockImplementationOnce(function (app: AppCredentials, _) {
 			expect(app.ClientID).toBe(mock.config.client_id);
 			expect(app.ClientSecret).toBe(mock.config.client_secret);
 			expect(app.RedirectURL).toBe(mock.config.client_redirect_url);
@@ -98,7 +99,7 @@ describe('User credentials', () => {
 				refresh_token: 'good',
 			},
 		});
-		mocked(makeOAuth2Client).mockImplementationOnce((app, user): OAuth2Client => {
+		vi.mocked(makeOAuth2Client).mockImplementationOnce((app, user): OAuth2Client => {
 			expect(app.ClientID).toBe(mock.config.client_id);
 			expect(app.ClientSecret).toBe(mock.config.client_secret);
 			expect(app.RedirectURL).toBe(mock.config.client_redirect_url);
@@ -110,7 +111,7 @@ describe('User credentials', () => {
 		const tested = new YoutubeAuthorization(mock);
 		await expect(tested.authorize(true)).resolves.toBeInstanceOf(OAuth2Client);
 		expect(mockForm.request).toHaveBeenCalledTimes(1);
-		expect(mocked(makeOAuth2Client)).toHaveBeenCalledTimes(1);
+		expect(vi.mocked(makeOAuth2Client)).toHaveBeenCalledTimes(1);
 	});
 
 	test('Login triggers on invalid OAuth2 token', async () => {

@@ -1,5 +1,13 @@
+import { describe, expect, test } from 'vitest';
+
 //require("leaked-handles");
-import { loadRefreshIntervalMs, loadMaxBroadcastCount, listConfigFields, RawConfig, validateConfig } from '../config';
+import {
+	loadRefreshIntervalMs,
+	loadMaxBroadcastCount,
+	listConfigFields,
+	RawConfig,
+	validateConfig,
+} from '../config.js';
 
 describe('Refresh interval', () => {
 	test('Refresh interval has a default', () => {

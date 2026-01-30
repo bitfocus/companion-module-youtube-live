@@ -7,8 +7,8 @@ import {
 	DropdownChoiceId,
 	InstanceBase,
 } from '@companion-module/base';
-import { BroadcastID } from './cache';
-import { YoutubeConfig } from './config';
+import { BroadcastID } from './cache.js';
+import { YoutubeConfig } from './config.js';
 
 /** Generic module skeleton for extracting function types. */
 type IModule = InstanceBase<YoutubeConfig>;

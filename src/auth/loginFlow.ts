@@ -1,9 +1,9 @@
 import opn from 'open';
 import * as url from 'node:url';
-import { Logger } from '../common';
-import { HttpReceiver } from './httpListener';
-import { AppCredentials, UserCredentials } from './types';
-import { OAuth2Client, makeOAuth2Client } from './oauthclient';
+import { Logger } from '../common.js';
+import { HttpReceiver } from './httpListener.js';
+import { AppCredentials, UserCredentials } from './types.js';
+import { OAuth2Client, makeOAuth2Client } from './oauthclient.js';
 
 /**
  * Process for acquiring new user authorization tokens.

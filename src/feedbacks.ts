@@ -8,7 +8,7 @@ import {
 	CompanionFeedbackContext,
 	SomeCompanionFeedbackInputField,
 } from '@companion-module/base';
-import { Broadcast, BroadcastMap, BroadcastLifecycle, Stream, StreamHealth } from './cache';
+import { Broadcast, BroadcastMap, BroadcastLifecycle, Stream, StreamHealth } from './cache.js';
 import {
 	broadcastIdDropdownOption,
 	BroadcastIdFromTextOption,
@@ -17,8 +17,8 @@ import {
 	BroadcastIdDropdownOptionId,
 	BroadcastIdTextOptionId,
 	getBroadcastIdFromOptions,
-} from './common';
-import { Core } from './core';
+} from './common.js';
+import { Core } from './core.js';
 
 export enum FeedbackId {
 	BroadcastStatus = 'broadcast_status',

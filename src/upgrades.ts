@@ -6,9 +6,9 @@ import type {
 	CompanionStaticUpgradeScript,
 	CompanionUpgradeContext,
 } from '@companion-module/base';
-import { tryUpgradeActionSelectingBroadcastId } from './actions';
-import type { RawConfig } from './config';
-import { tryUpgradeFeedbackSelectingBroadcastID } from './feedbacks';
+import { tryUpgradeActionSelectingBroadcastId } from './actions.js';
+import type { RawConfig } from './config.js';
+import { tryUpgradeFeedbackSelectingBroadcastID } from './feedbacks.js';
 
 function ActionUpdater(
 	tryUpdate: (action: CompanionMigrationAction) => boolean

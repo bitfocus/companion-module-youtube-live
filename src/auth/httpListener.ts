@@ -1,7 +1,7 @@
 import * as http from 'node:http';
 import * as url from 'node:url';
 import destroyer from 'server-destroy';
-import { Logger, DetachedPromise } from '../common';
+import { Logger, DetachedPromise } from '../common.js';
 
 /**
  * Process for acquiring new user authorization tokens.

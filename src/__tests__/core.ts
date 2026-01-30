@@ -1,48 +1,41 @@
+import { afterAll, afterEach, beforeEach, describe, expect, MockedObject, test, vi } from 'vitest';
+
 //require("leaked-handles");
-import { YoutubeAPI, Transition, Visibility } from '../youtube';
-import { ModuleBase, Core } from '../core';
-import { sleep } from '../common';
-import {
-	BroadcastMap,
-	Broadcast,
-	StreamMap,
-	BroadcastID,
-	StateMemory,
-	BroadcastLifecycle,
-	StreamHealth,
-} from '../cache';
-import { mocked, MockedShallow } from 'jest-mock';
+import { YoutubeAPI } from '../youtube.js';
+import { ModuleBase, Core } from '../core.js';
+import { sleep } from '../common.js';
+import { Broadcast, StateMemory, BroadcastLifecycle, StreamHealth } from '../cache.js';
 
 export function makeMockYT(memory: StateMemory): YoutubeAPI {
 	return {
-		listBroadcasts: jest.fn<Promise<BroadcastMap>, []>().mockImplementation(async () => {
+		listBroadcasts: vi.fn<YoutubeAPI['listBroadcasts']>().mockImplementation(async () => {
 			return Promise.resolve(memory.Broadcasts);
 		}),
-		refreshBroadcastStatus1: jest.fn<Promise<Broadcast>, [Broadcast]>().mockImplementation(async (b: Broadcast) => {
+		refreshBroadcastStatus1: vi.fn<YoutubeAPI['refreshBroadcastStatus1']>().mockImplementation(async (b: Broadcast) => {
 			return Promise.resolve(memory.Broadcasts[b.Id]);
 		}),
-		refreshBroadcastStatus: jest.fn<Promise<BroadcastMap>, [BroadcastMap]>().mockImplementation(async (_) => {
+		refreshBroadcastStatus: vi.fn<YoutubeAPI['refreshBroadcastStatus']>().mockImplementation(async (_) => {
 			return Promise.resolve(memory.Broadcasts);
 		}),
-		listBoundStreams: jest.fn<Promise<StreamMap>, [BroadcastMap]>(async (_) => {
+		listBoundStreams: vi.fn<YoutubeAPI['listBoundStreams']>(async (_) => {
 			return Promise.resolve(memory.Streams);
 		}),
-		transitionBroadcast: jest.fn<Promise<void>, [BroadcastID, Transition]>().mockImplementation(async () => {
+		transitionBroadcast: vi.fn<YoutubeAPI['transitionBroadcast']>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		sendMessageToLiveChat: jest.fn<Promise<void>, [string, string]>().mockImplementation(async () => {
+		sendMessageToLiveChat: vi.fn<YoutubeAPI['sendMessageToLiveChat']>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		insertCuePoint: jest.fn<Promise<void>, [BroadcastID, number]>().mockImplementation(async () => {
+		insertCuePoint: vi.fn<YoutubeAPI['insertCuePoint']>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		setTitle: jest.fn<Promise<void>, [BroadcastID, string, string]>().mockImplementation(async () => {
+		setTitle: vi.fn<YoutubeAPI['setTitle']>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		setDescription: jest.fn<Promise<void>, [BroadcastID, string, string, string]>().mockImplementation(async () => {
+		setDescription: vi.fn<YoutubeAPI['setDescription']>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
-		setVisibility: jest.fn<Promise<void>, [BroadcastID, Visibility]>().mockImplementation(async () => {
+		setVisibility: vi.fn<YoutubeAPI['setVisibility']>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
 	};
@@ -50,17 +43,17 @@ export function makeMockYT(memory: StateMemory): YoutubeAPI {
 
 export function makeMockModule(): ModuleBase {
 	return {
-		reloadAll: jest.fn<void, [StateMemory]>(),
-		reloadStates: jest.fn<void, [StateMemory]>(),
-		reloadBroadcast: jest.fn<void, [Broadcast]>(),
-		log: jest.fn<void, [string, string]>(),
+		reloadAll: vi.fn<ModuleBase['reloadAll']>(),
+		reloadStates: vi.fn<ModuleBase['reloadStates']>(),
+		reloadBroadcast: vi.fn<ModuleBase['reloadBroadcast']>(),
+		log: vi.fn<ModuleBase['log']>(),
 	};
 }
 
 describe('Miscellaneous', () => {
 	let memory: StateMemory;
-	let mockYT: MockedShallow<YoutubeAPI>;
-	let mockModule: MockedShallow<ModuleBase>;
+	let mockYT: MockedObject<YoutubeAPI>;
+	let mockModule: MockedObject<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -100,8 +93,8 @@ describe('Miscellaneous', () => {
 				},
 			],
 		};
-		mockYT = mocked(makeMockYT(memory));
-		mockModule = mocked(makeMockModule());
+		mockYT = vi.mocked(makeMockYT(memory));
+		mockModule = vi.mocked(makeMockModule());
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
@@ -111,8 +104,8 @@ describe('Miscellaneous', () => {
 	});
 
 	afterAll(() => {
-		jest.clearAllMocks();
-		jest.clearAllTimers();
+		vi.clearAllMocks();
+		vi.clearAllTimers();
 	});
 
 	test('Initialization succeeds', async () => {
@@ -185,7 +178,7 @@ describe('Miscellaneous', () => {
 
 	test('Partial reload works', async () => {
 		await core.init();
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 		await core.refreshFeedbacks();
 		expect(mockYT.listBroadcasts).not.toHaveBeenCalled();
 		expect(mockYT.refreshBroadcastStatus).toHaveBeenCalled();
@@ -196,8 +189,8 @@ describe('Miscellaneous', () => {
 
 describe('Starting tests on broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MockedShallow<YoutubeAPI>;
-	let mockModule: MockedShallow<ModuleBase>;
+	let mockYT: MockedObject<YoutubeAPI>;
+	let mockModule: MockedObject<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -224,8 +217,8 @@ describe('Starting tests on broadcasts', () => {
 			},
 			UnfinishedBroadcasts: [],
 		};
-		mockYT = mocked(makeMockYT(memory));
-		mockModule = mocked(makeMockModule());
+		mockYT = vi.mocked(makeMockYT(memory));
+		mockModule = vi.mocked(makeMockModule());
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
@@ -235,8 +228,8 @@ describe('Starting tests on broadcasts', () => {
 	});
 
 	afterAll(() => {
-		jest.clearAllMocks();
-		jest.clearAllTimers();
+		vi.clearAllMocks();
+		vi.clearAllTimers();
 	});
 
 	test('Starting test on unknown broadcast fails', async () => {
@@ -292,8 +285,8 @@ describe('Starting tests on broadcasts', () => {
 
 describe('Going live with broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MockedShallow<YoutubeAPI>;
-	let mockModule: MockedShallow<ModuleBase>;
+	let mockYT: MockedObject<YoutubeAPI>;
+	let mockModule: MockedObject<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -320,8 +313,8 @@ describe('Going live with broadcasts', () => {
 			},
 			UnfinishedBroadcasts: [],
 		};
-		mockYT = mocked(makeMockYT(memory));
-		mockModule = mocked(makeMockModule());
+		mockYT = vi.mocked(makeMockYT(memory));
+		mockModule = vi.mocked(makeMockModule());
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
@@ -331,8 +324,8 @@ describe('Going live with broadcasts', () => {
 	});
 
 	afterAll(() => {
-		jest.clearAllMocks();
-		jest.clearAllTimers();
+		vi.clearAllMocks();
+		vi.clearAllTimers();
 	});
 
 	test('Going live on broadcast in invalid state fails [monitor = on]', async () => {
@@ -394,8 +387,8 @@ describe('Going live with broadcasts', () => {
 
 describe('Finishing live broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MockedShallow<YoutubeAPI>;
-	let mockModule: MockedShallow<ModuleBase>;
+	let mockYT: MockedObject<YoutubeAPI>;
+	let mockModule: MockedObject<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -422,8 +415,8 @@ describe('Finishing live broadcasts', () => {
 			},
 			UnfinishedBroadcasts: [],
 		};
-		mockYT = mocked(makeMockYT(memory));
-		mockModule = mocked(makeMockModule());
+		mockYT = vi.mocked(makeMockYT(memory));
+		mockModule = vi.mocked(makeMockModule());
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
@@ -433,8 +426,8 @@ describe('Finishing live broadcasts', () => {
 	});
 
 	afterAll(() => {
-		jest.clearAllMocks();
-		jest.clearAllTimers();
+		vi.clearAllMocks();
+		vi.clearAllTimers();
 	});
 
 	test('Starting finish on broadcast in invalid state fails', async () => {
@@ -459,8 +452,8 @@ describe('Finishing live broadcasts', () => {
 
 describe('Toggling live broadcasts', () => {
 	let memory: StateMemory;
-	let mockYT: MockedShallow<YoutubeAPI>;
-	let mockModule: MockedShallow<ModuleBase>;
+	let mockYT: MockedObject<YoutubeAPI>;
+	let mockModule: MockedObject<ModuleBase>;
 	let core: Core;
 
 	beforeEach(() => {
@@ -487,8 +480,8 @@ describe('Toggling live broadcasts', () => {
 			},
 			UnfinishedBroadcasts: [],
 		};
-		mockYT = mocked(makeMockYT(memory));
-		mockModule = mocked(makeMockModule());
+		mockYT = vi.mocked(makeMockYT(memory));
+		mockModule = vi.mocked(makeMockModule());
 
 		core = new Core(mockModule, mockYT, 100, 100);
 	});
@@ -498,8 +491,8 @@ describe('Toggling live broadcasts', () => {
 	});
 
 	afterAll(() => {
-		jest.clearAllMocks();
-		jest.clearAllTimers();
+		vi.clearAllMocks();
+		vi.clearAllTimers();
 	});
 
 	test('Toggle works for ready stream [monitor = on]', async () => {

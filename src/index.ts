@@ -7,7 +7,7 @@ import {
 	validateConfig,
 	noConnectionConfig,
 	RawConfig,
-} from './config';
+} from './config.js';
 import {
 	CompanionVariableValues,
 	InstanceBase,
@@ -15,15 +15,15 @@ import {
 	SomeCompanionConfigField,
 	runEntrypoint,
 } from '@companion-module/base';
-import { Core, ModuleBase } from './core';
-import { StateMemory, Broadcast } from './cache';
-import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateVars } from './vars';
-import { listActions } from './actions';
-import { listFeedbacks } from './feedbacks';
-import { listPresets } from './presets';
-import { UpgradeScripts } from './upgrades';
-import { YoutubeConnector } from './youtube';
-import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow';
+import { Core, ModuleBase } from './core.js';
+import { StateMemory, Broadcast } from './cache.js';
+import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateVars } from './vars.js';
+import { listActions } from './actions.js';
+import { listFeedbacks } from './feedbacks.js';
+import { listPresets } from './presets.js';
+import { UpgradeScripts } from './upgrades.js';
+import { YoutubeConnector } from './youtube.js';
+import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow.js';
 
 /**
  * Main Companion integration class of this module

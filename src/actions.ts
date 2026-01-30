@@ -6,7 +6,7 @@ import {
 	DropdownChoice,
 	SomeCompanionActionInputField,
 } from '@companion-module/base';
-import { BroadcastMap, BroadcastID } from './cache';
+import { BroadcastMap, BroadcastID } from './cache.js';
 import {
 	BroadcastIdIsTextCheckbox,
 	BroadcastIdFromTextOption,
@@ -15,9 +15,9 @@ import {
 	BroadcastIdDropdownOptionId,
 	BroadcastIdTextOptionId,
 	getBroadcastIdFromOptions,
-} from './common';
-import { Core } from './core';
-import { Visibility } from './youtube';
+} from './common.js';
+import { Core } from './core.js';
+import { Visibility } from './youtube.js';
 
 export enum ActionId {
 	InitBroadcast = 'init_broadcast',

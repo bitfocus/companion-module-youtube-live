@@ -1,9 +1,13 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+
 //require("leaked-handles");
 import { OAuth2Client } from 'google-auth-library';
-import { YoutubeConnector, Transition } from '../youtube';
-import { FakeYouTube } from '../__mocks__/@googleapis/youtube';
-import { StateMemory, BroadcastLifecycle, StreamHealth } from '../cache';
-jest.mock('@googleapis/youtube');
+import { YoutubeConnector, Transition } from '../youtube.js';
+import { FakeYouTube } from '../__mocks__/@googleapis/youtube.js';
+import { StateMemory, BroadcastLifecycle, StreamHealth } from '../cache.js';
+vi.mock('@googleapis/youtube', async () => {
+	return import('../__mocks__/@googleapis/youtube.js');
+});
 
 const instance: YoutubeConnector = new YoutubeConnector(null as unknown as OAuth2Client, 10);
 const mock: FakeYouTube = instance.ApiClient as unknown as FakeYouTube;
@@ -92,7 +96,7 @@ const memoryUpdated: StateMemory = {
 
 describe('Queries', () => {
 	beforeEach(() => {
-		jest.resetAllMocks();
+		vi.resetAllMocks();
 	});
 
 	test('load all', async () => {
@@ -271,7 +275,7 @@ describe('Queries', () => {
 
 describe('Transition', () => {
 	beforeEach(() => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 	});
 
 	test('to testing state', async () => {
@@ -317,7 +321,7 @@ describe('Transition', () => {
 
 describe('Insert cue point', () => {
 	beforeEach(() => {
-		jest.resetAllMocks();
+		vi.resetAllMocks();
 	});
 
 	describe('success', () => {
@@ -372,7 +376,7 @@ describe('Insert cue point', () => {
 
 describe('Set title', () => {
 	beforeEach(() => {
-		jest.resetAllMocks();
+		vi.resetAllMocks();
 	});
 
 	test('success', async () => {
@@ -424,7 +428,7 @@ describe('Set title', () => {
 
 describe('Set description', () => {
 	beforeEach(() => {
-		jest.resetAllMocks();
+		vi.resetAllMocks();
 	});
 
 	test('success', async () => {
