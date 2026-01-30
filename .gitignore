@@ -3,7 +3,7 @@ dist/
 coverage/
 /pkg
 /pkg.tgz
-/companion-module-youtube-live.tar.gz
+/youtube-live-*.tgz
 TODO.md
 .DS_Store
 /.yarn
