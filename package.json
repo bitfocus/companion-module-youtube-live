@@ -32,7 +32,7 @@
 		"@companion-module/base": "~1.13.0",
 		"@googleapis/youtube": "^30.3.0",
 		"@types/jest": "^29.5.0",
-		"@types/node": "^20.10.6",
+		"@types/node": "^22.15.18",
 		"@types/server-destroy": "^1.0.0",
 		"leaked-handles": "^5.2.0",
 		"open": "^7.0.4",
