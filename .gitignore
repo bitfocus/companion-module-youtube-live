@@ -7,3 +7,4 @@ coverage/
 TODO.md
 .DS_Store
 /.yarn
+.vscode
