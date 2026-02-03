@@ -807,15 +807,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/server-destroy@npm:^1.0.0":
-  version: 1.0.4
-  resolution: "@types/server-destroy@npm:1.0.4"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/18077319f848470d87b7b699adbd61aae32cd90765a0d8f2f165c70928fe049725043de38de7a9983b74e900a3c412808993149b8af95024cf74cc093947998a
-  languageName: node
-  linkType: hard
-
 "@typescript-eslint/eslint-plugin@npm:8.44.1":
   version: 8.44.1
   resolution: "@typescript-eslint/eslint-plugin@npm:8.44.1"
@@ -2848,15 +2839,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-docker@npm:^2.0.0":
-  version: 2.2.1
-  resolution: "is-docker@npm:2.2.1"
-  bin:
-    is-docker: cli.js
-  checksum: 10c0/e828365958d155f90c409cdbe958f64051d99e8aedc2c8c4cd7c89dcf35329daed42f7b99346f7828df013e27deb8f721cf9408ba878c76eb9e8290235fbcdcc
-  languageName: node
-  linkType: hard
-
 "is-extglob@npm:^2.1.1":
   version: 2.1.1
   resolution: "is-extglob@npm:2.1.1"
@@ -2907,15 +2889,6 @@ __metadata:
   version: 3.0.0
   resolution: "is-stream@npm:3.0.0"
   checksum: 10c0/eb2f7127af02ee9aa2a0237b730e47ac2de0d4e76a4a905a50a11557f2339df5765eaea4ceb8029f1efa978586abe776908720bfcb1900c20c6ec5145f6f29d8
-  languageName: node
-  linkType: hard
-
-"is-wsl@npm:^2.1.1":
-  version: 2.2.0
-  resolution: "is-wsl@npm:2.2.0"
-  dependencies:
-    is-docker: "npm:^2.0.0"
-  checksum: 10c0/a6fa2d370d21be487c0165c7a440d567274fbba1a817f2f0bfa41cc5e3af25041d84267baa22df66696956038a43973e72fca117918c91431920bdef490fa25e
   languageName: node
   linkType: hard
 
@@ -3557,16 +3530,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"open@npm:^7.0.4":
-  version: 7.4.2
-  resolution: "open@npm:7.4.2"
-  dependencies:
-    is-docker: "npm:^2.0.0"
-    is-wsl: "npm:^2.1.1"
-  checksum: 10c0/77573a6a68f7364f3a19a4c80492712720746b63680ee304555112605ead196afe91052bd3c3d165efdf4e9d04d255e87de0d0a77acec11ef47fd5261251813f
-  languageName: node
-  linkType: hard
-
 "optionator@npm:^0.9.3":
   version: 0.9.4
   resolution: "optionator@npm:0.9.4"
@@ -4183,13 +4146,6 @@ __metadata:
   dependencies:
     randombytes: "npm:^2.1.0"
   checksum: 10c0/2dd09ef4b65a1289ba24a788b1423a035581bef60817bea1f01eda8e3bda623f86357665fe7ac1b50f6d4f583f97db9615b3f07b2a2e8cbcb75033965f771dd2
-  languageName: node
-  linkType: hard
-
-"server-destroy@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "server-destroy@npm:1.0.1"
-  checksum: 10c0/ab771f12b24cde1bc622cce0c14a1365f3ab0685937c641c762916fb43aa7a03d6c577cc4375ea5361d6bc1bb20ab689ec5723086e5798c6781edb61287e24b8
   languageName: node
   linkType: hard
 
@@ -5086,15 +5042,12 @@ __metadata:
     "@eslint/js": "npm:^9.39.2"
     "@googleapis/youtube": "npm:^30.3.0"
     "@types/node": "npm:^22.15.18"
-    "@types/server-destroy": "npm:^1.0.0"
     eslint: "npm:~9.36.0"
     husky: "npm:^9.1.7"
     leaked-handles: "npm:^5.2.0"
     lint-staged: "npm:^13.2.0"
-    open: "npm:^7.0.4"
     prettier: "npm:^3.8.1"
     rimraf: "npm:^4.4.1"
-    server-destroy: "npm:^1.0.1"
     type-testing: "npm:^0.2.0"
     typescript: "npm:~5.9.3"
     typescript-eslint: "npm:~8.44.1"

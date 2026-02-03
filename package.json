@@ -31,15 +31,12 @@
 	},
 	"dependencies": {
 		"@companion-module/base": "~1.13.0",
-		"@googleapis/youtube": "^30.3.0",
-		"open": "^7.0.4",
-		"server-destroy": "^1.0.1"
+		"@googleapis/youtube": "^30.3.0"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^2.6.1",
 		"@eslint/js": "^9.39.2",
 		"@types/node": "^22.15.18",
-		"@types/server-destroy": "^1.0.0",
 		"eslint": "~9.36.0",
 		"husky": "^9.1.7",
 		"leaked-handles": "^5.2.0",

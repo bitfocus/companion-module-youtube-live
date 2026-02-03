@@ -1,10 +1,13 @@
 import {
+	CompanionHTTPRequest,
+	CompanionHTTPResponse,
 	CompanionVariableValues,
 	InstanceBase,
 	InstanceStatus,
 	SomeCompanionConfigField,
 	runEntrypoint,
 } from '@companion-module/base';
+import type { Credentials } from 'google-auth-library';
 import type { ExpectFalse } from 'type-testing';
 import {
 	YoutubeConfig,
@@ -21,10 +24,11 @@ import { StateMemory, Broadcast } from './cache.js';
 import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateVars } from './vars.js';
 import { listActions } from './actions.js';
 import { listFeedbacks } from './feedbacks.js';
+import { handleHttpRequest } from './http-handler.js';
 import { listPresets } from './presets.js';
 import { UpgradeScripts } from './upgrades.js';
 import { YoutubeConnector } from './youtube.js';
-import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow.js';
+import { getOAuthClient } from './authorization.js';
 
 // @ts-expect-error Verify that type-testing in source files works.
 type assert_FailingTypeTest = ExpectFalse<true>;
@@ -32,23 +36,12 @@ type assert_FailingTypeTest = ExpectFalse<true>;
 /**
  * Main Companion integration class of this module
  */
-export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBase, AuthorizationEnvironment {
+export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBase {
 	/** Executive core of the module */
 	#core: Core | null = null;
 
-	/** YouTube authorization flow */
-	private auth: YoutubeAuthorization;
-
 	/** Configuration */
-	config: YoutubeConfig = noConnectionConfig();
-
-	/**
-	 * Create a new instance of this module
-	 */
-	constructor(internal: unknown) {
-		super(internal);
-		this.auth = new YoutubeAuthorization(this);
-	}
+	#config: YoutubeConfig = noConnectionConfig();
 
 	override async init(config: YoutubeConfig, _isFirstInit: boolean): Promise<void> {
 		this.log('debug', 'Initializing YT module');
@@ -58,7 +51,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 
 	#initInstance(config: YoutubeConfig): void {
 		this.#initializeInstance(config).catch((reason) => {
-			this.saveToken('');
+			this.#clearCredentials();
 			this.log('warn', `Authorization failed: ${reason}`);
 			this.updateStatus(InstanceStatus.UnknownError, `Authorization failed: ${reason}`);
 		});
@@ -68,14 +61,18 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 		this.updateStatus(InstanceStatus.UnknownWarning, 'Initializing');
 
 		validateConfig(config);
-		this.config = config;
+		this.#config = config;
 
-		const googleAuth = await this.auth.authorize(true);
-		this.saveToken(JSON.stringify(googleAuth.credentials));
+		const googleAuth = await getOAuthClient(config);
+		if (googleAuth instanceof Array) {
+			throw new Error(`Connection configuration has errors: ${googleAuth.join(', ')}`);
+		}
 
-		const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(this.config));
+		this.#saveCredentials(googleAuth.credentials);
 
-		const core = new Core(this, api, loadRefreshIntervalMs(this.config));
+		const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(config));
+
+		const core = new Core(this, api, loadRefreshIntervalMs(config));
 		this.#core = core;
 		try {
 			await core.init();
@@ -91,19 +88,19 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 		}
 	}
 
-	/**
-	 * Save an OAuth2 authorization token to the persistent settings store.
-	 * @param raw Stringified token or empty value
-	 */
-	saveToken(raw: string): void {
-		this.config.auth_token = raw;
-		this.saveConfig(this.config);
+	#saveCredentials(credentials: Credentials): void {
+		this.#config.auth_token = JSON.stringify(credentials);
+		this.saveConfig(this.#config);
+	}
+
+	#clearCredentials(): void {
+		this.#config.auth_token = '';
+		this.saveConfig(this.#config);
 	}
 
 	#shutdown() {
 		this.#core?.destroy();
 		this.#core = null;
-		this.auth.cancel();
 	}
 
 	/**
@@ -128,7 +125,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	 * Get a list of config fields that this module wants to store
 	 */
 	override getConfigFields(): SomeCompanionConfigField[] {
-		return listConfigFields();
+		return listConfigFields(this);
 	}
 
 	/**
@@ -136,7 +133,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	 * @param memory Known streams and broadcasts
 	 */
 	reloadAll(memory: StateMemory): void {
-		const unfinishedCnt = loadMaxUnfinishedBroadcastCount(this.config);
+		const unfinishedCnt = loadMaxUnfinishedBroadcastCount(this.#config);
 		const vars: CompanionVariableValues = {};
 
 		this.setVariableDefinitions(declareVars(memory, unfinishedCnt));
@@ -169,7 +166,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	reloadStates(memory: StateMemory): void {
 		const vars: CompanionVariableValues = {};
 
-		for (const item of exportVars(memory, loadMaxUnfinishedBroadcastCount(this.config))) {
+		for (const item of exportVars(memory, loadMaxUnfinishedBroadcastCount(this.#config))) {
 			vars[`${item.name}`] = item.value;
 		}
 		this.setVariableValues(vars);
@@ -196,6 +193,10 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 		}
 		this.setVariableValues(vars);
 		this.checkFeedbacks('broadcast_status');
+	}
+
+	override async handleHttpRequest(request: CompanionHTTPRequest): Promise<CompanionHTTPResponse> {
+		return handleHttpRequest(this.#config, (...args: Parameters<YoutubeInstance['log']>) => this.log(...args), request);
 	}
 }
 

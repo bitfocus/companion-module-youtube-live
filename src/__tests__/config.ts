@@ -62,6 +62,6 @@ describe('Broadcast limit', () => {
 	});
 
 	test('Module has configuration fields', () => {
-		expect(listConfigFields().length).toBeGreaterThan(0);
+		expect(listConfigFields({ label: 'label' }).length).toBeGreaterThan(0);
 	});
 });
