@@ -1,4 +1,12 @@
 import {
+	CompanionVariableValues,
+	InstanceBase,
+	InstanceStatus,
+	SomeCompanionConfigField,
+	runEntrypoint,
+} from '@companion-module/base';
+import type { ExpectFalse } from 'type-testing';
+import {
 	YoutubeConfig,
 	listConfigFields,
 	loadMaxBroadcastCount,
@@ -8,13 +16,6 @@ import {
 	noConnectionConfig,
 	RawConfig,
 } from './config.js';
-import {
-	CompanionVariableValues,
-	InstanceBase,
-	InstanceStatus,
-	SomeCompanionConfigField,
-	runEntrypoint,
-} from '@companion-module/base';
 import { Core, ModuleBase } from './core.js';
 import { StateMemory, Broadcast } from './cache.js';
 import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateVars } from './vars.js';
@@ -24,6 +25,9 @@ import { listPresets } from './presets.js';
 import { UpgradeScripts } from './upgrades.js';
 import { YoutubeConnector } from './youtube.js';
 import { YoutubeAuthorization, AuthorizationEnvironment } from './auth/mainFlow.js';
+
+// @ts-expect-error Verify that type-testing in source files works.
+type assert_FailingTypeTest = ExpectFalse<true>;
 
 /**
  * Main Companion integration class of this module

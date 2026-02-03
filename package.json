@@ -46,6 +46,7 @@
 		"lint-staged": "^13.2.0",
 		"prettier": "^3.8.1",
 		"rimraf": "^4.4.1",
+		"type-testing": "^0.2.0",
 		"typescript": "~5.9.3",
 		"typescript-eslint": "~8.44.1",
 		"vitest": "^4.0.18"

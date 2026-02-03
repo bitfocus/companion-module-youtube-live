@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest';
+import type { Equal, Expect } from 'type-testing';
 
 //require("leaked-handles");
 import {
@@ -14,7 +15,9 @@ describe('Refresh interval', () => {
 		const config: RawConfig = {};
 		validateConfig(config);
 
-		expect(typeof loadRefreshIntervalMs(config)).toBe('number');
+		const interval = loadRefreshIntervalMs(config);
+		type assert_IntervalIsNumber = Expect<Equal<typeof interval, number>>;
+		expect(typeof interval).toBe('number');
 	});
 
 	test('Refresh interval filters negative numbers', () => {
@@ -43,7 +46,9 @@ describe('Broadcast limit', () => {
 		const config: RawConfig = {};
 		validateConfig(config);
 
-		expect(typeof loadMaxBroadcastCount(config)).toBe('number');
+		const count = loadMaxBroadcastCount(config);
+		type assert_CountIsNumber = Expect<Equal<typeof count, number>>;
+		expect(typeof count).toBe('number');
 	});
 
 	test('Broadcast limit filters negative numbers', () => {

@@ -6,6 +6,12 @@ const baseConfig = await generateEslintConfig({
 	enableTypescript: true,
 });
 
+const permittedUnpublishedImports = [
+	// The type-testing types are erased during compilation, so it's fine to use
+	// it as an unpublished import.
+	'type-testing',
+];
+
 /**
  * @param {import('eslint').Linter.Config<import('eslint').Linter.RulesRecord>['files']} files
  * @param {readonly string[]} allowModules
@@ -18,7 +24,7 @@ function permitLimitedUnpublishedImports(files, allowModules) {
 			'n/no-unpublished-import': [
 				'error',
 				{
-					allowModules,
+					allowModules: [...new Set(permittedUnpublishedImports.concat(...allowModules)).values()],
 				},
 			],
 		},
@@ -47,7 +53,19 @@ const customConfig = [
 
 				{
 					selector: 'typeLike',
-					format: ['PascalCase'],
+					format: null,
+					custom: {
+						match: true,
+						// PascalCase (most types), '_' followed by PascalCase
+						// (types explicitly allowed to go unused), or 'assert_'
+						// followed by PascalCase (types that use 'type-testing'
+						// to verify the characteristics of other types at
+						// compile time).  PascalCase here is roughly consistent
+						// with how naming-convention defines it, except the
+						// first uppercase letter must be ASCII.
+						// https://github.com/typescript-eslint/typescript-eslint/blob/8a95834bb5fd818cc049390e4cb57196717a011f/packages/eslint-plugin/src/rules/naming-convention-utils/format.ts
+						regex: '^(?:(?:assert)?_)?[A-Z][^_]*$',
+					},
 				},
 
 				{
@@ -89,6 +107,24 @@ const customConfig = [
 					format: ['camelCase', 'PascalCase'],
 				},
 			],
+
+			// Turn off the general unused-vars rule, and turn on a more refined
+			// TypeScript-specific rule.
+			'no-unused-vars': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					vars: 'all',
+					argsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+					// In addition to `_*' variables, allow `assert_*` variables
+					// as permitted for types by the naming-convention rule
+					// above.  (This rule can't restrict `assert_*` to only
+					// types, but the naming-convention rule likely usually
+					// prevents this name for non-types anyway.)
+					varsIgnorePattern: '^(?:assert)?_',
+				},
+			],
 		},
 	},
 
@@ -96,7 +132,12 @@ const customConfig = [
 		ignores: ['eslint.config.mjs', 'vitest.config.ts'],
 		rules: {
 			'n/no-missing-import': 'off',
-			'n/no-unpublished-import': 'error',
+			'n/no-unpublished-import': [
+				'error',
+				{
+					allowModules: permittedUnpublishedImports,
+				},
+			],
 		},
 	},
 

@@ -4630,6 +4630,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"type-testing@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "type-testing@npm:0.2.0"
+  checksum: 10c0/7d4f9891bc31516a6b3ccf2278290da0c0c78a637cb0b4fe7b1a3c755a17d95530fc97ffd9af4e48cbee6073d9ed0ef3b0396916c44a6304d17da50103fed9a6
+  languageName: node
+  linkType: hard
+
 "typescript-eslint@npm:~8.44.1":
   version: 8.44.1
   resolution: "typescript-eslint@npm:8.44.1"
@@ -5088,6 +5095,7 @@ __metadata:
     prettier: "npm:^3.8.1"
     rimraf: "npm:^4.4.1"
     server-destroy: "npm:^1.0.1"
+    type-testing: "npm:^0.2.0"
     typescript: "npm:~5.9.3"
     typescript-eslint: "npm:~8.44.1"
     vitest: "npm:^4.0.18"
