@@ -25,6 +25,17 @@ export enum FeedbackId {
 	StreamHealth = 'broadcast_bound_stream_health',
 }
 
+const Yellow = combineRgb(209, 209, 0);
+const Green = combineRgb(0, 172, 0);
+const Red = combineRgb(222, 0, 0);
+const White = combineRgb(255, 255, 255);
+const RoyalBlue = combineRgb(0, 0, 168);
+const Gray = combineRgb(126, 126, 126);
+const LimeGreen = combineRgb(0, 204, 0);
+const DarkYellow = combineRgb(204, 204, 0);
+const BrightOrange = combineRgb(255, 102, 0);
+const BrightRed = combineRgb(255, 0, 0);
+
 export function tryUpgradeFeedbackSelectingBroadcastID(feedback: CompanionMigrationFeedback): boolean {
 	switch (feedback.feedbackId) {
 		case FeedbackId.BroadcastStatus as string:
@@ -113,37 +124,37 @@ export function listFeedbacks({
 					type: 'colorpicker',
 					label: 'Background color (ready)',
 					id: 'bg_ready',
-					default: combineRgb(209, 209, 0),
+					default: Yellow,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (testing)',
 					id: 'bg_testing',
-					default: combineRgb(0, 172, 0),
+					default: Green,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (live)',
 					id: 'bg_live',
-					default: combineRgb(222, 0, 0),
+					default: Red,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color',
 					id: 'text',
-					default: combineRgb(255, 255, 255),
+					default: White,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (complete)',
 					id: 'bg_complete',
-					default: combineRgb(0, 0, 168),
+					default: RoyalBlue,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (complete)',
 					id: 'text_complete',
-					default: combineRgb(126, 126, 126),
+					default: Gray,
 				},
 				...selectFromAllBroadcasts,
 			],
@@ -162,12 +173,12 @@ export function listFeedbacks({
 				}
 
 				// Handle missing fields
-				options.bg_ready = options.bg_ready ?? combineRgb(209, 209, 0);
-				options.bg_testing = options.bg_testing ?? combineRgb(0, 172, 0);
-				options.bg_live = options.bg_live ?? combineRgb(222, 0, 0);
-				options.bg_complete = options.bg_complete ?? combineRgb(0, 0, 168);
-				options.text = options.text ?? combineRgb(255, 255, 255);
-				options.text_complete = options.text_complete ?? combineRgb(126, 126, 126);
+				options.bg_ready = options.bg_ready ?? Yellow;
+				options.bg_testing = options.bg_testing ?? Green;
+				options.bg_live = options.bg_live ?? Red;
+				options.bg_complete = options.bg_complete ?? RoyalBlue;
+				options.text = options.text ?? White;
+				options.text_complete = options.text_complete ?? Gray;
 
 				switch (broadcastStatus) {
 					case BroadcastLifecycle.LiveStarting:
@@ -198,49 +209,49 @@ export function listFeedbacks({
 					type: 'colorpicker',
 					label: 'Background color (good)',
 					id: 'bg_good',
-					default: combineRgb(0, 204, 0),
+					default: LimeGreen,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (good)',
 					id: 'text_good',
-					default: combineRgb(255, 255, 255),
+					default: White,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (ok)',
 					id: 'bg_ok',
-					default: combineRgb(204, 204, 0),
+					default: DarkYellow,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (ok)',
 					id: 'text_ok',
-					default: combineRgb(255, 255, 255),
+					default: White,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (bad)',
 					id: 'bg_bad',
-					default: combineRgb(255, 102, 0),
+					default: BrightOrange,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (bad)',
 					id: 'text_bad',
-					default: combineRgb(255, 255, 255),
+					default: White,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (No data)',
 					id: 'bg_no_data',
-					default: combineRgb(255, 0, 0),
+					default: BrightRed,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (No data)',
 					id: 'text_no_data',
-					default: combineRgb(255, 255, 255),
+					default: White,
 				},
 				...selectFromAllBroadcasts,
 			],
@@ -265,14 +276,14 @@ export function listFeedbacks({
 				}
 
 				// Handle missing fields
-				options.bg_good = options.bg_good ?? combineRgb(0, 204, 0);
-				options.bg_ok = options.bg_ok ?? combineRgb(204, 204, 0);
-				options.bg_bad = options.bg_bad ?? combineRgb(255, 102, 0);
-				options.bg_no_data = options.bg_no_data ?? combineRgb(255, 0, 0);
-				options.text_good = options.text_good ?? combineRgb(255, 255, 255);
-				options.text_ok = options.text_ok ?? combineRgb(255, 255, 255);
-				options.text_bad = options.text_bad ?? combineRgb(255, 255, 255);
-				options.text_no_data = options.text_no_data ?? combineRgb(255, 255, 255);
+				options.bg_good = options.bg_good ?? LimeGreen;
+				options.bg_ok = options.bg_ok ?? DarkYellow;
+				options.bg_bad = options.bg_bad ?? BrightOrange;
+				options.bg_no_data = options.bg_no_data ?? BrightRed;
+				options.text_good = options.text_good ?? White;
+				options.text_ok = options.text_ok ?? White;
+				options.text_bad = options.text_bad ?? White;
+				options.text_no_data = options.text_no_data ?? White;
 
 				switch (stream.Health) {
 					case StreamHealth.Good:
