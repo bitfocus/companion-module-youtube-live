@@ -147,13 +147,13 @@ export function listFeedbacks({
 				},
 				...selectFromAllBroadcasts,
 			],
-			callback: async (event, context): Promise<CompanionAdvancedFeedbackResult> => {
+			callback: async ({ options }, context): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!core) return {};
 				const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
 
 				let broadcastStatus: BroadcastLifecycle;
 				{
-					const broadcast = await findBroadcastForOptions(event.options, context);
+					const broadcast = await findBroadcastForOptions(options, context);
 					if (broadcast === undefined) {
 						return {};
 					}
@@ -162,29 +162,28 @@ export function listFeedbacks({
 				}
 
 				// Handle missing fields
-				event.options.bg_ready = event.options.bg_ready ?? combineRgb(209, 209, 0);
-				event.options.bg_testing = event.options.bg_testing ?? combineRgb(0, 172, 0);
-				event.options.bg_live = event.options.bg_live ?? combineRgb(222, 0, 0);
-				event.options.bg_complete = event.options.bg_complete ?? combineRgb(0, 0, 168);
-				event.options.text = event.options.text ?? combineRgb(255, 255, 255);
-				event.options.text_complete = event.options.text_complete ?? combineRgb(126, 126, 126);
+				options.bg_ready = options.bg_ready ?? combineRgb(209, 209, 0);
+				options.bg_testing = options.bg_testing ?? combineRgb(0, 172, 0);
+				options.bg_live = options.bg_live ?? combineRgb(222, 0, 0);
+				options.bg_complete = options.bg_complete ?? combineRgb(0, 0, 168);
+				options.text = options.text ?? combineRgb(255, 255, 255);
+				options.text_complete = options.text_complete ?? combineRgb(126, 126, 126);
 
 				switch (broadcastStatus) {
 					case BroadcastLifecycle.LiveStarting:
-						if (dimStarting)
-							return { bgcolor: event.options.bg_testing as number, color: event.options.text as number };
-						else return { bgcolor: event.options.bg_live as number, color: event.options.text as number };
+						if (dimStarting) return { bgcolor: options.bg_testing as number, color: options.text as number };
+						else return { bgcolor: options.bg_live as number, color: options.text as number };
 					case BroadcastLifecycle.Live:
-						return { bgcolor: event.options.bg_live as number, color: event.options.text as number };
+						return { bgcolor: options.bg_live as number, color: options.text as number };
 					case BroadcastLifecycle.TestStarting:
-						if (dimStarting) return { bgcolor: event.options.bg_ready as number, color: event.options.text as number };
-						else return { bgcolor: event.options.bg_testing as number, color: event.options.text as number };
+						if (dimStarting) return { bgcolor: options.bg_ready as number, color: options.text as number };
+						else return { bgcolor: options.bg_testing as number, color: options.text as number };
 					case BroadcastLifecycle.Testing:
-						return { bgcolor: event.options.bg_testing as number, color: event.options.text as number };
+						return { bgcolor: options.bg_testing as number, color: options.text as number };
 					case BroadcastLifecycle.Complete:
-						return { bgcolor: event.options.bg_complete as number, color: event.options.text_complete as number };
+						return { bgcolor: options.bg_complete as number, color: options.text_complete as number };
 					case BroadcastLifecycle.Ready:
-						return { bgcolor: event.options.bg_ready as number, color: event.options.text as number };
+						return { bgcolor: options.bg_ready as number, color: options.text as number };
 					default:
 						return {};
 				}
@@ -245,13 +244,13 @@ export function listFeedbacks({
 				},
 				...selectFromAllBroadcasts,
 			],
-			callback: async (event, context): Promise<CompanionAdvancedFeedbackResult> => {
+			callback: async ({ options }, context): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!core) return {};
 
 				let stream: Stream;
 				let broadcastStatus: BroadcastLifecycle;
 				{
-					const broadcast = await findBroadcastForOptions(event.options, context);
+					const broadcast = await findBroadcastForOptions(options, context);
 					if (broadcast === undefined || broadcast.BoundStreamId === null) {
 						return {};
 					}
@@ -266,27 +265,27 @@ export function listFeedbacks({
 				}
 
 				// Handle missing fields
-				event.options.bg_good = event.options.bg_good ?? combineRgb(0, 204, 0);
-				event.options.bg_ok = event.options.bg_ok ?? combineRgb(204, 204, 0);
-				event.options.bg_bad = event.options.bg_bad ?? combineRgb(255, 102, 0);
-				event.options.bg_no_data = event.options.bg_no_data ?? combineRgb(255, 0, 0);
-				event.options.text_good = event.options.text_good ?? combineRgb(255, 255, 255);
-				event.options.text_ok = event.options.text_ok ?? combineRgb(255, 255, 255);
-				event.options.text_bad = event.options.text_bad ?? combineRgb(255, 255, 255);
-				event.options.text_no_data = event.options.text_no_data ?? combineRgb(255, 255, 255);
+				options.bg_good = options.bg_good ?? combineRgb(0, 204, 0);
+				options.bg_ok = options.bg_ok ?? combineRgb(204, 204, 0);
+				options.bg_bad = options.bg_bad ?? combineRgb(255, 102, 0);
+				options.bg_no_data = options.bg_no_data ?? combineRgb(255, 0, 0);
+				options.text_good = options.text_good ?? combineRgb(255, 255, 255);
+				options.text_ok = options.text_ok ?? combineRgb(255, 255, 255);
+				options.text_bad = options.text_bad ?? combineRgb(255, 255, 255);
+				options.text_no_data = options.text_no_data ?? combineRgb(255, 255, 255);
 
 				switch (stream.Health) {
 					case StreamHealth.Good:
-						return { bgcolor: event.options.bg_good as number, color: event.options.text_good as number };
+						return { bgcolor: options.bg_good as number, color: options.text_good as number };
 					case StreamHealth.OK:
-						return { bgcolor: event.options.bg_ok as number, color: event.options.text_ok as number };
+						return { bgcolor: options.bg_ok as number, color: options.text_ok as number };
 					case StreamHealth.Bad:
-						return { bgcolor: event.options.bg_bad as number, color: event.options.text_bad as number };
+						return { bgcolor: options.bg_bad as number, color: options.text_bad as number };
 					case StreamHealth.NoData:
 						if (broadcastStatus == BroadcastLifecycle.Complete) {
 							return {};
 						}
-						return { bgcolor: event.options.bg_no_data as number, color: event.options.text_no_data as number };
+						return { bgcolor: options.bg_no_data as number, color: options.text_no_data as number };
 				}
 			},
 		},
