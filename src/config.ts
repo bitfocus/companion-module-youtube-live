@@ -63,14 +63,6 @@ export type YoutubeConfig = {
 	[UnfinishedMaxCountOptionId]: number;
 };
 
-function toNumberDefaultZero(v: RawConfig[string]): number {
-	if (v === undefined) {
-		return 0;
-	}
-
-	return Number(v);
-}
-
 function toStringDefaultEmpty(v: RawConfig[string]): string {
 	return v ? String(v) : '';
 }
@@ -102,22 +94,28 @@ function toYouTubeCredentials(raw: RawConfig[typeof YouTubeCredentialsOptionId])
 	return '';
 }
 
+const DefaultFetchMaxCount = 10;
+
 function toFetchMaxCount(raw: RawConfig[typeof FetchMaxCountOptionId]): number {
-	let items = raw !== undefined ? Number(raw) : 10;
+	let items = raw !== undefined ? Number(raw) : DefaultFetchMaxCount;
 	if (items < 1) items = 1;
 	return items;
 }
 
+const DefaultRefreshIntervalSeconds = 60;
+
 function toRefreshInterval(raw: RawConfig[typeof RefreshIntervalOptionId]): number {
-	let seconds = toNumberDefaultZero(raw);
+	let seconds = raw !== undefined ? Number(raw) : DefaultRefreshIntervalSeconds;
 
 	if (seconds < 1) seconds = 1;
 
 	return seconds;
 }
 
+const DefaultUnfinishedMaxCount = 3;
+
 function toUnfinishedMaxCount(raw: RawConfig[typeof UnfinishedMaxCountOptionId]): number {
-	let items = raw !== undefined ? Number(raw) : 3;
+	let items = raw !== undefined ? Number(raw) : DefaultUnfinishedMaxCount;
 	if (items < 0) items = 0;
 	return items;
 }
@@ -144,9 +142,9 @@ export function noConnectionConfig(): YoutubeConfig {
 		[ClientRedirectURLOptionId]: '',
 		[AuthorizationCodeOptionId]: '',
 		[YouTubeCredentialsOptionId]: '',
-		[FetchMaxCountOptionId]: 10,
-		[RefreshIntervalOptionId]: 60,
-		[UnfinishedMaxCountOptionId]: 3,
+		[FetchMaxCountOptionId]: DefaultFetchMaxCount,
+		[RefreshIntervalOptionId]: DefaultRefreshIntervalSeconds,
+		[UnfinishedMaxCountOptionId]: DefaultUnfinishedMaxCount,
 	};
 }
 
@@ -192,7 +190,7 @@ export function listConfigFields(instance: Pick<YoutubeInstance, 'label'>): Some
 			id: FetchMaxCountOptionId,
 			min: 1,
 			max: 50,
-			default: 10,
+			default: DefaultFetchMaxCount,
 			required: true,
 			width: 6,
 		},
@@ -202,7 +200,7 @@ export function listConfigFields(instance: Pick<YoutubeInstance, 'label'>): Some
 			id: RefreshIntervalOptionId,
 			min: 1,
 			max: 300,
-			default: 60,
+			default: DefaultRefreshIntervalSeconds,
 			required: true,
 			width: 6,
 		},
@@ -212,7 +210,7 @@ export function listConfigFields(instance: Pick<YoutubeInstance, 'label'>): Some
 			id: UnfinishedMaxCountOptionId,
 			min: 0,
 			max: 50,
-			default: 3,
+			default: DefaultUnfinishedMaxCount,
 			required: true,
 			width: 6,
 		},
