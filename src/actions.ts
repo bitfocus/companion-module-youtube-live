@@ -4,17 +4,14 @@ import {
 	CompanionActionEvent,
 	CompanionMigrationAction,
 	DropdownChoice,
-	SomeCompanionActionInputField,
 } from '@companion-module/base';
 import { BroadcastMap, BroadcastID } from './cache.js';
 import {
-	BroadcastIdIsTextCheckbox,
-	BroadcastIdFromTextOption,
 	BroadcastIdIsTextOptionId,
-	broadcastIdDropdownOption,
 	BroadcastIdDropdownOptionId,
 	BroadcastIdTextOptionId,
 	getBroadcastIdFromOptions,
+	selectBroadcastOptions,
 } from './common.js';
 import { Core } from './core.js';
 import { Visibility } from './youtube.js';
@@ -86,17 +83,9 @@ export function listActions({
 		throw new Error('Error: module core undefined.');
 	};
 
-	const selectFromAllBroadcasts: SomeCompanionActionInputField[] = [
-		BroadcastIdIsTextCheckbox,
-		broadcastIdDropdownOption(Object.values(broadcasts), unfinishedCount),
-		BroadcastIdFromTextOption,
-	];
+	const selectFromAllBroadcasts = selectBroadcastOptions(Object.values(broadcasts), unfinishedCount);
 
-	const selectFromUnfinishedBroadcasts: SomeCompanionActionInputField[] = [
-		BroadcastIdIsTextCheckbox,
-		broadcastIdDropdownOption([], unfinishedCount),
-		BroadcastIdFromTextOption,
-	];
+	const selectFromUnfinishedBroadcasts = selectBroadcastOptions([], unfinishedCount);
 
 	const broadcastCallback = (
 		callback: (

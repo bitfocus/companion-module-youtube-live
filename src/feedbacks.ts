@@ -6,17 +6,14 @@ import {
 	CompanionMigrationFeedback,
 	CompanionOptionValues,
 	CompanionFeedbackContext,
-	SomeCompanionFeedbackInputField,
 } from '@companion-module/base';
 import { Broadcast, BroadcastMap, BroadcastLifecycle, Stream, StreamHealth } from './cache.js';
 import {
-	broadcastIdDropdownOption,
-	BroadcastIdFromTextOption,
-	BroadcastIdIsTextCheckbox,
 	BroadcastIdIsTextOptionId,
 	BroadcastIdDropdownOptionId,
 	BroadcastIdTextOptionId,
 	getBroadcastIdFromOptions,
+	selectBroadcastOptions,
 } from './common.js';
 import { Core } from './core.js';
 
@@ -103,11 +100,7 @@ export function listFeedbacks({
 		return core.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
 	};
 
-	const selectFromAllBroadcasts: SomeCompanionFeedbackInputField[] = [
-		BroadcastIdIsTextCheckbox,
-		broadcastIdDropdownOption(Object.values(broadcasts), unfinishedCount),
-		BroadcastIdFromTextOption,
-	];
+	const selectFromAllBroadcasts = selectBroadcastOptions(Object.values(broadcasts), unfinishedCount);
 
 	return {
 		[FeedbackId.BroadcastStatus]: {

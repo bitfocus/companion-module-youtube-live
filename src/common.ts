@@ -58,17 +58,28 @@ export const BroadcastIdIsTextOptionId = 'broadcast_id_is_text';
 export const BroadcastIdDropdownOptionId = 'broadcast_id';
 export const BroadcastIdTextOptionId = 'broadcast_id_text';
 
-export const BroadcastIdIsTextCheckbox: CompanionInputFieldCheckbox = {
+const BroadcastIdIsTextCheckbox: CompanionInputFieldCheckbox = {
 	type: 'checkbox',
 	label: 'Specify broadcast ID from text',
 	id: BroadcastIdIsTextOptionId,
 	default: false,
 } as const;
 
-export function broadcastIdDropdownOption(
+const BroadcastIdFromTextOption: CompanionInputFieldTextInput = {
+	type: 'textinput',
+	label: 'Broadcast ID:',
+	id: BroadcastIdTextOptionId,
+	tooltip: 'YouTube broadcast ID, e.g. dQw4w9WgXcQ',
+	useVariables: true,
+	// Hardcode the option name because isVisible functions must serialize
+	// to string and back.
+	isVisible: (options) => !!options.broadcast_id_is_text,
+} as const;
+
+export function selectBroadcastOptions(
 	definedBroadcasts: Iterable<Readonly<Broadcast>>,
 	unfinishedCount: number
-): CompanionInputFieldDropdown {
+): [CompanionInputFieldCheckbox, CompanionInputFieldDropdown, CompanionInputFieldTextInput] {
 	const choices: DropdownChoice[] = [];
 
 	for (const item of definedBroadcasts) {
@@ -81,28 +92,21 @@ export function broadcastIdDropdownOption(
 
 	const defaultChoice = choices.length === 0 ? '' : choices[0].id;
 
-	return {
-		type: 'dropdown',
-		label: 'Broadcast:',
-		id: BroadcastIdDropdownOptionId,
-		choices,
-		default: defaultChoice,
-		// Hardcode the option name because isVisible functions must serialize
-		// to string and back.
-		isVisible: (options): boolean => !options.broadcast_id_is_text,
-	};
+	return [
+		BroadcastIdIsTextCheckbox,
+		{
+			type: 'dropdown',
+			label: 'Broadcast:',
+			id: BroadcastIdDropdownOptionId,
+			choices,
+			default: defaultChoice,
+			// Hardcode the option name because isVisible functions must
+			// serialize to string and back.
+			isVisible: (options): boolean => !options.broadcast_id_is_text,
+		},
+		BroadcastIdFromTextOption,
+	];
 }
-
-export const BroadcastIdFromTextOption: CompanionInputFieldTextInput = {
-	type: 'textinput',
-	label: 'Broadcast ID:',
-	id: BroadcastIdTextOptionId,
-	tooltip: 'YouTube broadcast ID, e.g. dQw4w9WgXcQ',
-	useVariables: true,
-	// Hardcode the option name because isVisible functions must serialize
-	// to string and back.
-	isVisible: (options) => !!options.broadcast_id_is_text,
-} as const;
 
 /**
  * Context interface for parsing variables (works with both action and feedback contexts).
