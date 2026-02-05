@@ -4,10 +4,9 @@ import {
 	CompanionInputFieldTextInput,
 	CompanionOptionValues,
 	DropdownChoice,
-	DropdownChoiceId,
 	InstanceBase,
 } from '@companion-module/base';
-import { BroadcastID } from './cache.js';
+import { Broadcast, BroadcastID } from './cache.js';
 import { YoutubeConfig } from './config.js';
 
 /** Generic module skeleton for extracting function types. */
@@ -67,9 +66,21 @@ export const BroadcastIdIsTextCheckbox: CompanionInputFieldCheckbox = {
 } as const;
 
 export function broadcastIdDropdownOption(
-	choices: DropdownChoice[],
-	defaultChoice: DropdownChoiceId
+	definedBroadcasts: Iterable<Readonly<Broadcast>>,
+	unfinishedCount: number
 ): CompanionInputFieldDropdown {
+	const choices: DropdownChoice[] = [];
+
+	for (const item of definedBroadcasts) {
+		choices.push({ id: item.Id, label: item.Name });
+	}
+
+	for (let i = 0; i < unfinishedCount; i++) {
+		choices.push({ id: `unfinished_${i}`, label: `Unfinished/planned #${i}` });
+	}
+
+	const defaultChoice = choices.length === 0 ? '' : choices[0].id;
+
 	return {
 		type: 'dropdown',
 		label: 'Broadcast:',

@@ -2,7 +2,6 @@ import {
 	CompanionAdvancedFeedbackDefinition,
 	CompanionAdvancedFeedbackResult,
 	CompanionFeedbackAdvancedEvent,
-	DropdownChoice,
 	combineRgb,
 	CompanionMigrationFeedback,
 	CompanionOptionValues,
@@ -83,16 +82,6 @@ export function listFeedbacks({
 	unfinishedCount: number;
 	core: Core | null;
 }): Record<FeedbackId, AdvancedFeedbackWithAsyncCallback> {
-	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map((item): DropdownChoice => {
-		return { id: item.Id, label: item.Name };
-	});
-
-	const broadcastUnfinishedEntries: DropdownChoice[] = [...Array(unfinishedCount).keys()].map((i): DropdownChoice => {
-		return { id: `unfinished_${i}`, label: `Unfinished/planned #${i}` };
-	});
-
-	const defaultBroadcast = broadcastEntries.length == 0 ? '' : broadcastEntries[0].id;
-
 	const findBroadcastForOptions = async (
 		options: CompanionFeedbackAdvancedEvent['options'],
 		context: CompanionFeedbackContext
@@ -116,7 +105,7 @@ export function listFeedbacks({
 
 	const selectFromAllBroadcasts: SomeCompanionFeedbackInputField[] = [
 		BroadcastIdIsTextCheckbox,
-		broadcastIdDropdownOption([...broadcastEntries, ...broadcastUnfinishedEntries], defaultBroadcast),
+		broadcastIdDropdownOption(Object.values(broadcasts), unfinishedCount),
 		BroadcastIdFromTextOption,
 	];
 

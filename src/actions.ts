@@ -82,31 +82,19 @@ export function listActions({
 	unfinishedCount: number;
 	core: Core | null;
 }): Record<ActionId, CompanionActionDefinition> {
-	const broadcastEntries: DropdownChoice[] = Object.values(broadcasts).map((item): DropdownChoice => {
-		return { id: item.Id, label: item.Name };
-	});
-
-	const broadcastUnfinishedEntries: DropdownChoice[] = [...Array(unfinishedCount).keys()].map((i): DropdownChoice => {
-		return { id: `unfinished_${i}`, label: `Unfinished/planned #${i}` };
-	});
-
-	const defaultBroadcast = broadcastEntries.length == 0 ? '' : broadcastEntries[0].id;
-
-	const defaultUnfinishedBroadcast = broadcastUnfinishedEntries.length == 0 ? '' : broadcastUnfinishedEntries[0].id;
-
 	const noModuleCore: () => never = () => {
 		throw new Error('Error: module core undefined.');
 	};
 
 	const selectFromAllBroadcasts: SomeCompanionActionInputField[] = [
 		BroadcastIdIsTextCheckbox,
-		broadcastIdDropdownOption([...broadcastEntries, ...broadcastUnfinishedEntries], defaultBroadcast),
+		broadcastIdDropdownOption(Object.values(broadcasts), unfinishedCount),
 		BroadcastIdFromTextOption,
 	];
 
 	const selectFromUnfinishedBroadcasts: SomeCompanionActionInputField[] = [
 		BroadcastIdIsTextCheckbox,
-		broadcastIdDropdownOption([...broadcastUnfinishedEntries], defaultUnfinishedBroadcast),
+		broadcastIdDropdownOption([], unfinishedCount),
 		BroadcastIdFromTextOption,
 	];
 
