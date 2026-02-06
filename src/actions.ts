@@ -5,7 +5,7 @@ import {
 	CompanionMigrationAction,
 	DropdownChoice,
 } from '@companion-module/base';
-import { BroadcastMap, BroadcastID } from './cache.js';
+import { BroadcastMap, BroadcastID, youngerThan, BroadcastLifecycle } from './cache.js';
 import {
 	BroadcastIdIsTextOptionId,
 	BroadcastIdDropdownOptionId,
@@ -83,10 +83,6 @@ export function listActions({
 		throw new Error('Error: module core undefined.');
 	};
 
-	const selectFromAllBroadcasts = selectBroadcastOptions(Object.values(broadcasts), unfinishedCount);
-
-	const selectFromUnfinishedBroadcasts = selectBroadcastOptions([], unfinishedCount);
-
 	const broadcastCallback = (
 		callback: (
 			core: Core,
@@ -120,25 +116,55 @@ export function listActions({
 		};
 	};
 
+	// We expose all requested unfinished broadcasts, without any filtering.
+	// These seem always to have been exposed a bit prospectively, regardless
+	// whether there are actually any unfinished broadcasts to expose.
+	//
+	// We expose every actual broadcast in dropdown choices that *is*, or *might
+	// eventually*, be able to be subjected to the action.
+	//
+	// It obviously makes sense to expose broadcasts that an action can apply
+	// to, and not expose broadcasts an action can never apply to.  We expose
+	// broadcasts that an action *might eventually* apply to, because this lets
+	// a user create a broadcast, then configure a bunch of actions to operate
+	// upon it -- without having to advance the broadcast far enough for each
+	// action to work.
+	const selectFromAllBroadcasts = selectBroadcastOptions(broadcasts, unfinishedCount);
+	const selectFromPreTestingBroadcasts = selectBroadcastOptions(
+		broadcasts,
+		unfinishedCount,
+		youngerThan(BroadcastLifecycle.TestStarting)
+	);
+	const selectFromNotYetLiveBroadcasts = selectBroadcastOptions(
+		broadcasts,
+		unfinishedCount,
+		youngerThan(BroadcastLifecycle.LiveStarting)
+	);
+	const selectFromUncompletedBroadcasts = selectBroadcastOptions(
+		broadcasts,
+		unfinishedCount,
+		youngerThan(BroadcastLifecycle.Complete)
+	);
+
 	return {
 		[ActionId.InitBroadcast]: {
 			name: 'Start broadcast test',
-			options: [...selectFromAllBroadcasts],
+			options: [...selectFromPreTestingBroadcasts],
 			callback: broadcastCallback(async (core, broadcastId) => core.startBroadcastTest(broadcastId)),
 		},
 		[ActionId.StartBroadcast]: {
 			name: 'Go live',
-			options: [...selectFromAllBroadcasts],
+			options: [...selectFromNotYetLiveBroadcasts],
 			callback: broadcastCallback(async (core, broadcastId) => core.makeBroadcastLive(broadcastId)),
 		},
 		[ActionId.StopBroadcast]: {
 			name: 'Finish broadcast',
-			options: [...selectFromAllBroadcasts],
+			options: [...selectFromUncompletedBroadcasts],
 			callback: broadcastCallback(async (core, broadcastId) => core.finishBroadcast(broadcastId)),
 		},
 		[ActionId.ToggleBroadcast]: {
 			name: 'Advance broadcast to next phase',
-			options: [...selectFromAllBroadcasts],
+			options: [...selectFromUncompletedBroadcasts],
 			callback: broadcastCallback(async (core, broadcastId) => core.toggleBroadcast(broadcastId)),
 		},
 		[ActionId.RefreshFeedbacks]: {
@@ -162,7 +188,7 @@ export function listActions({
 		[ActionId.SendMessage]: {
 			name: 'Send message to live chat',
 			options: [
-				...selectFromUnfinishedBroadcasts,
+				...selectFromUncompletedBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Message:',
@@ -185,14 +211,14 @@ export function listActions({
 		[ActionId.InsertCuePoint]: {
 			name: 'Insert an advertisement cue point (default duration)',
 			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
-			options: [...selectFromUnfinishedBroadcasts],
+			options: [...selectFromUncompletedBroadcasts],
 			callback: broadcastCallback(async (core, broadcastId) => core.insertCuePoint(broadcastId)),
 		},
 		[ActionId.InsertCuePointCustomDuration]: {
 			name: 'Insert an advertisement cue point (custom duration)',
 			description: 'The cue point may be inserted with a delay, and the ad may only be displayed to certain viewers.',
 			options: [
-				...selectFromUnfinishedBroadcasts,
+				...selectFromUncompletedBroadcasts,
 				{
 					type: 'number',
 					label: 'Duration:',
@@ -310,7 +336,7 @@ export function listActions({
 		[ActionId.AddChapterToDescription]: {
 			name: 'Add chapter timecode to description',
 			options: [
-				...selectFromUnfinishedBroadcasts,
+				...selectFromUncompletedBroadcasts,
 				{
 					type: 'textinput',
 					label: 'Chapter title:',

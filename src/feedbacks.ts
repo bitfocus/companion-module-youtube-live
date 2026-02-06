@@ -100,7 +100,7 @@ export function listFeedbacks({
 		return core.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === id);
 	};
 
-	const selectFromAllBroadcasts = selectBroadcastOptions(Object.values(broadcasts), unfinishedCount);
+	const selectFromAllBroadcasts = selectBroadcastOptions(broadcasts, unfinishedCount);
 
 	return {
 		[FeedbackId.BroadcastStatus]: {

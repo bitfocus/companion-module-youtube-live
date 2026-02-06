@@ -39,6 +39,21 @@ export enum BroadcastLifecycle {
 	Revoked = 'revoked',
 }
 
+const lifecycleToNumberMap: Record<BroadcastLifecycle, number> = {
+	[BroadcastLifecycle.Created]: 0,
+	[BroadcastLifecycle.Ready]: 1,
+	[BroadcastLifecycle.TestStarting]: 2,
+	[BroadcastLifecycle.Testing]: 3,
+	[BroadcastLifecycle.LiveStarting]: 4,
+	[BroadcastLifecycle.Live]: 5,
+	[BroadcastLifecycle.Complete]: 6,
+	[BroadcastLifecycle.Revoked]: 7,
+};
+
+export function youngerThan(status: BroadcastLifecycle): (broadcast: Readonly<Broadcast>) => boolean {
+	return (broadcast: Broadcast) => lifecycleToNumberMap[broadcast.Status] < lifecycleToNumberMap[status];
+}
+
 /**
  * Health metric for AV streams going to YouTube.
  */
