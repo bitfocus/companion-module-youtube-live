@@ -185,24 +185,41 @@ export function listFeedbacks({
 				const textColor = getColor(options, 'text', White);
 				const textComplete = getColor(options, 'text_complete', Gray);
 
+				let bgcolor: number;
+				let color: number = textColor;
 				switch (broadcastStatus) {
 					case BroadcastLifecycle.LiveStarting:
-						if (dimStarting) return { bgcolor: bgTesting, color: textColor };
-						else return { bgcolor: bgLive, color: textColor };
+						if (dimStarting) {
+							bgcolor = bgTesting;
+						} else {
+							bgcolor = bgLive;
+						}
+						break;
 					case BroadcastLifecycle.Live:
-						return { bgcolor: bgLive, color: textColor };
+						bgcolor = bgLive;
+						break;
 					case BroadcastLifecycle.TestStarting:
-						if (dimStarting) return { bgcolor: bgReady, color: textColor };
-						else return { bgcolor: bgTesting, color: textColor };
+						if (dimStarting) {
+							bgcolor = bgReady;
+						} else {
+							bgcolor = bgTesting;
+						}
+						break;
 					case BroadcastLifecycle.Testing:
-						return { bgcolor: bgTesting, color: textColor };
+						bgcolor = bgTesting;
+						break;
 					case BroadcastLifecycle.Complete:
-						return { bgcolor: bgComplete, color: textComplete };
+						bgcolor = bgComplete;
+						color = textComplete;
+						break;
 					case BroadcastLifecycle.Ready:
-						return { bgcolor: bgReady, color: textColor };
+						bgcolor = bgReady;
+						break;
 					default:
 						return {};
 				}
+
+				return { bgcolor, color };
 			},
 		},
 		[FeedbackId.StreamHealth]: {
@@ -280,22 +297,31 @@ export function listFeedbacks({
 					broadcastStatus = broadcast.Status;
 				}
 
+				let bgcolor: number;
+				let color: number;
 				switch (stream.Health) {
 					case StreamHealth.Good:
-						return { bgcolor: getColor(options, 'bg_good', LimeGreen), color: getColor(options, 'text_good', White) };
+						bgcolor = getColor(options, 'bg_good', LimeGreen);
+						color = getColor(options, 'text_good', White);
+						break;
 					case StreamHealth.OK:
-						return { bgcolor: getColor(options, 'bg_ok', DarkYellow), color: getColor(options, 'text_ok', White) };
+						bgcolor = getColor(options, 'bg_ok', DarkYellow);
+						color = getColor(options, 'text_ok', White);
+						break;
 					case StreamHealth.Bad:
-						return { bgcolor: getColor(options, 'bg_bad', BrightOrange), color: getColor(options, 'text_bad', White) };
+						bgcolor = getColor(options, 'bg_bad', BrightOrange);
+						color = getColor(options, 'text_bad', White);
+						break;
 					case StreamHealth.NoData:
 						if (broadcastStatus == BroadcastLifecycle.Complete) {
 							return {};
 						}
-						return {
-							bgcolor: getColor(options, 'bg_no_data', BrightRed),
-							color: getColor(options, 'text_no_data', White),
-						};
+						bgcolor = getColor(options, 'bg_no_data', BrightRed);
+						color = getColor(options, 'text_no_data', White);
+						break;
 				}
+
+				return { bgcolor, color };
 			},
 		},
 	};
