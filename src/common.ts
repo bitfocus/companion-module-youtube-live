@@ -71,9 +71,7 @@ const BroadcastIdFromTextOption: CompanionInputFieldTextInput = {
 	id: BroadcastIdTextOptionId,
 	tooltip: 'YouTube broadcast ID, e.g. dQw4w9WgXcQ',
 	useVariables: true,
-	// Hardcode the option name because isVisible functions must serialize
-	// to string and back.
-	isVisible: (options) => !!options.broadcast_id_is_text,
+	isVisibleExpression: `!!$(options:${BroadcastIdIsTextOptionId})`,
 } as const;
 
 /**
@@ -124,9 +122,7 @@ export function selectBroadcastOptions(
 			id: BroadcastIdDropdownOptionId,
 			choices,
 			default: defaultChoice,
-			// Hardcode the option name because isVisible functions must
-			// serialize to string and back.
-			isVisible: (options): boolean => !options.broadcast_id_is_text,
+			isVisibleExpression: `!$(options:${BroadcastIdIsTextOptionId})`,
 		},
 		BroadcastIdFromTextOption,
 	];

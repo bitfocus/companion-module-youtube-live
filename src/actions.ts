@@ -63,6 +63,8 @@ export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationA
 	return true;
 }
 
+const DefaultSeparatorOptionId = 'default_separator';
+
 /**
  * Get a list of actions for this module
  * @param broadcasts Map of known broadcasts
@@ -348,7 +350,7 @@ export function listActions({
 				{
 					type: 'checkbox',
 					label: 'Use default separator?',
-					id: 'default_separator',
+					id: DefaultSeparatorOptionId,
 					tooltip: 'Default separator is " - "',
 					default: true,
 				},
@@ -359,9 +361,7 @@ export function listActions({
 					tooltip: 'The separator must contain at least one character',
 					useVariables: true,
 					regex: '/^.{1,}$/',
-					isVisible: (options) => {
-						return !options.default_separator;
-					},
+					isVisibleExpression: `!$(options:${DefaultSeparatorOptionId})`,
 				},
 			],
 			callback: broadcastCallback(async (core, broadcastId, event, context) => {
