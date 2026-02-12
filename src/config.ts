@@ -219,68 +219,28 @@ export function listConfigFields(instance: Pick<YoutubeInstance, 'label'>): Some
 			id: 'api_key_info',
 			label: 'YouTube OAuth application parameters',
 			value: `
-<p>You'll have to create a Google Cloud application that can manipulate YouTube
-  broadcasts, that this Companion connection can invoke.  On the
-  <a href="https://console.cloud.google.com/home/dashboard" target="_blank">Google
-  Cloud Console</a> Create a Project, and in the APIs and services &gt; Enabled
-  APIs and servers.  Be sure to enable the YouTube Data API v3.</p>
+<p>Follow the instructions in <code>youtube-live</code> module help
+  documentation to set up the connection to your YouTube channel.  Fill in the
+  OAuth <strong>client ID</strong>, <strong>client secret</strong>, and
+  <strong>redirect URL</strong> settings as instructed.</p>
+
+<p>Then, and whenever YouTube requires you to reauthenticate:</p>
+
 <ol>
-	<li>Go to <a href="https://console.cloud.google.com/apis/credentials"
-	target="_blank">https://console.cloud.google.com/apis/credentials</a>, click 'Create Credentials', then select
-	'OAuth client ID':
-		<ul>
-			<li>Select 'Web Application' as the Application Type.</li>
-			<li>Give the app any name you like.  This name will appear on the
-			consent screen when you use a Google login to grant your Companion
-			connection access to your YouTube account .</li>
-		</ul>
-		<li>In the 'Authorized redirect URIs' section, specify a redirect that's
-		a localhost URL, e.g. <code>http://localhost:3000</code>.  Make sure the
-		port in the URL isn't being used!</li>
-		<li>Click 'Create' to create the OAuth client ID.</li>
-	</li>
-	<li>Once you click 'Create', a confirmation dialog will appear, specifying a
-	Client ID and Client Secret to store in connection settings to connect to
-	YouTube:
-		<ul>
-			<li>Copy and past the Client ID and Client Secret into connection
-			settings below.</li>
-			<li>Enter the redirect URL you just specified, e.g.
-			<code>http://localhost:3000</code>.  (Be careful to enter it
-			<em>exactly the same way</em>: no added/removed trailing slash or
-			similar.)</li>
-		</ul>
-	</li>
-	</li>Click 'Save' below to save connection settings.</li>
-	<li>Add a permitted user of your Google Cloud application:
-		<ul>
-			<li>When your application's publishing status is "Testing", you must
-			individually add permitted users.  Open <a
-			href="https://console.cloud.google.com/apis/credentials"
-			target="_blank">https://console.cloud.google.com/apis/credentials</a>
-			and click on the client ID created above.  Then click on "Audience".
-			Under "Test Users", add the Google account you'll use to manipulate
-			YouTube broadcasts.  (You can add more users if multiple people need
-			access.)</li>
-		</ul>
-	</li>
-	<li>Finally, open the <a href="./instance/${instance.label}/authorize"
-	target="_blank">YouTube consent screen</a> for the Google Cloud application
-	you created.  (The consent screen URL is also available in the logs for this
-	connection.)
-		<ul>
-			<li>Give consent through one of the permitted users added
-			earlier.  You'll be redirected to the redirect URL.</li>
-			<li>The redirect URL will have appended to it a query string
-			starting with a <code>?</code>, containing <code>name=value</code>
-			pairs separated by <code>&#38;</code>.  Find the
-			<code>code=<strong>...</strong></code> portion of this URL, and copy
-			the <code><strong>...</strong></code> portion of it into the "Cached
-			OAuth Authorization Code" setting below.</li>
-		</ul>
-	</li>
+	<li><a href="./instance/${instance.label}/authorize" target="_blank">Consent
+	  to YouTube letting Companion operate your broadcasts</a> using a Google
+	  account and selecting your channel.  (The full consent URL is also logged
+	  in connection logs when you click that link.)</li>
+	<li>After you grant consent, the consent window will redirect to your
+	  redirect URL, which will end in a query string: <code>?</code> followed by
+	  a series of <code>name=value</code> pairs separated by <code>&#38;</code>.
+	  Copy the <strong><code>...</code></strong> part of the
+	  <code>code=<strong>...</strong></code> pair into the <strong>Cached OAuth
+	  authorization code</strong> setting, and close the window.</li>
+	<li>Save connection settings.</li>
 </ol>
-<p>See the YouTube Live module setup guide for more info.</p>
+
+<p>The connection to YouTube will be established in a few seconds.</p>
 				`,
 			width: 12,
 		},
@@ -299,28 +259,21 @@ export function listConfigFields(instance: Pick<YoutubeInstance, 'label'>): Some
 		{
 			type: 'textinput',
 			id: ClientRedirectURLOptionId,
-			label: 'OAuth redirect url (as entered in the YouTube web app interface above, e.g. "http://localhost:3000")',
+			label: 'OAuth redirect URL',
 			default: 'http://localhost:3000',
 			width: 12,
 		},
 		{
 			type: 'textinput',
 			id: AuthorizationCodeOptionId,
-			label: 'Cached OAuth Authorization Code',
-			width: 12,
-		},
-		{
-			type: 'static-text',
-			id: 'token_info',
-			label: 'Cached YouTube OAuth2 token',
-			value:
-				'Following field contains something like a session token - it corresponds to one active access point to a YouTube account.',
+			label: 'Cached OAuth authorization code',
 			width: 12,
 		},
 		{
 			type: 'textinput',
 			id: YouTubeCredentialsOptionId,
-			label: 'Authorization token (empty to re-authenticate)',
+			label: 'Cached YouTube OAuth2 token (empty to re-authenticate)',
+			description: 'YouTube API session JSON credentials',
 			width: 12,
 		},
 	];

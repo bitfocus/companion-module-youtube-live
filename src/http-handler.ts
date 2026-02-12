@@ -5,6 +5,7 @@ import { YoutubeInstance } from './index.js';
 
 async function redirectToAuthorizeEndpoint(
 	config: YoutubeConfig,
+	log: YoutubeInstance['log'],
 	request: CompanionHTTPRequest
 ): Promise<CompanionHTTPResponse> {
 	if (request.method !== 'GET') {
@@ -19,6 +20,7 @@ async function redirectToAuthorizeEndpoint(
 
 	const urlOrErrors = generateAuthorizationURL(config);
 	if (typeof urlOrErrors === 'string') {
+		log('info', `YouTube consent URL: ${urlOrErrors}`);
 		return {
 			status: 302,
 			headers: {
@@ -27,7 +29,6 @@ async function redirectToAuthorizeEndpoint(
 		};
 	}
 
-	const title = "Can't redirect to authorization URL";
 	return {
 		status: 500,
 		headers: {
@@ -37,7 +38,7 @@ async function redirectToAuthorizeEndpoint(
 <!DOCTYPE html>
 <html>
 <head>
-<title>${title}</title>
+  <title>Can't redirect to authorization URL</title>
 </head>
 <body>
 <p>Fix these errors to authorize access to YouTube:</p>
@@ -67,7 +68,7 @@ export async function handleHttpRequest(
 	try {
 		switch (request.path) {
 			case '/authorize':
-				return redirectToAuthorizeEndpoint(config, request);
+				return redirectToAuthorizeEndpoint(config, log, request);
 		}
 	} catch (e: unknown) {
 		log(
