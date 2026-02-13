@@ -1,5 +1,5 @@
 import { InputValue, SomeCompanionConfigField } from '@companion-module/base';
-import type { Credentials } from 'google-auth-library';
+import { credentialsFromToken } from './authorization.js';
 import { YoutubeInstance } from './index.js';
 
 /**
@@ -8,9 +8,9 @@ import { YoutubeInstance } from './index.js';
  * Nothing ensures that Companion config objects conform to the `TConfig` type
  * specified by a module.  Therefore we leave this type underdefined, not
  * well-defined, so that configuration info will be defensively processed.  (We
- * use `YoutubeConfig` to store configuration choices as well-typed values
- * for the long haul.  See `validateConfig` for explanation of the field/types
- * we expect to find in config objects.)
+ * use `YoutubeConfig` to store configuration choices as well-typed values for
+ * the long haul.  See `validateConfig` for explanation of the field/types we
+ * expect to find in config objects.)
  */
 export interface RawConfig {
 	[key: string]: InputValue | undefined;
@@ -73,25 +73,8 @@ const toClientRedirectURL = toStringDefaultEmpty;
 const toCachedAuthorizationCode = toStringDefaultEmpty;
 
 function toYouTubeCredentials(raw: RawConfig[typeof YouTubeCredentialsOptionId]): string {
-	try {
-		const parsed = JSON.parse(toStringDefaultEmpty(raw)) as unknown;
-		if (parsed !== null && typeof parsed === 'object') {
-			const creds = parsed as Record<keyof Credentials, unknown>;
-			const credentials: Credentials = {};
-			if (typeof creds.refresh_token === 'string') credentials.refresh_token = creds.refresh_token;
-			if (typeof creds.expiry_date === 'number') credentials.expiry_date = creds.expiry_date;
-			if (typeof creds.access_token === 'string') credentials.access_token = creds.access_token;
-			if (typeof creds.token_type === 'string') credentials.token_type = creds.token_type;
-			if (typeof creds.id_token === 'string') credentials.id_token = creds.id_token;
-			if (typeof creds.scope === 'string') credentials.scope = creds.scope;
-
-			return JSON.stringify(credentials);
-		}
-	} catch (_e) {
-		// fall through to empty
-	}
-
-	return '';
+	const credentials = credentialsFromToken(toStringDefaultEmpty(raw));
+	return credentials === null ? '' : JSON.stringify(credentials);
 }
 
 const DefaultFetchMaxCount = 10;

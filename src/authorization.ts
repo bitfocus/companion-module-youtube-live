@@ -99,6 +99,34 @@ export function generateAuthorizationURL(config: YoutubeConfig): string | Author
 }
 
 /**
+ * Given an ostensible OAuth2 token string, return credentials from it or `null`
+ * if it doesn't contain syntactically valid credentials.  (Note that
+ * "syntactically valid" doesn't guarantee much because every property in
+ * `Credentials` is optional.)
+ */
+export function credentialsFromToken(authToken: string): Credentials | null {
+	try {
+		// Note: we intend this to throw if `authToken` is empty.
+		const parsed = JSON.parse(authToken) as unknown;
+		if (typeof parsed === 'object' && parsed !== null && !(parsed instanceof Array)) {
+			const creds = parsed as Record<keyof Credentials, unknown>;
+			const credentials: Credentials = {};
+			if (typeof creds.refresh_token === 'string') credentials.refresh_token = creds.refresh_token;
+			if (typeof creds.expiry_date === 'number') credentials.expiry_date = creds.expiry_date;
+			if (typeof creds.access_token === 'string') credentials.access_token = creds.access_token;
+			if (typeof creds.token_type === 'string') credentials.token_type = creds.token_type;
+			if (typeof creds.id_token === 'string') credentials.id_token = creds.id_token;
+			if (typeof creds.scope === 'string') credentials.scope = creds.scope;
+			return credentials;
+		}
+	} catch (_e) {
+		// fall through to no credentials
+	}
+
+	return null;
+}
+
+/**
  * Get an OAuth client for the application/access information in settings.
  *
  * @param config
@@ -111,11 +139,6 @@ export async function getOAuthClient(config: YoutubeConfig): Promise<OAuth2Clien
 	}
 	const { clientId, clientSecret, redirectUri } = app;
 
-	const authorizationCode = config.authorization_code;
-	if (authorizationCode === '') {
-		return [AuthorizationError.MissingAuthenticationCode];
-	}
-
 	let oauth: OAuth2Client;
 	try {
 		oauth = new OAuth2Client({ clientId, clientSecret, redirectUri });
@@ -123,21 +146,13 @@ export async function getOAuthClient(config: YoutubeConfig): Promise<OAuth2Clien
 		return [AuthorizationError.UnknownError];
 	}
 
-	let credentials: Credentials;
-	const youtubeCredentials = config.auth_token;
-	if (youtubeCredentials !== '') {
-		try {
-			// YoutubeConfig sanitization guarantees that if this is nonempty,
-			// it's syntactically valid enough to use as credentials.  (Note
-			// that all fields in `Credentials` are optional, so merely having
-			// this doesn't guarantee it encodes usable credentials.)
-			credentials = JSON.parse(youtubeCredentials);
-		} catch (_e) {
-			// This should be unreachable as the existence of a `YoutubeConfig`
-			// implies the structural validity of its contents.
-			return [AuthorizationError.UnknownError];
+	let credentials = credentialsFromToken(config.auth_token);
+	if (credentials === null) {
+		const authorizationCode = config.authorization_code;
+		if (authorizationCode === '') {
+			return [AuthorizationError.MissingAuthenticationCode];
 		}
-	} else {
+
 		try {
 			const tokenResponse = await oauth.getToken(authorizationCode);
 			credentials = tokenResponse.tokens;

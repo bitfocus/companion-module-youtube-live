@@ -165,16 +165,10 @@ describe('get OAuth client', () => {
 			client_redirect_url: 'bad URL',
 		});
 
+		// `validateConfig` won't sanitize non-URLs to the empty string.
+		expect(config.client_redirect_url).toBe('bad URL');
+
 		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.InvalidRedirectURL]);
-	});
-
-	test('missing authentication code', async () => {
-		const config = configWithOverrides({
-			// eslint-disable-next-line @typescript-eslint/naming-convention
-			authorization_code: '',
-		});
-
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.MissingAuthenticationCode]);
 	});
 
 	test('new OAuth2Client throws', async () => {
@@ -194,8 +188,11 @@ describe('get OAuth client', () => {
 		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.UnknownError]);
 	});
 
-	test('auth_token contains invalid JSON', async () => {
-		const config = configWithOverrides({});
+	test('auth_token contains invalid JSON and no authorization code', async () => {
+		const config = configWithOverrides({
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			authorization_code: '',
+		});
 
 		// A Companion-supplied config should pass through `validateConfig` and
 		// be rewritten before module code sees this.  But `getOauthClient` can
@@ -210,21 +207,31 @@ describe('get OAuth client', () => {
 
 		vi.spyOn(JSON, 'parse');
 
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.UnknownError]);
+		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.MissingAuthenticationCode]);
 		expect(JSON.parse).toHaveBeenCalledWith(invalid);
 	});
 
-	test('auth_token is empty, getToken throws', async () => {
+	test('auth_token contains invalid JSON, but with authorization code', async () => {
 		const config = configWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
-			authorization_code: 'hello world',
-			// eslint-disable-next-line @typescript-eslint/naming-convention
-			auth_token: '',
+			authorization_code: 'voicepassport',
 		});
+
+		// A Companion-supplied config should pass through `validateConfig` and
+		// be rewritten before module code sees this.  But `getOauthClient` can
+		// be written defensively.
+		const invalid = 'this should not be possible but test it anyway';
+
+		config.auth_token = invalid;
+		validateConfig(config);
+		expect(config.auth_token).toBe('');
+
+		config.auth_token = invalid;
 
 		vi.spyOn(OAuth2Client.prototype, 'getToken').mockRejectedValueOnce(new Error('throw!'));
 
 		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.GetTokenError]);
-		expect(OAuth2Client.prototype.getToken).toHaveBeenCalledWith('hello world');
+		expect(JSON.parse).toHaveBeenCalledWith(invalid);
+		expect(OAuth2Client.prototype.getToken).toHaveBeenCalledWith('voicepassport');
 	});
 });

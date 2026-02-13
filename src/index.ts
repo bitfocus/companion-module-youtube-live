@@ -59,11 +59,41 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 		});
 	}
 
+	#updateConfig(oldConfig: YoutubeConfig, newConfig: RawConfig): asserts newConfig is YoutubeConfig {
+		validateConfig(newConfig);
+
+		let changed = false;
+		if (oldConfig.authorization_code !== newConfig.authorization_code) {
+			// If the authorization code was changed and the cached OAuth token
+			// info wasn't, treat this as the consent process having been rerun
+			// such that the cached token info should be discarded.
+			if (oldConfig.auth_token === newConfig.auth_token && newConfig.auth_token !== '') {
+				// Presume that an OAuth authorization code change means the
+				// consent process was rerun and the unchanged OAuth token info
+				// should be discarded.
+				newConfig.auth_token = '';
+				changed = true;
+			}
+		} else {
+			// If the cached OAuth token info was cleared but the authorization
+			// code (presumed to have been used to get it) wasn't changed, clear
+			// the authorization code -- it's one-shot and useless now.
+			if (newConfig.auth_token === '' && oldConfig.auth_token !== '') {
+				newConfig.authorization_code = '';
+				changed = true;
+			}
+		}
+
+		if (changed) {
+			this.saveConfig(newConfig);
+		}
+		this.#config = newConfig;
+	}
+
 	async #initializeInstance(config: RawConfig): Promise<void> {
 		this.updateStatus(InstanceStatus.UnknownWarning, 'Initializing');
 
-		validateConfig(config);
-		this.#config = config;
+		this.#updateConfig(this.#config, config);
 
 		const googleAuth = await getOAuthClient(config);
 		if (googleAuth instanceof Array) {
