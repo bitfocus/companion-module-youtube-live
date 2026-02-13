@@ -72,6 +72,30 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 
 		this.#saveCredentials(googleAuth.credentials);
 
+		googleAuth.on('tokens', (credentials) => {
+			// Don't log `credentials`: it's sensitive, and logging it might
+			// persist it somewhere unwanted.
+			this.log('info', 'Refresh token exchanged for new credentials');
+
+			this.#saveCredentials({
+				// Use information from the new credentials.
+				...credentials,
+
+				// But save the refresh token specially.
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				refresh_token:
+					// "The authorization server MAY issue a new refresh token,
+					// in which case the client MUST discard the old refresh
+					// token and replace it with the new refresh token."
+					// https://datatracker.ietf.org/doc/html/rfc6749#section-6
+					credentials.refresh_token ??
+					// If there's no new refresh token, use the old one.  Google
+					// docs suggest it won't always issue new refresh tokens.
+					// https://developers.google.com/identity/protocols/oauth2/web-server#offline
+					googleAuth.credentials.refresh_token,
+			});
+		});
+
 		const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(config));
 
 		const core = new Core(this, api, loadRefreshIntervalMs(config));
