@@ -43,13 +43,13 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	/** Configuration */
 	#config: YoutubeConfig = noConnectionConfig();
 
-	override async init(config: YoutubeConfig, _isFirstInit: boolean): Promise<void> {
+	override async init(config: RawConfig, _isFirstInit: boolean): Promise<void> {
 		this.log('debug', 'Initializing YT module');
 
 		this.#initInstance(config);
 	}
 
-	#initInstance(config: YoutubeConfig): void {
+	#initInstance(config: RawConfig): void {
 		this.#initializeInstance(config).catch((reason) => {
 			this.#clearCredentials();
 			this.log('warn', `Authorization failed: ${reason}`);
@@ -57,7 +57,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 		});
 	}
 
-	async #initializeInstance(config: YoutubeConfig): Promise<void> {
+	async #initializeInstance(config: RawConfig): Promise<void> {
 		this.updateStatus(InstanceStatus.UnknownWarning, 'Initializing');
 
 		validateConfig(config);
