@@ -52,8 +52,10 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	#initInstance(config: RawConfig): void {
 		this.#initializeInstance(config).catch((reason) => {
 			this.#clearCredentials();
-			this.log('warn', `Authorization failed: ${reason}`);
-			this.updateStatus(InstanceStatus.UnknownError, `Authorization failed: ${reason}`);
+
+			const authorizationFailedMessage = `Authorization failed: ${reason}`;
+			this.log('warn', authorizationFailedMessage);
+			this.updateStatus(InstanceStatus.UnknownError, authorizationFailedMessage);
 		});
 	}
 
@@ -80,8 +82,9 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 			this.log('info', 'YT Module initialized successfully');
 			this.updateStatus(InstanceStatus.Ok);
 		} catch (err) {
-			this.log('warn', `YT Broadcast query failed: ${err}`);
-			this.updateStatus(InstanceStatus.UnknownError, `YT Broadcast query failed: ${err}`);
+			const queryFailedMessage = `YT Broadcast query failed: ${err}`;
+			this.log('warn', queryFailedMessage);
+			this.updateStatus(InstanceStatus.UnknownError, queryFailedMessage);
 
 			core.destroy();
 			this.#core = null;
