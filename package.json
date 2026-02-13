@@ -5,6 +5,7 @@
 	"main": "dist/index.js",
 	"license": "MIT",
 	"scripts": {
+		"postinstall": "husky",
 		"dev": "yarn build:watch",
 		"check-types": "tsc -p tsconfig.json --noEmit  --noUnusedLocals false",
 		"build": "rimraf dist && yarn build:main",
@@ -12,6 +13,7 @@
 		"build:watch": "tsc -p tsconfig.build.json --watch",
 		"lint:raw": "eslint",
 		"lint": "yarn lint:raw .",
+		"knip": "knip",
 		"test": "vitest --run"
 	},
 	"repository": {
@@ -31,15 +33,15 @@
 	},
 	"dependencies": {
 		"@companion-module/base": "~1.13.0",
-		"@googleapis/youtube": "^30.3.0"
+		"@googleapis/youtube": "^30.3.0",
+		"google-auth-library": "^10.5.0"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^2.6.1",
-		"@eslint/js": "^9.39.2",
 		"@types/node": "^22.15.18",
 		"eslint": "~9.36.0",
 		"husky": "^9.1.7",
-		"leaked-handles": "^5.2.0",
+		"knip": "^5.83.1",
 		"lint-staged": "^13.2.0",
 		"prettier": "^3.8.1",
 		"rimraf": "^4.4.1",

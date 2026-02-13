@@ -164,7 +164,7 @@ export function getStreamVars(broadcast: Broadcast, stream: Stream): VariableCon
  * @param index Index number of unfinished Broadcast
  * @param broadcast Broadcast to generate variables for
  */
-export function getUnfinishedBroadcastVars(index: number, broadcast: Broadcast): VariableContent[] {
+function getUnfinishedBroadcastVars(index: number, broadcast: Broadcast): VariableContent[] {
 	const contentName: VariableContent = {
 		name: `unfinished_${index}`,
 		value: broadcast.Name,
@@ -226,7 +226,7 @@ export function getUnfinishedBroadcastStateVars(index: number, broadcast: Broadc
  * Generate variable contents for a given broadcast
  * @param index Index number of unfinished Broadcast
  */
-export function getUnfinishedDefaultVars(index: number): VariableContent[] {
+function getUnfinishedDefaultVars(index: number): VariableContent[] {
 	const content: VariableContent = {
 		name: `unfinished_${index}`,
 		value: 'n/a',
@@ -256,7 +256,7 @@ export function getUnfinishedDefaultVars(index: number): VariableContent[] {
  * @param index Index number of unfinished Broadcast
  * @param stream Stream to generate variables for
  */
-export function getStreamHealthVarsForUnfinishedBroadcast(index: number, stream: Stream): VariableContent[] {
+function getStreamHealthVarsForUnfinishedBroadcast(index: number, stream: Stream): VariableContent[] {
 	const content: VariableContent = {
 		name: `unfinished_health_${index}`,
 		value: 'unknown',
@@ -284,7 +284,7 @@ export function getStreamHealthVarsForUnfinishedBroadcast(index: number, stream:
  * Generate variable contents for a given stream
  * @param index Index number of unfinished Broadcast
  */
-export function getStreamHealthVarsForUnfinishedBroadcastDefault(index: number): VariableContent[] {
+function getStreamHealthVarsForUnfinishedBroadcastDefault(index: number): VariableContent[] {
 	const content: VariableContent = {
 		name: `unfinished_health_${index}`,
 		value: 'n/a',

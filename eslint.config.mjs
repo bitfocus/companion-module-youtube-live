@@ -140,7 +140,7 @@ const customConfig = [
 	},
 
 	{
-		ignores: ['eslint.config.mjs', 'vitest.config.ts'],
+		ignores: ['eslint.config.mjs'],
 		rules: {
 			'n/no-missing-import': 'off',
 			'n/no-unpublished-import': [
@@ -151,10 +151,6 @@ const customConfig = [
 			],
 		},
 	},
-
-	permitLimitedUnpublishedImports(allTestFilePatterns, ['vitest']),
-	permitLimitedUnpublishedImports(['eslint.config.mjs'], ['@companion-module/tools']),
-	permitLimitedUnpublishedImports(['vitest.config.ts'], ['vitest']),
 
 	{
 		files: allTestFilePatterns,
@@ -174,6 +170,11 @@ const customConfig = [
 			// 'vitest/unbound-method': 'error',
 		},
 	},
+
+	permitLimitedUnpublishedImports(allTestFilePatterns, ['vitest']),
+	permitLimitedUnpublishedImports(['eslint.config.mjs'], ['@companion-module/tools']),
+	permitLimitedUnpublishedImports(['knip.config.ts'], ['knip']),
+	permitLimitedUnpublishedImports(['vitest.config.ts'], ['vitest']),
 ];
 
 export default customConfig;
