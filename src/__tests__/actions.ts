@@ -206,12 +206,10 @@ describe('Action callback', () => {
 
 	test('Finish success', async () => {
 		const context = new MockContext();
-		context.setVariable('mod:var', 'tes');
-
 		const event = makeEvent(ActionId.StopBroadcast, {
 			broadcast_id_is_text: true,
 			broadcast_id: 'BAD',
-			broadcast_id_text: '$(mod:var)t',
+			broadcast_id_text: 'test',
 		});
 		await expect(actionsOK.stop_broadcast.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.finishBroadcast).toHaveBeenLastCalledWith('test');
@@ -292,14 +290,11 @@ describe('Action callback', () => {
 	});
 	test('Send message failure', async () => {
 		const context = new MockContext();
-		context.setVariable('ex:lax', 'ting mes');
-		context.setVariable('semi:punctuation', 'e');
-
 		const event = makeEvent(ActionId.SendMessage, {
 			broadcast_id_is_text: true,
 			broadcast_id: 'BAD',
-			broadcast_id_text: 't$(semi:punctuation)st',
-			message_content: 'tes$(ex:lax)sage',
+			broadcast_id_text: 'test',
+			message_content: 'testing message',
 		});
 		await expect(actionsKO.send_livechat_message.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.sendLiveChatMessage).toHaveBeenLastCalledWith('test', 'testing message');
@@ -406,13 +401,11 @@ describe('Action callback', () => {
 	});
 	test('Prepend to description success', async () => {
 		const context = new MockContext();
-		context.setVariable('mod:var', 's');
-
 		const event = makeEvent(ActionId.PrependToDescription, {
 			broadcast_id_is_text: true,
 			broadcast_id: 'BAD',
-			broadcast_id_text: 'te$(mod:var)t',
-			text: 'text$(mod:var) to prepend',
+			broadcast_id_text: 'test',
+			text: 'texts to prepend',
 		});
 		await expect(actionsOK.preprend_to_description.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.prependToDescription).toHaveBeenLastCalledWith('test', 'texts to prepend');
@@ -432,13 +425,11 @@ describe('Action callback', () => {
 	});
 	test('Append to description success', async () => {
 		const context = new MockContext();
-		context.setVariable('hello:hello', 'st');
-
 		const TextToAppend = 'text to append';
 		const event = makeEvent(ActionId.AppendToDescription, {
 			broadcast_id_is_text: true,
 			broadcast_id: 'BAD',
-			broadcast_id_text: 'te$(hello:hello)',
+			broadcast_id_text: 'test',
 			text: TextToAppend,
 		});
 		await expect(actionsOK.append_to_description.callback(event, context)).resolves.toBeUndefined();
@@ -447,13 +438,11 @@ describe('Action callback', () => {
 	});
 	test('Append to description failure', async () => {
 		const context = new MockContext();
-		context.setVariable('hello:hello', 'BAD');
-
 		const TextToAppend = 'text to append';
 		const event = makeEvent(ActionId.AppendToDescription, {
 			broadcast_id_is_text: false,
 			broadcast_id: 'test',
-			broadcast_id_text: '$(hello:hello)',
+			broadcast_id_text: 'BAD',
 			text: TextToAppend,
 		});
 		await expect(actionsKO.append_to_description.callback(event, context)).rejects.toBeInstanceOf(Error);
@@ -462,8 +451,6 @@ describe('Action callback', () => {
 	});
 	test('Add chapter to description success', async () => {
 		const context = new MockContext();
-		context.setVariable('custom:separator', 'DO NOT USE');
-
 		const ChapterTitle = 'gooder chapter title';
 		const event = makeEvent(ActionId.AddChapterToDescription, {
 			broadcast_id_is_text: false,
@@ -471,7 +458,7 @@ describe('Action callback', () => {
 			broadcast_id_text: 'BAD',
 			title: ChapterTitle,
 			default_separator: true,
-			separator: '$(custom:separator)',
+			separator: 'DO NOT USE',
 		});
 		await expect(actionsOK.add_chapter_to_description.callback(event, context)).resolves.toBeUndefined();
 		expect(coreOK.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
@@ -479,17 +466,14 @@ describe('Action callback', () => {
 	});
 	test('Add chapter to description failure', async () => {
 		const context = new MockContext();
-		context.setVariable('sing:song', 'test');
-		context.setVariable('bad:bunny', 'DO NOT USE');
-
 		const ChapterTitle = 'goodest chapter title';
 		const event = makeEvent(ActionId.AddChapterToDescription, {
 			broadcast_id_is_text: true,
 			broadcast_id: 'BAD',
-			broadcast_id_text: '$(sing:song)',
+			broadcast_id_text: 'test',
 			title: ChapterTitle,
 			default_separator: true,
-			separator: '$(bad:bunny)',
+			separator: 'DO NOT USE',
 		});
 		await expect(actionsKO.add_chapter_to_description.callback(event, context)).rejects.toBeInstanceOf(Error);
 		expect(coreKO.addChapterToDescription).toHaveBeenLastCalledWith('test', ChapterTitle);
@@ -497,14 +481,12 @@ describe('Action callback', () => {
 	});
 	test('Add chapter with custom separator to description success', async () => {
 		const context = new MockContext();
-		context.setVariable('epoch:fail', 'BAD');
-
 		const ChapterTitle = 'quality chapter title';
 		const Sep = '—';
 		const event = makeEvent(ActionId.AddChapterToDescription, {
 			broadcast_id_is_text: false,
 			broadcast_id: 'test',
-			broadcast_id_text: '$(epoch:fail)',
+			broadcast_id_text: 'BAD',
 			title: ChapterTitle,
 			default_separator: false,
 			separator: Sep,
@@ -515,14 +497,12 @@ describe('Action callback', () => {
 	});
 	test('Add chapter with custom separator to description failure', async () => {
 		const context = new MockContext();
-		context.setVariable('brief:ly', 'test');
-
 		const ChapterTitle = 'A-OK chapter title';
 		const Sep = 'DASH';
 		const event = makeEvent(ActionId.AddChapterToDescription, {
 			broadcast_id_is_text: true,
 			broadcast_id: 'BAD',
-			broadcast_id_text: '$(brief:ly)',
+			broadcast_id_text: 'test',
 			title: ChapterTitle,
 			default_separator: false,
 			separator: Sep,

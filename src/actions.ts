@@ -1,5 +1,4 @@
 import {
-	CompanionActionContext,
 	CompanionActionDefinition,
 	CompanionActionEvent,
 	CompanionMigrationAction,
@@ -86,19 +85,14 @@ export function listActions({
 	};
 
 	const broadcastCallback = (
-		callback: (
-			core: Core,
-			broadcastId: BroadcastID,
-			event: CompanionActionEvent,
-			context: CompanionActionContext
-		) => Promise<void>
+		callback: (core: Core, broadcastId: BroadcastID, event: CompanionActionEvent) => Promise<void>
 	): CompanionActionDefinition['callback'] => {
-		return async (event, context): Promise<void> => {
+		return async (event): Promise<void> => {
 			if (!core) {
 				return undefined;
 			}
 
-			let broadcastId: BroadcastID | undefined = await getBroadcastIdFromOptions(event.options, context);
+			let broadcastId: BroadcastID | undefined = await getBroadcastIdFromOptions(event.options);
 			if (broadcastId === undefined) {
 				core.Module.log('warn', 'Action failed: undefined broadcast ID');
 				return undefined;
@@ -114,7 +108,7 @@ export function listActions({
 				}
 			}
 
-			return callback(core, broadcastId, event, context);
+			return callback(core, broadcastId, event);
 		};
 	};
 
@@ -201,8 +195,8 @@ export function listActions({
 					useVariables: true,
 				},
 			],
-			callback: broadcastCallback(async (core, broadcastId, event, context) => {
-				const message = await context.parseVariablesInString(String(event.options.message_content));
+			callback: broadcastCallback(async (core, broadcastId, event) => {
+				const message = String(event.options.message_content);
 				if (message.length === 0 || 200 < message.length) {
 					throw new Error('Message is empty or too long.');
 				}
@@ -249,8 +243,8 @@ export function listActions({
 					useVariables: true,
 				},
 			],
-			callback: broadcastCallback(async (core, broadcastId, event, context) => {
-				const title = await context.parseVariablesInString(String(event.options.title_content));
+			callback: broadcastCallback(async (core, broadcastId, event) => {
+				const title = String(event.options.title_content);
 				if (title.length === 0 || 100 < title.length) {
 					throw new Error('Unable to set title: title is empty or too long.');
 				}
@@ -272,8 +266,8 @@ export function listActions({
 					useVariables: true,
 				},
 			],
-			callback: broadcastCallback(async (core, broadcastId, event, context) => {
-				const description = await context.parseVariablesInString(String(event.options.desc_content));
+			callback: broadcastCallback(async (core, broadcastId, event) => {
+				const description = String(event.options.desc_content);
 				if (description.length === 0 || 5000 < description.length) {
 					throw new Error('Unable to set description: description is empty or too long.');
 				}
@@ -295,8 +289,8 @@ export function listActions({
 					useVariables: true,
 				},
 			],
-			callback: broadcastCallback(async (core, broadcastId, event, context) => {
-				const text = await context.parseVariablesInString(String(event.options.text));
+			callback: broadcastCallback(async (core, broadcastId, event) => {
+				const text = String(event.options.text);
 				if (text.length === 0) {
 					return;
 				}
@@ -322,8 +316,8 @@ export function listActions({
 					useVariables: true,
 				},
 			],
-			callback: broadcastCallback(async (core, broadcastId, event, context) => {
-				const text = await context.parseVariablesInString(String(event.options.text));
+			callback: broadcastCallback(async (core, broadcastId, event) => {
+				const text = String(event.options.text);
 				if (text.length === 0) {
 					return;
 				}
@@ -364,9 +358,9 @@ export function listActions({
 					isVisibleExpression: `!$(options:${DefaultSeparatorOptionId})`,
 				},
 			],
-			callback: broadcastCallback(async (core, broadcastId, event, context) => {
-				const separator = await context.parseVariablesInString(String(event.options.separator));
-				const chapterTitle = await context.parseVariablesInString(String(event.options.title));
+			callback: broadcastCallback(async (core, broadcastId, event) => {
+				const separator = String(event.options.separator);
+				const chapterTitle = String(event.options.title);
 
 				if (!chapterTitle) {
 					throw new Error('Unable to prepend text to description: bad parameters.');

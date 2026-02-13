@@ -80,14 +80,13 @@ export function listFeedbacks({
 	core: Core | null;
 }): Record<FeedbackId, AdvancedFeedbackWithAsyncCallback> {
 	const findBroadcastForOptions = async (
-		options: CompanionFeedbackAdvancedEvent['options'],
-		context: CompanionFeedbackContext
+		options: CompanionFeedbackAdvancedEvent['options']
 	): Promise<Broadcast | undefined> => {
 		if (!core) {
 			return undefined;
 		}
 
-		const id = await getBroadcastIdFromOptions(options, context);
+		const id = await getBroadcastIdFromOptions(options);
 		if (id === undefined) {
 			core.Module.log('warn', 'Feedback failed: undefined broadcast ID');
 			return undefined;
@@ -146,13 +145,13 @@ export function listFeedbacks({
 				},
 				...selectFromAllBroadcasts,
 			],
-			callback: async ({ options }, context): Promise<CompanionAdvancedFeedbackResult> => {
+			callback: async ({ options }): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!core) return {};
 				const dimStarting = Math.floor(Date.now() / 1000) % 2 == 0;
 
 				let broadcastStatus: BroadcastLifecycle;
 				{
-					const broadcast = await findBroadcastForOptions(options, context);
+					const broadcast = await findBroadcastForOptions(options);
 					if (broadcast === undefined) {
 						return {};
 					}
@@ -259,13 +258,13 @@ export function listFeedbacks({
 				},
 				...selectFromAllBroadcasts,
 			],
-			callback: async ({ options }, context): Promise<CompanionAdvancedFeedbackResult> => {
+			callback: async ({ options }): Promise<CompanionAdvancedFeedbackResult> => {
 				if (!core) return {};
 
 				let stream: Stream;
 				let broadcastStatus: BroadcastLifecycle;
 				{
-					const broadcast = await findBroadcastForOptions(options, context);
+					const broadcast = await findBroadcastForOptions(options);
 					if (broadcast === undefined || broadcast.BoundStreamId === null) {
 						return {};
 					}

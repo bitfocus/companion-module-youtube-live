@@ -128,23 +128,11 @@ export function selectBroadcastOptions(
 	];
 }
 
-/**
- * Context interface for parsing variables (works with both action and feedback contexts).
- * Note: After upgrading to @companion-module/base 1.14+, this can be replaced with
- * CompanionCommonCallbackContext which is exported from the package.
- */
-interface VariableParsingContext {
-	parseVariablesInString(text: string): Promise<string>;
-}
-
-export async function getBroadcastIdFromOptions(
-	options: CompanionOptionValues,
-	context: VariableParsingContext
-): Promise<BroadcastID | undefined> {
+export async function getBroadcastIdFromOptions(options: CompanionOptionValues): Promise<BroadcastID | undefined> {
 	const defineBroadcastIdFromText = Boolean(options[BroadcastIdIsTextOptionId]);
 	let broadcastId: BroadcastID;
 	if (defineBroadcastIdFromText) {
-		broadcastId = await context.parseVariablesInString(String(options[BroadcastIdTextOptionId]));
+		broadcastId = String(options[BroadcastIdTextOptionId]);
 	} else {
 		const rawBroadcastId = options[BroadcastIdDropdownOptionId];
 		if (rawBroadcastId) {
