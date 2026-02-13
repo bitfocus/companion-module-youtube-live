@@ -64,6 +64,21 @@ function getColor(options: CompanionOptionValues, id: string, defaultColor: numb
 	return Number.isNaN(n) ? defaultColor : n;
 }
 
+const BgReadyColorOptionId = 'bg_ready';
+const BgTestingColorOptionId = 'bg_testing';
+const BgLiveColorOptionId = 'bg_live';
+const BgCompleteColorOptionId = 'bg_complete';
+const TextColorOptionId = 'text';
+const TextCompleteColorOptionId = 'text_complete';
+
+const BgGoodColorOptionId = 'bg_good';
+const TextGoodColorOptionId = 'text_good';
+const BgOkColorOptionId = 'bg_ok';
+const TextOkColorOptionId = 'text_ok';
+const BgBadColorOptionId = 'bg_bad';
+const TextBadColorOptionId = 'text_bad';
+const BgNoDataColorOptionId = 'bg_no_data';
+const TextNoDataColorOptionId = 'text_no_data';
 /**
  * Get a list of feedbacks for this module
  * @param broadcasts Map of known broadcasts
@@ -110,37 +125,37 @@ export function listFeedbacks({
 				{
 					type: 'colorpicker',
 					label: 'Background color (ready)',
-					id: 'bg_ready',
+					id: BgReadyColorOptionId,
 					default: Yellow,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (testing)',
-					id: 'bg_testing',
+					id: BgTestingColorOptionId,
 					default: Green,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (live)',
-					id: 'bg_live',
+					id: BgLiveColorOptionId,
 					default: Red,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color',
-					id: 'text',
+					id: TextColorOptionId,
 					default: White,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (complete)',
-					id: 'bg_complete',
+					id: BgCompleteColorOptionId,
 					default: RoyalBlue,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (complete)',
-					id: 'text_complete',
+					id: TextCompleteColorOptionId,
 					default: Gray,
 				},
 				...selectFromAllBroadcasts,
@@ -159,12 +174,12 @@ export function listFeedbacks({
 					broadcastStatus = broadcast.Status;
 				}
 
-				const bgReady = getColor(options, 'bg_ready', Yellow);
-				const bgTesting = getColor(options, 'bg_testing', Green);
-				const bgLive = getColor(options, 'bg_live', Red);
-				const bgComplete = getColor(options, 'bg_complete', RoyalBlue);
-				const textColor = getColor(options, 'text', White);
-				const textComplete = getColor(options, 'text_complete', Gray);
+				const bgReady = getColor(options, BgReadyColorOptionId, Yellow);
+				const bgTesting = getColor(options, BgTestingColorOptionId, Green);
+				const bgLive = getColor(options, BgLiveColorOptionId, Red);
+				const bgComplete = getColor(options, BgCompleteColorOptionId, RoyalBlue);
+				const textColor = getColor(options, TextColorOptionId, White);
+				const textComplete = getColor(options, TextCompleteColorOptionId, Gray);
 
 				let bgcolor: number;
 				let color: number = textColor;
@@ -211,49 +226,49 @@ export function listFeedbacks({
 				{
 					type: 'colorpicker',
 					label: 'Background color (good)',
-					id: 'bg_good',
+					id: BgGoodColorOptionId,
 					default: LimeGreen,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (good)',
-					id: 'text_good',
+					id: TextGoodColorOptionId,
 					default: White,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (ok)',
-					id: 'bg_ok',
+					id: BgOkColorOptionId,
 					default: DarkYellow,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (ok)',
-					id: 'text_ok',
+					id: TextOkColorOptionId,
 					default: White,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (bad)',
-					id: 'bg_bad',
+					id: BgBadColorOptionId,
 					default: BrightOrange,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (bad)',
-					id: 'text_bad',
+					id: TextBadColorOptionId,
 					default: White,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (No data)',
-					id: 'bg_no_data',
+					id: BgNoDataColorOptionId,
 					default: BrightRed,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (No data)',
-					id: 'text_no_data',
+					id: TextNoDataColorOptionId,
 					default: White,
 				},
 				...selectFromAllBroadcasts,
@@ -282,23 +297,23 @@ export function listFeedbacks({
 				let color: number;
 				switch (stream.Health) {
 					case StreamHealth.Good:
-						bgcolor = getColor(options, 'bg_good', LimeGreen);
-						color = getColor(options, 'text_good', White);
+						bgcolor = getColor(options, BgGoodColorOptionId, LimeGreen);
+						color = getColor(options, TextGoodColorOptionId, White);
 						break;
 					case StreamHealth.OK:
-						bgcolor = getColor(options, 'bg_ok', DarkYellow);
-						color = getColor(options, 'text_ok', White);
+						bgcolor = getColor(options, BgOkColorOptionId, DarkYellow);
+						color = getColor(options, TextOkColorOptionId, White);
 						break;
 					case StreamHealth.Bad:
-						bgcolor = getColor(options, 'bg_bad', BrightOrange);
-						color = getColor(options, 'text_bad', White);
+						bgcolor = getColor(options, BgBadColorOptionId, BrightOrange);
+						color = getColor(options, TextBadColorOptionId, White);
 						break;
 					case StreamHealth.NoData:
 						if (broadcastStatus == BroadcastLifecycle.Complete) {
 							return {};
 						}
-						bgcolor = getColor(options, 'bg_no_data', BrightRed);
-						color = getColor(options, 'text_no_data', White);
+						bgcolor = getColor(options, BgNoDataColorOptionId, BrightRed);
+						color = getColor(options, TextNoDataColorOptionId, White);
 						break;
 				}
 
