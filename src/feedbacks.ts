@@ -5,7 +5,6 @@ import {
 	combineRgb,
 	CompanionMigrationFeedback,
 	CompanionOptionValues,
-	CompanionFeedbackContext,
 } from '@companion-module/base';
 import { Broadcast, BroadcastMap, BroadcastLifecycle, Stream, StreamHealth } from './cache.js';
 import {
@@ -52,12 +51,9 @@ export function tryUpgradeFeedbackSelectingBroadcastID(feedback: CompanionMigrat
 	return true;
 }
 
-interface AdvancedFeedbackWithAsyncCallback extends CompanionAdvancedFeedbackDefinition {
-	callback: (
-		feedback: CompanionFeedbackAdvancedEvent,
-		context: CompanionFeedbackContext
-	) => Promise<CompanionAdvancedFeedbackResult>;
-}
+type AdvancedFeedbackWithAsyncCallback = CompanionAdvancedFeedbackDefinition & {
+	callback: (...args: any[]) => Promise<any>;
+};
 
 function getColor(options: CompanionOptionValues, id: string, defaultColor: number): number {
 	const n = Number(options[id]);
