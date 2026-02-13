@@ -140,7 +140,6 @@ export async function getOAuthClient(config: YoutubeConfig): Promise<OAuth2Clien
 	} else {
 		try {
 			const tokenResponse = await oauth.getToken(authorizationCode);
-			console.log(`here: ${JSON.stringify(tokenResponse)}`);
 			credentials = tokenResponse.tokens;
 		} catch (_e) {
 			return [AuthorizationError.GetTokenError];
