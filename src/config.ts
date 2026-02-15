@@ -1,6 +1,17 @@
-import type { InputValue, SomeCompanionConfigField } from '@companion-module/base';
+import type { SomeCompanionConfigField } from '@companion-module/base';
 import { credentialsFromToken } from './authorization.js';
 import type { YoutubeInstance } from './index.js';
+
+function toStringDefaultEmpty(v: RawConfig[string]): string {
+	if (v === null || v === undefined) {
+		return '';
+	}
+
+	// We don't actually expect anything but strings here, so it shouldn't
+	// really matter if we invoke default `toString`.
+	// eslint-disable-next-line @typescript-eslint/no-base-to-string
+	return String(v);
+}
 
 /**
  * The `TConfig` object type used to store instance configuration info.
@@ -13,7 +24,7 @@ import type { YoutubeInstance } from './index.js';
  * expect to find in config objects.)
  */
 export interface RawConfig {
-	[key: string]: InputValue | undefined;
+	[key: string]: unknown;
 }
 
 const ClientIdOptionId = 'client_id';
@@ -62,10 +73,6 @@ export type YoutubeConfig = {
 	/** How many unfinished broadcasts store into variables */
 	[UnfinishedMaxCountOptionId]: number;
 };
-
-function toStringDefaultEmpty(v: RawConfig[string]): string {
-	return v ? String(v) : '';
-}
 
 const toClientId = toStringDefaultEmpty;
 const toClientSecret = toStringDefaultEmpty;
