@@ -1,6 +1,6 @@
 import * as url from 'node:url';
 import { type Credentials, OAuth2Client } from 'google-auth-library';
-import type { YoutubeConfig } from './config.js';
+import type { YoutubeSecrets } from './config.js';
 
 /**
  * Google API application parameters.
@@ -34,7 +34,7 @@ function getAppCredentials({
 	client_id: clientId,
 	client_secret: clientSecret,
 	client_redirect_url: redirectUri,
-}: YoutubeConfig): AppCredentials | AuthorizationError[] {
+}: YoutubeSecrets): AppCredentials | AuthorizationError[] {
 	const errors: AuthorizationError[] = [];
 
 	// Presume any nonempty client ID is valid.  (RFC 6749 allows client IDs to
@@ -78,8 +78,8 @@ function getAppCredentials({
  * If the current OAuth client settings are invalid, return an array of
  * descriptions of the errors in the settings.
  */
-export function generateAuthorizationURL(config: YoutubeConfig): string | AuthorizationError[] {
-	const appOrErrors = getAppCredentials(config);
+export function generateAuthorizationURL(secrets: YoutubeSecrets): string | AuthorizationError[] {
+	const appOrErrors = getAppCredentials(secrets);
 	if (appOrErrors instanceof Array) {
 		return appOrErrors;
 	}
@@ -132,8 +132,8 @@ export function credentialsFromToken(authToken: string): Credentials | null {
  * @param config
  *   Current configuration settings.
  */
-export async function getOAuthClient(config: YoutubeConfig): Promise<OAuth2Client | AuthorizationError[]> {
-	const app = getAppCredentials(config);
+export async function getOAuthClient(secrets: YoutubeSecrets): Promise<OAuth2Client | AuthorizationError[]> {
+	const app = getAppCredentials(secrets);
 	if (app instanceof Array) {
 		return app;
 	}
@@ -146,9 +146,9 @@ export async function getOAuthClient(config: YoutubeConfig): Promise<OAuth2Clien
 		return [AuthorizationError.UnknownError];
 	}
 
-	let credentials = credentialsFromToken(config.auth_token);
+	let credentials = credentialsFromToken(secrets.auth_token);
 	if (credentials === null) {
-		const authorizationCode = config.authorization_code;
+		const authorizationCode = secrets.authorization_code;
 		if (authorizationCode === '') {
 			return [AuthorizationError.MissingAuthenticationCode];
 		}

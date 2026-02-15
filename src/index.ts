@@ -67,27 +67,27 @@ export class YoutubeInstance extends InstanceBase<RawConfig, RawSecrets> impleme
 	): asserts newConfiguration is YoutubeConfiguration {
 		validateConfiguration(newConfiguration);
 
-		const oldConfig = oldConfiguration.config;
+		const oldSecrets = oldConfiguration.secrets;
 		const { config: newConfig, secrets: newSecrets } = newConfiguration;
 
 		let changed = false;
-		if (oldConfig.authorization_code !== newConfig.authorization_code) {
+		if (oldSecrets.authorization_code !== newSecrets.authorization_code) {
 			// If the authorization code was changed and the cached OAuth token
 			// info wasn't, treat this as the consent process having been rerun
 			// such that the cached token info should be discarded.
-			if (oldConfig.auth_token === newConfig.auth_token && newConfig.auth_token !== '') {
+			if (oldSecrets.auth_token === newSecrets.auth_token && newSecrets.auth_token !== '') {
 				// Presume that an OAuth authorization code change means the
 				// consent process was rerun and the unchanged OAuth token info
 				// should be discarded.
-				newConfig.auth_token = '';
+				newSecrets.auth_token = '';
 				changed = true;
 			}
 		} else {
 			// If the cached OAuth token info was cleared but the authorization
 			// code (presumed to have been used to get it) wasn't changed, clear
 			// the authorization code -- it's one-shot and useless now.
-			if (newConfig.auth_token === '' && oldConfig.auth_token !== '') {
-				newConfig.authorization_code = '';
+			if (newSecrets.auth_token === '' && oldSecrets.auth_token !== '') {
+				newSecrets.authorization_code = '';
 				changed = true;
 			}
 		}
@@ -103,9 +103,9 @@ export class YoutubeInstance extends InstanceBase<RawConfig, RawSecrets> impleme
 
 		this.#updateConfig(this.#configuration, configuration);
 
-		const config = configuration.config;
+		const { secrets } = configuration;
 
-		const googleAuth = await getOAuthClient(config);
+		const googleAuth = await getOAuthClient(secrets);
 		if (googleAuth instanceof Array) {
 			throw new Error(`Connection configuration has errors: ${googleAuth.join(', ')}`);
 		}
@@ -136,6 +136,8 @@ export class YoutubeInstance extends InstanceBase<RawConfig, RawSecrets> impleme
 			});
 		});
 
+		const { config } = configuration;
+
 		const api = new YoutubeConnector(googleAuth, loadMaxBroadcastCount(config));
 
 		const core = new Core(this, api, loadRefreshIntervalMs(config));
@@ -156,12 +158,12 @@ export class YoutubeInstance extends InstanceBase<RawConfig, RawSecrets> impleme
 	}
 
 	#saveCredentials(credentials: Credentials): void {
-		this.#configuration.config.auth_token = JSON.stringify(credentials);
+		this.#configuration.secrets.auth_token = JSON.stringify(credentials);
 		this.saveConfig(this.#configuration.config, this.#configuration.secrets);
 	}
 
 	#clearCredentials(): void {
-		this.#configuration.config.auth_token = '';
+		this.#configuration.secrets.auth_token = '';
 		this.saveConfig(this.#configuration.config, this.#configuration.secrets);
 	}
 
@@ -264,7 +266,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig, RawSecrets> impleme
 	}
 
 	override async handleHttpRequest(request: CompanionHTTPRequest): Promise<CompanionHTTPResponse> {
-		return handleHttpRequest(this.#configuration.config, this.log.bind(this), request);
+		return handleHttpRequest(this.#configuration.secrets, this.log.bind(this), request);
 	}
 }
 

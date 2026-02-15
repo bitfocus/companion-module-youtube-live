@@ -1,10 +1,10 @@
 import type { CompanionHTTPRequest, CompanionHTTPResponse } from '@companion-module/base';
 import { generateAuthorizationURL } from './authorization.js';
-import type { YoutubeConfig } from './config.js';
+import type { YoutubeSecrets } from './config.js';
 import type { YoutubeInstance } from './index.js';
 
 async function redirectToAuthorizeEndpoint(
-	config: YoutubeConfig,
+	secrets: YoutubeSecrets,
 	log: YoutubeInstance['log'],
 	request: CompanionHTTPRequest
 ): Promise<CompanionHTTPResponse> {
@@ -18,7 +18,7 @@ async function redirectToAuthorizeEndpoint(
 		};
 	}
 
-	const urlOrErrors = generateAuthorizationURL(config);
+	const urlOrErrors = generateAuthorizationURL(secrets);
 	if (typeof urlOrErrors === 'string') {
 		log('info', `YouTube consent URL: ${urlOrErrors}`);
 		return {
@@ -60,7 +60,7 @@ ${urlOrErrors
 }
 
 export async function handleHttpRequest(
-	config: YoutubeConfig,
+	secrets: YoutubeSecrets,
 	log: YoutubeInstance['log'],
 	request: CompanionHTTPRequest
 ): Promise<CompanionHTTPResponse> {
@@ -68,7 +68,7 @@ export async function handleHttpRequest(
 	try {
 		switch (request.path) {
 			case '/authorize':
-				return redirectToAuthorizeEndpoint(config, log, request);
+				return redirectToAuthorizeEndpoint(secrets, log, request);
 		}
 	} catch (e: unknown) {
 		log(

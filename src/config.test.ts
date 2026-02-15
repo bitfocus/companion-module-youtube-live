@@ -6,6 +6,12 @@ import {
 	listConfigFields,
 	type RawConfig,
 	validateConfig,
+	type RawSecrets,
+	validateSecrets,
+	tryMoveOAuthFieldsFromConfigToSecrets,
+	ClientIdOptionId,
+	type YoutubeConfig,
+	type YoutubeSecrets,
 } from './config.js';
 
 //require("leaked-handles");
@@ -63,5 +69,54 @@ describe('Broadcast limit', () => {
 
 	test('Module has configuration fields', () => {
 		expect(listConfigFields({ label: 'label' }).length).toBeGreaterThan(0);
+	});
+});
+
+describe('tryMoveOAuthFieldsFromConfigToSecrets', () => {
+	test('need to move', () => {
+		const goodConfig: RawConfig = {};
+		validateConfig(goodConfig);
+
+		const goodSecrets: RawSecrets = {};
+		validateSecrets(goodSecrets);
+
+		const needsMigrationConfig: RawConfig = {
+			...goodConfig,
+			...goodSecrets,
+		};
+		const needsMigrationSecrets: RawSecrets = {};
+
+		expect(ClientIdOptionId in needsMigrationConfig).toBe(true);
+		expect(tryMoveOAuthFieldsFromConfigToSecrets(needsMigrationConfig, needsMigrationSecrets)).toBe(true);
+		expect(ClientIdOptionId in needsMigrationConfig).toBe(false);
+
+		expect(needsMigrationConfig).toEqual(goodConfig);
+		expect(needsMigrationSecrets).toEqual(goodSecrets);
+
+		expect(tryMoveOAuthFieldsFromConfigToSecrets(needsMigrationConfig, needsMigrationSecrets)).toBe(false);
+		expect(ClientIdOptionId in needsMigrationConfig).toBe(false);
+	});
+
+	test('no need to move', () => {
+		const goodConfig: RawConfig = {};
+		validateConfig(goodConfig);
+
+		type assert_GoodConfigIsYoutubeConfig = Expect<Equal<typeof goodConfig, YoutubeConfig>>;
+
+		const goodSecrets: RawSecrets = {};
+		validateSecrets(goodSecrets);
+
+		type assert_GoodSecretsIsYoutubeSecrets = Expect<Equal<typeof goodSecrets, YoutubeSecrets>>;
+
+		const testConfig: YoutubeConfig = { ...goodConfig };
+		const testSecrets: YoutubeSecrets = { ...goodSecrets };
+
+		expect(ClientIdOptionId in testConfig).toBe(false);
+		expect(ClientIdOptionId in testSecrets).toBe(true);
+		expect(tryMoveOAuthFieldsFromConfigToSecrets(testConfig, testSecrets)).toBe(false);
+		expect(ClientIdOptionId in testConfig).toBe(false);
+		expect(testConfig).toEqual(goodConfig);
+		expect(ClientIdOptionId in testSecrets).toBe(true);
+		expect(testSecrets).toEqual(goodSecrets);
 	});
 });

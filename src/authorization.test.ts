@@ -2,15 +2,15 @@ import type { Equal, Expect } from 'type-testing';
 import { describe, expect, test, vi } from 'vitest';
 
 import { AuthorizationError, generateAuthorizationURL, getOAuthClient } from './authorization.js';
-import { type RawConfig, validateConfig, type YoutubeConfig } from './config.js';
+import { type RawSecrets, validateSecrets, type YoutubeSecrets } from './config.js';
 
 vi.mock('google-auth-library');
 import { OAuth2Client } from 'google-auth-library';
 
 const mockedOAuthCtor = vi.mocked(OAuth2Client);
 
-function configWithOverrides(overrides: Partial<YoutubeConfig>): YoutubeConfig {
-	const base: RawConfig = {
+function secretsWithOverrides(overrides: Partial<YoutubeSecrets>): YoutubeSecrets {
+	const base: RawSecrets = {
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		client_id: 'rickybobby',
 		// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -21,175 +21,171 @@ function configWithOverrides(overrides: Partial<YoutubeConfig>): YoutubeConfig {
 		authorization_code: 'code',
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		auth_token: '{}',
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		refresh_interval: 1,
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		fetch_max_count: 3,
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		unfinished_max_cnt: 2,
 	};
-	validateConfig(base);
 
-	type assert_BaseIsYoutubeConfig = Expect<Equal<typeof base, YoutubeConfig>>;
+	validateSecrets(base);
 
-	const config: RawConfig = {
+	type assert_BaseIsYoutubeSecrets = Expect<Equal<typeof base, YoutubeSecrets>>;
+
+	const secrets: RawSecrets = {
 		...base,
 		...overrides,
 	};
-	validateConfig(config);
 
-	return config;
+	validateSecrets(secrets);
+
+	return secrets;
 }
 
 describe('generate authorization URL', () => {
 	test('missing client ID', () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_id: '',
 		});
 
-		expect(generateAuthorizationURL(config)).toEqual([AuthorizationError.MissingClientId]);
+		expect(generateAuthorizationURL(secrets)).toEqual([AuthorizationError.MissingClientId]);
 	});
 
 	test('missing client secret', () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_secret: '',
 		});
 
-		expect(generateAuthorizationURL(config)).toEqual([AuthorizationError.MissingClientSecret]);
+		expect(generateAuthorizationURL(secrets)).toEqual([AuthorizationError.MissingClientSecret]);
 	});
 
 	test('missing client ID/secret', () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_id: '',
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_secret: '',
 		});
 
-		expect(generateAuthorizationURL(config)).toEqual([
+		expect(generateAuthorizationURL(secrets)).toEqual([
 			AuthorizationError.MissingClientId,
 			AuthorizationError.MissingClientSecret,
 		]);
 	});
 
 	test('missing redirect URL', () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_redirect_url: '',
 		});
 
-		expect(config.client_redirect_url).toBe('');
+		expect(secrets.client_redirect_url).toBe('');
 
-		expect(generateAuthorizationURL(config)).toEqual([AuthorizationError.InvalidRedirectURL]);
+		expect(generateAuthorizationURL(secrets)).toEqual([AuthorizationError.InvalidRedirectURL]);
 	});
 
 	test('missing client secret/redirect URL', () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_secret: '',
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_redirect_url: '',
 		});
 
-		expect(config.client_redirect_url).toBe('');
+		expect(secrets.client_redirect_url).toBe('');
 
-		expect(generateAuthorizationURL(config)).toEqual([
+		expect(generateAuthorizationURL(secrets)).toEqual([
 			AuthorizationError.MissingClientSecret,
 			AuthorizationError.InvalidRedirectURL,
 		]);
 	});
 
 	test('invalid redirect URL', () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_redirect_url: 'not a URL',
 		});
 
 		// `validateConfig` won't sanitize non-URLs to the empty string.
-		expect(config.client_redirect_url).toBe('not a URL');
+		expect(secrets.client_redirect_url).toBe('not a URL');
 
-		expect(generateAuthorizationURL(config)).toEqual([AuthorizationError.InvalidRedirectURL]);
+		expect(generateAuthorizationURL(secrets)).toEqual([AuthorizationError.InvalidRedirectURL]);
 	});
 });
 
 describe('get OAuth client', () => {
 	test('missing client ID', async () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_id: '',
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			authorization_code: '',
 		});
 
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.MissingClientId]);
+		await expect(getOAuthClient(secrets)).resolves.toEqual([AuthorizationError.MissingClientId]);
 	});
 
 	test('missing client ID but have authorization code', async () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_id: '',
 		});
 
-		expect(config.authorization_code).toBe('code');
+		expect(secrets.authorization_code).toBe('code');
 
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.MissingClientId]);
+		await expect(getOAuthClient(secrets)).resolves.toEqual([AuthorizationError.MissingClientId]);
 	});
 
 	test('missing client secret', async () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_secret: '',
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			authorization_code: '',
 		});
 
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.MissingClientSecret]);
+		await expect(getOAuthClient(secrets)).resolves.toEqual([AuthorizationError.MissingClientSecret]);
 	});
 
 	test('missing client secret but have authorization code', async () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_secret: '',
 		});
 
-		expect(config.authorization_code).toBe('code');
+		expect(secrets.authorization_code).toBe('code');
 
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.MissingClientSecret]);
+		await expect(getOAuthClient(secrets)).resolves.toEqual([AuthorizationError.MissingClientSecret]);
 	});
 
 	test('invalid redirect URL', async () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			client_redirect_url: 'bad URL',
 		});
 
 		// `validateConfig` won't sanitize non-URLs to the empty string.
-		expect(config.client_redirect_url).toBe('bad URL');
+		expect(secrets.client_redirect_url).toBe('bad URL');
 
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.InvalidRedirectURL]);
+		await expect(getOAuthClient(secrets)).resolves.toEqual([AuthorizationError.InvalidRedirectURL]);
 	});
 
 	test('new OAuth2Client throws', async () => {
-		const config = configWithOverrides({});
+		const secrets = secretsWithOverrides({});
 
 		// The current implementation never throws if passed correctly-typed
 		// values, but we may as well mock it to ensure reasonable handling.
 		mockedOAuthCtor.mockImplementationOnce(function (opts) {
 			expect(opts).instanceOf(Object);
-			expect(opts).toHaveProperty('clientId', config.client_id);
-			expect(opts).toHaveProperty('clientSecret', config.client_secret);
-			expect(opts).toHaveProperty('redirectUri', config.client_redirect_url);
+			expect(opts).toHaveProperty('clientId', secrets.client_id);
+			expect(opts).toHaveProperty('clientSecret', secrets.client_secret);
+			expect(opts).toHaveProperty('redirectUri', secrets.client_redirect_url);
 
 			throw new Error('expected error');
 		});
 
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.UnknownError]);
+		await expect(getOAuthClient(secrets)).resolves.toEqual([AuthorizationError.UnknownError]);
 	});
 
 	test('auth_token contains invalid JSON and no authorization code', async () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			authorization_code: '',
 		});
@@ -199,38 +195,38 @@ describe('get OAuth client', () => {
 		// be written defensively.
 		const invalid = 'this should not be possible but test it anyway';
 
-		config.auth_token = invalid;
-		validateConfig(config);
-		expect(config.auth_token).toBe('');
+		secrets.auth_token = invalid;
+		validateSecrets(secrets);
+		expect(secrets.auth_token).toBe('');
 
-		config.auth_token = invalid;
+		secrets.auth_token = invalid;
 
 		vi.spyOn(JSON, 'parse');
 
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.MissingAuthenticationCode]);
+		await expect(getOAuthClient(secrets)).resolves.toEqual([AuthorizationError.MissingAuthenticationCode]);
 		expect(JSON.parse).toHaveBeenCalledWith(invalid);
 	});
 
 	test('auth_token contains invalid JSON, but with authorization code', async () => {
-		const config = configWithOverrides({
+		const secrets = secretsWithOverrides({
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			authorization_code: 'voicepassport',
 		});
 
-		// A Companion-supplied config should pass through `validateConfig` and
+		// Companion-supplied secrets should pass through `validateSecrets` and
 		// be rewritten before module code sees this.  But `getOauthClient` can
 		// be written defensively.
 		const invalid = 'this should not be possible but test it anyway';
 
-		config.auth_token = invalid;
-		validateConfig(config);
-		expect(config.auth_token).toBe('');
+		secrets.auth_token = invalid;
+		validateSecrets(secrets);
+		expect(secrets.auth_token).toBe('');
 
-		config.auth_token = invalid;
+		secrets.auth_token = invalid;
 
 		vi.spyOn(OAuth2Client.prototype, 'getToken').mockRejectedValueOnce(new Error('throw!'));
 
-		await expect(getOAuthClient(config)).resolves.toEqual([AuthorizationError.GetTokenError]);
+		await expect(getOAuthClient(secrets)).resolves.toEqual([AuthorizationError.GetTokenError]);
 		expect(JSON.parse).toHaveBeenCalledWith(invalid);
 		expect(OAuth2Client.prototype.getToken).toHaveBeenCalledWith('voicepassport');
 	});
