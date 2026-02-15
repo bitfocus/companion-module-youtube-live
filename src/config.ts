@@ -111,8 +111,8 @@ function toUnfinishedMaxCount(raw: RawConfig[typeof UnfinishedMaxCountOptionId])
 }
 
 /**
- * Validate 'config' as a validly-encoded configuration, massaging it into type
- * conformance as necessary.
+ * Validate 'config' as a validly-encoded `YoutubeConfig`, massaging it into
+ * type conformance as necessary.
  */
 export function validateConfig(config: RawConfig): asserts config is YoutubeConfig {
 	config[ClientIdOptionId] = toClientId(config[ClientIdOptionId]);
@@ -123,19 +123,6 @@ export function validateConfig(config: RawConfig): asserts config is YoutubeConf
 	config[FetchMaxCountOptionId] = toFetchMaxCount(config[FetchMaxCountOptionId]);
 	config[RefreshIntervalOptionId] = toRefreshInterval(config[RefreshIntervalOptionId]);
 	config[UnfinishedMaxCountOptionId] = toUnfinishedMaxCount(config[UnfinishedMaxCountOptionId]);
-}
-
-export function noConnectionConfig(): YoutubeConfig {
-	return {
-		[ClientIdOptionId]: '',
-		[ClientSecretOptionId]: '',
-		[ClientRedirectURLOptionId]: '',
-		[AuthorizationCodeOptionId]: '',
-		[YouTubeCredentialsOptionId]: '',
-		[FetchMaxCountOptionId]: DefaultFetchMaxCount,
-		[RefreshIntervalOptionId]: DefaultRefreshIntervalSeconds,
-		[UnfinishedMaxCountOptionId]: DefaultUnfinishedMaxCount,
-	};
 }
 
 /**
@@ -167,6 +154,60 @@ export function loadMaxUnfinishedBroadcastCount(config: YoutubeConfig): number {
 	if (items > max) items = max;
 
 	return items;
+}
+
+/**
+ * The `TSecrets` object type used to store instance configuration secrets.
+ *
+ * As with `RawConfig`, nothing guarantees Companion's stored secrets conform to
+ * a well-typed formulation of the secrets store, so we undertype it and then
+ * validate it into well-typed form for long-term use.
+ */
+export interface RawSecrets {
+	[key: string]: unknown;
+}
+
+/** There are no secrets...yet. */
+export type YoutubeSecrets = Record<string, never>;
+
+function validateSecrets(_secrets: RawSecrets): asserts _secrets is YoutubeSecrets {
+	// Nothing to do...yet.
+}
+
+export type RawConfiguration = {
+	config: RawConfig;
+	secrets: RawSecrets;
+};
+
+export type YoutubeConfiguration = {
+	config: YoutubeConfig;
+	secrets: YoutubeSecrets;
+};
+
+export function noConnectionConfiguration(): YoutubeConfiguration {
+	return {
+		config: {
+			[ClientIdOptionId]: '',
+			[ClientSecretOptionId]: '',
+			[ClientRedirectURLOptionId]: '',
+			[AuthorizationCodeOptionId]: '',
+			[YouTubeCredentialsOptionId]: '',
+			[FetchMaxCountOptionId]: DefaultFetchMaxCount,
+			[RefreshIntervalOptionId]: DefaultRefreshIntervalSeconds,
+			[UnfinishedMaxCountOptionId]: DefaultUnfinishedMaxCount,
+		},
+		secrets: {},
+	};
+}
+
+/**
+ * Validate 'configuration' as a validly-encoded configuration, massaging it
+ * into type conformance as necessary.
+ */
+export function validateConfiguration(configuration: RawConfiguration): asserts configuration is YoutubeConfiguration {
+	const { config, secrets } = configuration;
+	validateConfig(config);
+	validateSecrets(secrets);
 }
 
 /**

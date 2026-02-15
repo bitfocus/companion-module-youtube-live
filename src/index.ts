@@ -10,14 +10,16 @@ import {
 import type { Credentials } from 'google-auth-library';
 import type { ExpectFalse } from 'type-testing';
 import {
-	type YoutubeConfig,
 	listConfigFields,
 	loadMaxBroadcastCount,
 	loadRefreshIntervalMs,
 	loadMaxUnfinishedBroadcastCount,
-	validateConfig,
-	noConnectionConfig,
+	validateConfiguration,
 	type RawConfig,
+	type RawSecrets,
+	type YoutubeConfiguration,
+	noConnectionConfiguration,
+	type RawConfiguration,
 } from './config.js';
 import { Core, type ModuleBase } from './core.js';
 import type { Broadcast, StateMemory } from './cache.js';
@@ -36,21 +38,21 @@ type assert_FailingTypeTest = ExpectFalse<true>;
 /**
  * Main Companion integration class of this module
  */
-export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBase {
+export class YoutubeInstance extends InstanceBase<RawConfig, RawSecrets> implements ModuleBase {
 	/** Executive core of the module */
 	#core: Core | null = null;
 
 	/** Configuration */
-	#config: YoutubeConfig = noConnectionConfig();
+	#configuration: YoutubeConfiguration = noConnectionConfiguration();
 
-	override async init(config: RawConfig, _isFirstInit: boolean): Promise<void> {
+	override async init(config: RawConfig, _isFirstInit: boolean, secrets: RawSecrets): Promise<void> {
 		this.log('debug', 'Initializing YT module');
 
-		this.#initInstance(config);
+		this.#initInstance({ config, secrets });
 	}
 
-	#initInstance(config: RawConfig): void {
-		this.#initializeInstance(config).catch((reason) => {
+	#initInstance(configuration: RawConfiguration): void {
+		this.#initializeInstance(configuration).catch((reason) => {
 			this.#clearCredentials();
 
 			const authorizationFailedMessage = `Authorization failed: ${reason}`;
@@ -59,8 +61,14 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 		});
 	}
 
-	#updateConfig(oldConfig: YoutubeConfig, newConfig: RawConfig): asserts newConfig is YoutubeConfig {
-		validateConfig(newConfig);
+	#updateConfig(
+		oldConfiguration: YoutubeConfiguration,
+		newConfiguration: RawConfiguration
+	): asserts newConfiguration is YoutubeConfiguration {
+		validateConfiguration(newConfiguration);
+
+		const oldConfig = oldConfiguration.config;
+		const { config: newConfig, secrets: newSecrets } = newConfiguration;
 
 		let changed = false;
 		if (oldConfig.authorization_code !== newConfig.authorization_code) {
@@ -85,15 +93,17 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 		}
 
 		if (changed) {
-			this.saveConfig(newConfig);
+			this.saveConfig(newConfig, newSecrets);
 		}
-		this.#config = newConfig;
+		this.#configuration = newConfiguration;
 	}
 
-	async #initializeInstance(config: RawConfig): Promise<void> {
+	async #initializeInstance(configuration: RawConfiguration): Promise<void> {
 		this.updateStatus(InstanceStatus.UnknownWarning, 'Initializing');
 
-		this.#updateConfig(this.#config, config);
+		this.#updateConfig(this.#configuration, configuration);
+
+		const config = configuration.config;
 
 		const googleAuth = await getOAuthClient(config);
 		if (googleAuth instanceof Array) {
@@ -146,13 +156,13 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	}
 
 	#saveCredentials(credentials: Credentials): void {
-		this.#config.auth_token = JSON.stringify(credentials);
-		this.saveConfig(this.#config);
+		this.#configuration.config.auth_token = JSON.stringify(credentials);
+		this.saveConfig(this.#configuration.config, this.#configuration.secrets);
 	}
 
 	#clearCredentials(): void {
-		this.#config.auth_token = '';
-		this.saveConfig(this.#config);
+		this.#configuration.config.auth_token = '';
+		this.saveConfig(this.#configuration.config, this.#configuration.secrets);
 	}
 
 	#shutdown() {
@@ -170,12 +180,13 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	/**
 	 * Store new configuration from UI and reload the module
 	 * @param config New module configuration
+	 * @param secrets New module secrets
 	 */
-	override async configUpdated(config: YoutubeConfig): Promise<void> {
+	override async configUpdated(config: RawConfig, secrets: RawSecrets): Promise<void> {
 		this.log('debug', 'Restarting YT module after reconfiguration');
 		this.#shutdown();
 
-		this.#initInstance(config);
+		this.#initInstance({ config, secrets });
 	}
 
 	/**
@@ -190,7 +201,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	 * @param memory Known streams and broadcasts
 	 */
 	reloadAll(memory: StateMemory): void {
-		const unfinishedCnt = loadMaxUnfinishedBroadcastCount(this.#config);
+		const unfinishedCnt = loadMaxUnfinishedBroadcastCount(this.#configuration.config);
 		const vars: CompanionVariableValues = {};
 
 		this.setVariableDefinitions(declareVars(memory, unfinishedCnt));
@@ -223,7 +234,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	reloadStates(memory: StateMemory): void {
 		const vars: CompanionVariableValues = {};
 
-		for (const item of exportVars(memory, loadMaxUnfinishedBroadcastCount(this.#config))) {
+		for (const item of exportVars(memory, loadMaxUnfinishedBroadcastCount(this.#configuration.config))) {
 			vars[`${item.name}`] = item.value;
 		}
 		this.setVariableValues(vars);
@@ -253,7 +264,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	}
 
 	override async handleHttpRequest(request: CompanionHTTPRequest): Promise<CompanionHTTPResponse> {
-		return handleHttpRequest(this.#config, this.log.bind(this), request);
+		return handleHttpRequest(this.#configuration.config, this.log.bind(this), request);
 	}
 }
 
