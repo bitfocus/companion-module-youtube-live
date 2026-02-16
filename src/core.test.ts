@@ -54,6 +54,13 @@ describe('Miscellaneous', () => {
 					Visibility: Visibility.Private,
 				},
 			],
+			BoundStreams: {
+				sA: {
+					Id: 'sA',
+					Health: StreamHealth.Good,
+				},
+			},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
@@ -76,6 +83,7 @@ describe('Miscellaneous', () => {
 		expect(mockModule.reloadAll).toHaveBeenCalledWith(core.Cache);
 		expect(mockYT.listBroadcasts).toHaveBeenCalledTimes(1);
 		expect(mockYT.listBoundStreams).toHaveBeenCalledTimes(1);
+		expect(mockYT.listStreams).toHaveBeenCalledTimes(1);
 	});
 
 	test('Periodic callback works', async () => {
@@ -183,6 +191,8 @@ describe('Starting tests on broadcasts', () => {
 				},
 			},
 			UnfinishedBroadcasts: [],
+			BoundStreams: {},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
@@ -280,6 +290,8 @@ describe('Going live with broadcasts', () => {
 				},
 			},
 			UnfinishedBroadcasts: [],
+			BoundStreams: {},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
@@ -383,6 +395,8 @@ describe('Finishing live broadcasts', () => {
 				},
 			},
 			UnfinishedBroadcasts: [],
+			BoundStreams: {},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
@@ -449,6 +463,8 @@ describe('Toggling live broadcasts', () => {
 				},
 			},
 			UnfinishedBroadcasts: [],
+			BoundStreams: {},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
