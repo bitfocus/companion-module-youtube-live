@@ -1,6 +1,6 @@
 import * as url from 'node:url';
 import { type Credentials, OAuth2Client } from 'google-auth-library';
-import { YoutubeConfig } from './config.js';
+import type { YoutubeConfig } from './config.js';
 
 /**
  * Google API application parameters.

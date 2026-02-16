@@ -1,6 +1,6 @@
-import { InputValue, SomeCompanionConfigField } from '@companion-module/base';
+import type { InputValue, SomeCompanionConfigField } from '@companion-module/base';
 import { credentialsFromToken } from './authorization.js';
-import { YoutubeInstance } from './index.js';
+import type { YoutubeInstance } from './index.js';
 
 /**
  * The `TConfig` object type used to store instance configuration info.

@@ -1,14 +1,14 @@
-import { afterAll, afterEach, describe, expect, MockedObject, test, vi } from 'vitest';
+import { afterAll, afterEach, describe, expect, type MockedObject, test, vi } from 'vitest';
 
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
-import { CompanionActionEvent, CompanionOptionValues } from '@companion-module/base';
+import type { CompanionActionEvent, CompanionOptionValues } from '@companion-module/base';
 import { makeMockModule, makeMockYT } from './core.js';
 import { listActions, ActionId } from '../actions.js';
-import { BroadcastLifecycle, BroadcastID, StateMemory } from '../cache.js';
+import { BroadcastLifecycle, type BroadcastID, type StateMemory } from '../cache.js';
 import { clone } from '../common.js';
-import { ModuleBase, Core } from '../core.js';
-import { Visibility, YoutubeAPI } from '../youtube.js';
+import { type ModuleBase, Core } from '../core.js';
+import { Visibility, type YoutubeAPI } from '../youtube.js';
 import { MockContext } from '../__mocks__/context.js';
 
 const SampleMemory: StateMemory = {

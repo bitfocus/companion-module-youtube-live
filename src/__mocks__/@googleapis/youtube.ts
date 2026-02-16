@@ -1,4 +1,4 @@
-import { youtube_v3 } from '@googleapis/youtube/build';
+import type { youtube_v3 } from '@googleapis/youtube';
 import { expect, vi } from 'vitest';
 
 // All methods mocked below are heavily overloaded.  If we were to use e.g.

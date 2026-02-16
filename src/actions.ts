@@ -1,10 +1,10 @@
-import {
+import type {
 	CompanionActionDefinition,
 	CompanionActionEvent,
 	CompanionMigrationAction,
 	DropdownChoice,
 } from '@companion-module/base';
-import { BroadcastMap, BroadcastID, youngerThan, BroadcastLifecycle } from './cache.js';
+import { type BroadcastMap, type BroadcastID, youngerThan, BroadcastLifecycle } from './cache.js';
 import {
 	BroadcastIdIsTextOptionId,
 	BroadcastIdDropdownOptionId,
@@ -12,7 +12,7 @@ import {
 	getBroadcastIdFromOptions,
 	selectBroadcastOptions,
 } from './common.js';
-import { Core } from './core.js';
+import type { Core } from './core.js';
 import { Visibility } from './youtube.js';
 
 export enum ActionId {

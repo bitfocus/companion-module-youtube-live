@@ -1,4 +1,4 @@
-import { CompanionActionContext, CompanionFeedbackContext, CompanionVariableValue } from '@companion-module/base';
+import type { CompanionActionContext, CompanionFeedbackContext, CompanionVariableValue } from '@companion-module/base';
 
 // https://github.com/bitfocus/companion/blob/bfe2e89d2fdbddf0d2347e73305e866c659ae412/companion/lib/Variables/Util.ts#L22
 const VARIABLE_REGEX = /\$\(([^:$)]+):([^)$]+)\)/;

@@ -1,10 +1,10 @@
-import { afterAll, afterEach, beforeEach, describe, expect, MockedObject, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, type MockedObject, test, vi } from 'vitest';
 
 //require("leaked-handles");
-import { YoutubeAPI } from '../youtube.js';
-import { ModuleBase, Core } from '../core.js';
+import { type YoutubeAPI } from '../youtube.js';
+import { type ModuleBase, Core } from '../core.js';
 import { sleep } from '../common.js';
-import { Broadcast, StateMemory, BroadcastLifecycle, StreamHealth } from '../cache.js';
+import { type Broadcast, type StateMemory, BroadcastLifecycle, StreamHealth } from '../cache.js';
 
 export function makeMockYT(memory: StateMemory): YoutubeAPI {
 	return {

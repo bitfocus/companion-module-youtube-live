@@ -1,7 +1,7 @@
 import type { CompanionHTTPRequest, CompanionHTTPResponse } from '@companion-module/base';
 import { generateAuthorizationURL } from './authorization.js';
-import { YoutubeConfig } from './config.js';
-import { YoutubeInstance } from './index.js';
+import type { YoutubeConfig } from './config.js';
+import type { YoutubeInstance } from './index.js';
 
 async function redirectToAuthorizeEndpoint(
 	config: YoutubeConfig,

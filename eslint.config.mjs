@@ -60,6 +60,13 @@ const customConfig = [
 			'no-eval': 'error',
 			'no-implied-eval': 'error',
 
+			'@typescript-eslint/consistent-type-imports': [
+				'error',
+				{
+					fixStyle: 'separate-type-imports',
+				},
+			],
+
 			'@typescript-eslint/naming-convention': [
 				'error',
 

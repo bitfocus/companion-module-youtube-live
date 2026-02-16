@@ -1,4 +1,4 @@
-import {
+import type {
 	CompanionInputFieldCheckbox,
 	CompanionInputFieldDropdown,
 	CompanionInputFieldTextInput,
@@ -6,8 +6,8 @@ import {
 	DropdownChoice,
 	InstanceBase,
 } from '@companion-module/base';
-import { Broadcast, BroadcastID, BroadcastMap } from './cache.js';
-import { YoutubeConfig } from './config.js';
+import type { Broadcast, BroadcastID, BroadcastMap } from './cache.js';
+import type { YoutubeConfig } from './config.js';
 
 /** Generic module skeleton for extracting function types. */
 type IModule = InstanceBase<YoutubeConfig>;

@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import type { Equal, Expect } from 'type-testing';
-
-//require("leaked-handles");
 import {
 	loadRefreshIntervalMs,
 	loadMaxBroadcastCount,
 	listConfigFields,
-	RawConfig,
+	type RawConfig,
 	validateConfig,
 } from '../config.js';
+
+//require("leaked-handles");
 
 describe('Refresh interval', () => {
 	test('Refresh interval has a default', () => {

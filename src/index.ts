@@ -1,26 +1,26 @@
 import {
-	CompanionHTTPRequest,
-	CompanionHTTPResponse,
-	CompanionVariableValues,
+	type CompanionHTTPRequest,
+	type CompanionHTTPResponse,
+	type CompanionVariableValues,
 	InstanceBase,
 	InstanceStatus,
-	SomeCompanionConfigField,
+	type SomeCompanionConfigField,
 	runEntrypoint,
 } from '@companion-module/base';
 import type { Credentials } from 'google-auth-library';
 import type { ExpectFalse } from 'type-testing';
 import {
-	YoutubeConfig,
+	type YoutubeConfig,
 	listConfigFields,
 	loadMaxBroadcastCount,
 	loadRefreshIntervalMs,
 	loadMaxUnfinishedBroadcastCount,
 	validateConfig,
 	noConnectionConfig,
-	RawConfig,
+	type RawConfig,
 } from './config.js';
-import { Core, ModuleBase } from './core.js';
-import { StateMemory, Broadcast } from './cache.js';
+import { Core, type ModuleBase } from './core.js';
+import type { Broadcast, StateMemory } from './cache.js';
 import { getBroadcastVars, exportVars, declareVars, getUnfinishedBroadcastStateVars } from './vars.js';
 import { listActions } from './actions.js';
 import { listFeedbacks } from './feedbacks.js';

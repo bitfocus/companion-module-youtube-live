@@ -1,12 +1,12 @@
 import {
-	CompanionAdvancedFeedbackDefinition,
-	CompanionAdvancedFeedbackResult,
-	CompanionFeedbackAdvancedEvent,
+	type CompanionAdvancedFeedbackDefinition,
+	type CompanionAdvancedFeedbackResult,
+	type CompanionFeedbackAdvancedEvent,
 	combineRgb,
-	CompanionMigrationFeedback,
-	CompanionOptionValues,
+	type CompanionMigrationFeedback,
+	type CompanionOptionValues,
 } from '@companion-module/base';
-import { Broadcast, BroadcastMap, BroadcastLifecycle, Stream, StreamHealth } from './cache.js';
+import { type Broadcast, type BroadcastMap, BroadcastLifecycle, type Stream, StreamHealth } from './cache.js';
 import {
 	BroadcastIdIsTextOptionId,
 	BroadcastIdDropdownOptionId,
@@ -14,7 +14,7 @@ import {
 	getBroadcastIdFromOptions,
 	selectBroadcastOptions,
 } from './common.js';
-import { Core } from './core.js';
+import type { Core } from './core.js';
 
 export enum FeedbackId {
 	BroadcastStatus = 'broadcast_status',

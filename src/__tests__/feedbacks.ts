@@ -1,13 +1,17 @@
-import { afterAll, afterEach, beforeEach, describe, expect, MockedObject, test, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, type MockedObject, test, vi } from 'vitest';
 
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import { listFeedbacks } from '../feedbacks.js';
-import { BroadcastLifecycle, StreamHealth, StateMemory } from '../cache.js';
-import { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult, combineRgb } from '@companion-module/base';
+import { BroadcastLifecycle, StreamHealth, type StateMemory } from '../cache.js';
+import {
+	type CompanionFeedbackAdvancedEvent,
+	type CompanionAdvancedFeedbackResult,
+	combineRgb,
+} from '@companion-module/base';
 import { clone } from '../common.js';
-import { ModuleBase, Core } from '../core.js';
-import { YoutubeAPI } from '../youtube.js';
+import { type ModuleBase, Core } from '../core.js';
+import type { YoutubeAPI } from '../youtube.js';
 import { makeMockModule, makeMockYT } from './core.js';
 import { MockContext } from '../__mocks__/context.js';
 
