@@ -281,11 +281,11 @@ export function listFeedbacks({
 					}
 
 					const streamId = broadcast.BoundStreamId;
-					if (!(streamId in core.Cache.Streams)) {
+					if (!(streamId in core.Cache.BoundStreams)) {
 						return {};
 					}
 
-					stream = core.Cache.Streams[streamId];
+					stream = core.Cache.BoundStreams[streamId];
 					broadcastStatus = broadcast.Status;
 				}
 

@@ -30,6 +30,8 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 		});
 	});
 
+	result.push({ variableId: 'last_created_broadcast_id', name: 'ID of the most recently created broadcast' });
+
 	Array(unfinishedCnt)
 		.keys()
 		.forEach((i) => {
@@ -53,6 +55,8 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
  */
 export function exportVars(memory: StateMemory, unfinishedCnt: number): VariableContent[] {
 	const result: VariableContent[] = [];
+
+	result.push({ name: 'last_created_broadcast_id', value: memory.LastCreatedBroadcast?.Id || '' });
 
 	Object.values(memory.Broadcasts).forEach((broadcast) => {
 		result.push(...getBroadcastVars(broadcast));

@@ -33,5 +33,10 @@ export class FakeYouTube {
 		insertCuepoint:
 			vi.fn<LiveBroadcastsMethod<'insertCuepoint', [youtube_v3.Params$Resource$Livebroadcasts$Insertcuepoint]>>(),
 		update: vi.fn<LiveBroadcastsMethod<'update', [youtube_v3.Params$Resource$Livebroadcasts$Update]>>(),
+		insert: vi.fn(),
+		bind: vi.fn(),
+	};
+	thumbnails = {
+		set: vi.fn(),
 	};
 }
