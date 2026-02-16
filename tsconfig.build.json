@@ -8,9 +8,6 @@
 			"*": ["./node_modules/*"]
 		},
 
-		"module": "es2022",
-
-		// This is needed to perform ECMA imports of 'open' and 'server-destroy'.
-		"esModuleInterop": true
+		"module": "es2022"
 	}
 }
