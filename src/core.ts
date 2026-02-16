@@ -1,6 +1,9 @@
-import { type StateMemory, type BroadcastID, BroadcastLifecycle, type Broadcast } from './cache.js';
+import { type StateMemory, type BroadcastID, BroadcastLifecycle, type Broadcast, type StreamMap } from './cache.js';
 import { Transition, type Visibility, type YoutubeAPI } from './youtube.js';
 import { DetachedPromise, type Logger } from './common.js';
+import * as fs from 'fs';
+import * as https from 'https';
+import * as http from 'http';
 
 /**
  * Interface between executive core and the Companion module glue
@@ -66,7 +69,13 @@ export class Core {
 	constructor(mod: ModuleBase, api: YoutubeAPI, refreshInterval: number, pollInterval = 1000) {
 		this.Module = mod;
 		this.YouTube = api;
-		this.Cache = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
+		this.Cache = {
+			Broadcasts: {},
+			Streams: {},
+			BoundStreams: {},
+			UnfinishedBroadcasts: [],
+			LastCreatedBroadcast: null,
+		};
 		this.RefreshInterval = refreshInterval;
 		this.TransitionPollInterval = pollInterval;
 		this.RunningTransitions = {};
@@ -78,7 +87,8 @@ export class Core {
 	 */
 	async init(): Promise<void> {
 		this.Cache.Broadcasts = await this.YouTube.listBroadcasts();
-		this.Cache.Streams = await this.YouTube.listBoundStreams(this.Cache.Broadcasts);
+		this.Cache.BoundStreams = await this.YouTube.listBoundStreams(this.Cache.Broadcasts);
+		this.Cache.Streams = await this.YouTube.listStreams();
 
 		const unfinished = Object.values(this.Cache.Broadcasts).filter((broadcast: Broadcast): boolean => {
 			// Filter only unfinished broadcasts.
@@ -112,7 +122,7 @@ export class Core {
 	async refresher(): Promise<void> {
 		try {
 			this.Cache.Broadcasts = await this.YouTube.refreshBroadcastStatus(this.Cache.Broadcasts);
-			this.Cache.Streams = await this.YouTube.listBoundStreams(this.Cache.Broadcasts);
+			this.Cache.BoundStreams = await this.YouTube.listBoundStreams(this.Cache.Broadcasts);
 			// update existing unfinished broadcasts store
 			this.Cache.UnfinishedBroadcasts = this.Cache.UnfinishedBroadcasts.map((a) => {
 				return a.Id in this.Cache.Broadcasts ? this.Cache.Broadcasts[a.Id] : a;
@@ -475,6 +485,197 @@ export class Core {
 
 	async setVisibility(id: BroadcastID, visibility: Visibility): Promise<void> {
 		return this.YouTube.setVisibility(id, visibility);
+	}
+
+	async createBroadcast(
+		title: string,
+		scheduledStartTime: string,
+		privacyStatus: Visibility,
+		description?: string,
+		enableAutoStart?: boolean,
+		enableAutoStop?: boolean,
+		templateId?: BroadcastID,
+		thumbnailPath?: string,
+		streamId?: string
+	): Promise<BroadcastID> {
+		this.Cache.LastCreatedBroadcast = null;
+
+		if (description && description.length > 5000) {
+			throw new Error(`Description must not exceed 5000 characters (got ${description.length})`);
+		}
+
+		let finalTitle = title;
+		let finalDescription = description;
+		let enableMonitorStream: boolean | undefined = undefined;
+		let finalStreamId = streamId;
+
+		if (templateId && this.Cache.Broadcasts[templateId]) {
+			const template = this.Cache.Broadcasts[templateId];
+			if (!finalTitle || finalTitle.length === 0) {
+				finalTitle = template.Name;
+			}
+			if (finalDescription === undefined) {
+				finalDescription = template.Description;
+			}
+			enableMonitorStream = template.MonitorStreamEnabled;
+			if (!finalStreamId && template.BoundStreamId) {
+				finalStreamId = template.BoundStreamId;
+			}
+		}
+
+		if (!finalTitle || finalTitle.length === 0 || finalTitle.length > 100) {
+			throw new Error(`Title must be between 1 and 100 characters (got ${finalTitle?.length ?? 0})`);
+		}
+
+		const broadcastId = await this.YouTube.createBroadcast(
+			finalTitle,
+			scheduledStartTime,
+			privacyStatus,
+			finalDescription,
+			enableAutoStart,
+			enableAutoStop,
+			enableMonitorStream
+		);
+
+		this.Module.log('info', `Created broadcast: ${broadcastId}`);
+
+		if (thumbnailPath) {
+			await this.setThumbnail(broadcastId, thumbnailPath);
+		}
+
+		if (finalStreamId) {
+			await this.YouTube.bindBroadcastToStream(broadcastId, finalStreamId);
+			this.Module.log('info', `Bound stream ${finalStreamId} to broadcast ${broadcastId}`);
+		}
+
+		await this.reloadEverything();
+
+		// Set after reload so we have the full broadcast data
+		this.Cache.LastCreatedBroadcast = this.Cache.Broadcasts[broadcastId] || null;
+		this.Module.reloadStates(this.Cache);
+
+		return broadcastId;
+	}
+
+	async setThumbnail(broadcastId: BroadcastID, imagePath: string): Promise<void> {
+		const maxSize = 2 * 1024 * 1024;
+		let imageData: Buffer;
+		let mimeType: string;
+
+		if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+			const result = await this.fetchImageFromUrl(imagePath);
+			imageData = result.data;
+			mimeType = result.mimeType;
+		} else {
+			if (!fs.existsSync(imagePath)) {
+				throw new Error(`Thumbnail file not found: ${imagePath}`);
+			}
+
+			const stat = fs.statSync(imagePath);
+			if (stat.size > maxSize) {
+				throw new Error(`Thumbnail file too large: ${stat.size} bytes (max 2MB)`);
+			}
+
+			imageData = fs.readFileSync(imagePath);
+			mimeType = this.detectMimeType(imageData, imagePath);
+		}
+
+		if (imageData.length > maxSize) {
+			throw new Error(`Thumbnail data too large: ${imageData.length} bytes (max 2MB)`);
+		}
+
+		if (mimeType !== 'image/jpeg' && mimeType !== 'image/png') {
+			throw new Error(`Invalid thumbnail type: ${mimeType} (must be JPEG or PNG)`);
+		}
+
+		await this.YouTube.setThumbnail(broadcastId, imageData, mimeType);
+		this.Module.log('info', `Set thumbnail for broadcast: ${broadcastId}`);
+	}
+
+	async getAvailableStreams(): Promise<StreamMap> {
+		return this.YouTube.listStreams();
+	}
+
+	async bindStream(broadcastId: BroadcastID, streamId: string): Promise<void> {
+		await this.YouTube.bindBroadcastToStream(broadcastId, streamId);
+		this.Module.log('info', `Bound stream ${streamId} to broadcast ${broadcastId}`);
+		await this.reloadEverything();
+	}
+
+	async unbindStream(broadcastId: BroadcastID): Promise<void> {
+		await this.YouTube.bindBroadcastToStream(broadcastId);
+		this.Module.log('info', `Unbound stream from broadcast ${broadcastId}`);
+		await this.reloadEverything();
+	}
+
+	private async fetchImageFromUrl(url: string, remainingRedirects = 5): Promise<{ data: Buffer; mimeType: string }> {
+		return new Promise((resolve, reject) => {
+			const protocol = url.startsWith('https://') ? https : http;
+
+			const request = protocol.get(url, { timeout: 30000 }, (response) => {
+				if (
+					response.statusCode &&
+					response.statusCode >= 300 &&
+					response.statusCode < 400 &&
+					response.headers.location
+				) {
+					if (remainingRedirects <= 0) {
+						reject(new Error('Too many redirects'));
+						return;
+					}
+					this.fetchImageFromUrl(response.headers.location, remainingRedirects - 1)
+						.then(resolve)
+						.catch(reject);
+					return;
+				}
+
+				if (response.statusCode !== 200) {
+					reject(new Error(`Failed to fetch image: HTTP ${response.statusCode}`));
+					return;
+				}
+
+				const chunks: Buffer[] = [];
+				response.on('data', (chunk: Buffer) => chunks.push(chunk));
+				response.on('end', () => {
+					const data = Buffer.concat(chunks);
+					const contentType = response.headers['content-type'] || '';
+					let mimeType = contentType.split(';')[0].trim();
+
+					if (mimeType !== 'image/jpeg' && mimeType !== 'image/png') {
+						mimeType = this.detectMimeType(data, url);
+					}
+
+					resolve({ data, mimeType });
+				});
+				response.on('error', reject);
+			});
+
+			request.on('timeout', () => {
+				request.destroy();
+				reject(new Error('Request timeout'));
+			});
+
+			request.on('error', reject);
+		});
+	}
+
+	private detectMimeType(data: Buffer, path: string): string {
+		if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) {
+			return 'image/jpeg';
+		}
+		if (data.length >= 8 && data[0] === 0x89 && data[1] === 0x50 && data[2] === 0x4e && data[3] === 0x47) {
+			return 'image/png';
+		}
+
+		const lowerPath = path.toLowerCase();
+		if (lowerPath.endsWith('.jpg') || lowerPath.endsWith('.jpeg')) {
+			return 'image/jpeg';
+		}
+		if (lowerPath.endsWith('.png')) {
+			return 'image/png';
+		}
+
+		return 'application/octet-stream';
 	}
 }
 

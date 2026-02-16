@@ -28,6 +28,8 @@ const SampleMemory: StateMemory = {
 		},
 	},
 	UnfinishedBroadcasts: [],
+	BoundStreams: {},
+	LastCreatedBroadcast: null,
 };
 
 function hasAny(vars: CompanionVariableDefinition[] | VariableContent[], name: string): boolean {
@@ -41,10 +43,17 @@ function hasAny(vars: CompanionVariableDefinition[] | VariableContent[], name: s
 }
 
 describe('Variable declarations', () => {
-	test('No variables without broadcasts', () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
+	test('Only global variable without broadcasts', () => {
+		const data: StateMemory = {
+			Broadcasts: {},
+			Streams: {},
+			BoundStreams: {},
+			UnfinishedBroadcasts: [],
+			LastCreatedBroadcast: null,
+		};
 		const result = declareVars(data, 0);
-		expect(result).toHaveLength(0);
+		expect(result).toHaveLength(1);
+		expect(result[0]).toEqual(expect.objectContaining({ variableId: 'last_created_broadcast_id' }));
 	});
 
 	test('Lifecycle and health added for each broadcast', () => {
@@ -113,10 +122,17 @@ describe('Variable declarations', () => {
 });
 
 describe('Variable values', () => {
-	test('No variables without broadcasts', () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
+	test('Only global variable without broadcasts', () => {
+		const data: StateMemory = {
+			Broadcasts: {},
+			Streams: {},
+			BoundStreams: {},
+			UnfinishedBroadcasts: [],
+			LastCreatedBroadcast: null,
+		};
 		const result = exportVars(data, 0);
-		expect(result).toHaveLength(0);
+		expect(result).toHaveLength(1);
+		expect(result[0]).toEqual({ name: 'last_created_broadcast_id', value: '' });
 	});
 
 	test('Lifecycle and health added for each broadcast', () => {

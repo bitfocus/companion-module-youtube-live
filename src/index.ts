@@ -224,6 +224,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig, RawSecrets> impleme
 				broadcasts: memory.Broadcasts,
 				unfinishedCount: unfinishedCnt,
 				core: this.#core,
+				streams: memory.Streams,
 			})
 		);
 		this.checkFeedbacks();

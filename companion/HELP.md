@@ -8,9 +8,7 @@ broadcasts that the action might be performed upon, or by specifying its ID (the
 part after the `?v=...` in a YouTube video URL) as textual input. A checkbox
 switches between the two modes.
 
-The module currently only allows already-created broadcasts to be manipulated:
-it doesn't offer a way to create them itself. You'll have to create a broadcast
-in YouTube Studio in order to be able to manipulate it.
+The module can create new broadcasts and manipulate existing ones.
 
 ## Available actions
 
@@ -47,6 +45,18 @@ in YouTube Studio in order to be able to manipulate it.
   the description.
 - **Add chapter timecode to description** - This action inserts a chapter
   timecode at the end of the description.
+- **Create new broadcast** - This action creates a new YouTube broadcast with
+  the specified settings. Supports using an existing broadcast as a template to
+  copy settings from (title, description, monitor stream, and stream binding).
+  Options include scheduled start time (now, minutes from now, or custom ISO
+  8601), privacy status, auto-start/auto-stop, thumbnail upload, and stream
+  binding.
+- **Set broadcast thumbnail** - This action uploads and sets a custom thumbnail
+  image for a broadcast. Accepts a local file path or URL to a JPEG/PNG image
+  (max 2MB).
+- **Bind stream to broadcast** - This action binds a video stream to a
+  broadcast, which is required before going live. Select a stream from the
+  dropdown or enter a stream ID manually.
 
 [ytapi]: https://developers.google.com/youtube/v3/live/docs/liveBroadcasts/transition
 
@@ -165,6 +175,34 @@ completing the consent process can be found underneath that link.
 Consent while in "Testing" status only lasts a week. After that you'll have to
 reopen the consent screen and recomplete the consent process.
 
+## Available feedbacks
+
+- **Broadcast status** - Changes button colors based on the broadcast lifecycle
+  state (ready, testing, live, complete). Colors are configurable.
+- **Health of stream bound to broadcast** - Changes button colors based on the
+  health of the video stream bound to a broadcast (good, ok, bad, no data).
+
+## Available variables
+
+Per-broadcast variables (where `ID` is the YouTube broadcast ID):
+
+- `broadcast_ID_lifecycle` - Lifecycle state of the broadcast
+- `broadcast_ID_health` - Health of the stream bound to the broadcast
+
+Unfinished broadcast variables (where `N` is the index, starting from 0):
+
+- `unfinished_N` - Name of unfinished broadcast #N
+- `unfinished_N_id` - ID of unfinished broadcast #N
+- `unfinished_short_N` - Shortened name of unfinished broadcast #N
+- `unfinished_state_N` - State of unfinished broadcast #N
+- `unfinished_health_N` - Stream health of unfinished broadcast #N
+- `unfinished_concurrent_viewers_N` - Concurrent viewers of unfinished broadcast #N
+
+Global variables:
+
+- `last_created_broadcast_id` - ID of the most recently created broadcast (via
+  the "Create new broadcast" action)
+
 ## Action configuration
 
 When creating actions to operate upon a broadcast, pick the broadcast to work
@@ -178,6 +216,21 @@ Alternatively, if you have the YouTube broadcast ID, you can check the checkbox
 to switch to a text input and enter it there. The text field supports
 variables, so you can also store the broadcast ID in a variable and change that
 variable as needed.
+
+### Using templates with Create broadcast
+
+When creating a broadcast, you can check "Use existing broadcast as template" to
+copy settings from an existing broadcast. Template values serve as defaults:
+any value you explicitly set will override the template. This is useful for
+creating broadcasts with consistent settings. The template's description,
+monitor stream setting, and stream binding will be copied if you don't provide
+your own.
+
+### Using the last created broadcast ID
+
+After creating a broadcast, its ID is stored in the `last_created_broadcast_id`
+variable. You can use this variable in subsequent actions (via text input mode)
+to operate on the newly created broadcast without knowing its ID in advance.
 
 ## Thanks
 
