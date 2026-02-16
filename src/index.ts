@@ -253,7 +253,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig> implements ModuleBa
 	}
 
 	override async handleHttpRequest(request: CompanionHTTPRequest): Promise<CompanionHTTPResponse> {
-		return handleHttpRequest(this.#config, (...args: Parameters<YoutubeInstance['log']>) => this.log(...args), request);
+		return handleHttpRequest(this.#config, this.log.bind(this), request);
 	}
 }
 
