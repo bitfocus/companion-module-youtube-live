@@ -3,13 +3,13 @@ import { afterAll, afterEach, describe, expect, type MockedObject, test, vi } fr
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import type { CompanionActionEvent, CompanionOptionValues } from '@companion-module/base';
-import { makeMockModule, makeMockYT } from './core.js';
-import { listActions, ActionId } from '../actions.js';
-import { BroadcastLifecycle, type BroadcastID, type StateMemory } from '../cache.js';
-import { clone } from '../common.js';
-import { type ModuleBase, Core } from '../core.js';
-import { Visibility, type YoutubeAPI } from '../youtube.js';
-import { MockContext } from '../__mocks__/context.js';
+import { makeMockModule, makeMockYT } from './__mocks__/@googleapis/youtube.js';
+import { listActions, ActionId } from './actions.js';
+import { BroadcastLifecycle, type BroadcastID, type StateMemory } from './cache.js';
+import { clone } from './common.js';
+import { type ModuleBase, Core } from './core.js';
+import { Visibility, type YoutubeAPI } from './youtube.js';
+import { MockContext } from './__mocks__/context.js';
 
 const SampleMemory: StateMemory = {
 	Broadcasts: {

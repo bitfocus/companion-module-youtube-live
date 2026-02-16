@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 //require("leaked-handles");
 import type { OAuth2Client } from 'google-auth-library';
-import { YoutubeConnector, Transition } from '../youtube.js';
-import type { FakeYouTube } from '../__mocks__/@googleapis/youtube.js';
-import { type StateMemory, BroadcastLifecycle, StreamHealth } from '../cache.js';
+import { YoutubeConnector, Transition } from './youtube.js';
+import type { FakeYouTube } from './__mocks__/@googleapis/youtube.js';
+import { type StateMemory, BroadcastLifecycle, StreamHealth } from './cache.js';
 vi.mock('@googleapis/youtube', async () => {
-	return import('../__mocks__/@googleapis/youtube.js');
+	return import('./__mocks__/@googleapis/youtube.js');
 });
 
 const instance: YoutubeConnector = new YoutubeConnector(null as unknown as OAuth2Client, 10);

@@ -2,18 +2,18 @@ import { afterAll, afterEach, beforeEach, describe, expect, type MockedObject, t
 
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
-import { listFeedbacks } from '../feedbacks.js';
-import { BroadcastLifecycle, StreamHealth, type StateMemory } from '../cache.js';
+import { listFeedbacks } from './feedbacks.js';
+import { BroadcastLifecycle, StreamHealth, type StateMemory } from './cache.js';
 import {
 	type CompanionFeedbackAdvancedEvent,
 	type CompanionAdvancedFeedbackResult,
 	combineRgb,
 } from '@companion-module/base';
-import { clone } from '../common.js';
-import { type ModuleBase, Core } from '../core.js';
-import type { YoutubeAPI } from '../youtube.js';
-import { makeMockModule, makeMockYT } from './core.js';
-import { MockContext } from '../__mocks__/context.js';
+import { clone } from './common.js';
+import { type ModuleBase, Core } from './core.js';
+import type { YoutubeAPI } from './youtube.js';
+import { makeMockModule, makeMockYT } from './__mocks__/@googleapis/youtube.js';
+import { MockContext } from './__mocks__/context.js';
 
 //
 // SAMPLE DATA

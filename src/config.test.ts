@@ -6,7 +6,7 @@ import {
 	listConfigFields,
 	type RawConfig,
 	validateConfig,
-} from '../config.js';
+} from './config.js';
 
 //require("leaked-handles");
 

@@ -1,8 +1,8 @@
 import type { Equal, Expect } from 'type-testing';
 import { describe, expect, test, vi } from 'vitest';
 
-import { AuthorizationError, generateAuthorizationURL, getOAuthClient } from '../authorization.js';
-import { type RawConfig, validateConfig, type YoutubeConfig } from '../config.js';
+import { AuthorizationError, generateAuthorizationURL, getOAuthClient } from './authorization.js';
+import { type RawConfig, validateConfig, type YoutubeConfig } from './config.js';
 
 vi.mock('google-auth-library');
 import { OAuth2Client } from 'google-auth-library';
