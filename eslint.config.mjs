@@ -54,6 +54,11 @@ const customConfig = [
 	{
 		files: ['**/*.ts'],
 		rules: {
+			'no-useless-rename': 'error',
+			radix: 'error',
+			'no-eval': 'error',
+			'no-implied-eval': 'error',
+
 			'@typescript-eslint/naming-convention': [
 				'error',
 
