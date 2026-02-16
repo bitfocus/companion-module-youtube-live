@@ -54,6 +54,7 @@ const customConfig = [
 	{
 		files: ['**/*.ts'],
 		rules: {
+			'object-shorthand': 'error',
 			'no-useless-rename': 'error',
 			radix: 'error',
 			'no-eval': 'error',

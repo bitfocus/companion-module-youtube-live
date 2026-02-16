@@ -123,8 +123,8 @@ describe('Action callback', () => {
 			surfaceId: 'surface0',
 			id: 'action0',
 			controlId: 'control0',
-			actionId: actionId,
-			options: options,
+			actionId,
+			options,
 		};
 		return event;
 	}

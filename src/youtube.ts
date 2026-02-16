@@ -112,7 +112,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	constructor(auth: OAuth2Client, maxBroadcasts: number) {
 		this.ApiClient = youtube({
 			version: 'v3',
-			auth: auth,
+			auth,
 		});
 		this.MaxBroadcasts = maxBroadcasts;
 	}
@@ -265,7 +265,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	async transitionBroadcast(id: BroadcastID, to: Transition): Promise<void> {
 		await this.ApiClient.liveBroadcasts.transition({
 			part: ['id'],
-			id: id,
+			id,
 			broadcastStatus: to,
 		});
 	}
@@ -298,8 +298,8 @@ export class YoutubeConnector implements YoutubeAPI {
 
 		if (duration) requestBody['durationSecs'] = duration;
 		await this.ApiClient.liveBroadcasts.insertCuepoint({
-			id: id,
-			requestBody: requestBody,
+			id,
+			requestBody,
 		});
 	}
 
@@ -312,11 +312,11 @@ export class YoutubeConnector implements YoutubeAPI {
 		await this.ApiClient.liveBroadcasts.update({
 			part: ['snippet'],
 			requestBody: {
-				id: id,
+				id,
 				snippet: {
 					scheduledStartTime: sst,
-					title: title,
-					description: description,
+					title,
+					description,
 				},
 			},
 		});
@@ -329,10 +329,10 @@ export class YoutubeConnector implements YoutubeAPI {
 		await this.ApiClient.liveBroadcasts.update({
 			part: ['snippet'],
 			requestBody: {
-				id: id,
+				id,
 				snippet: {
 					scheduledStartTime: sst,
-					title: title,
+					title,
 				},
 			},
 		});
@@ -345,7 +345,7 @@ export class YoutubeConnector implements YoutubeAPI {
 		await this.ApiClient.liveBroadcasts.update({
 			part: ['status'],
 			requestBody: {
-				id: id,
+				id,
 				status: {
 					privacyStatus: visibility,
 				},
