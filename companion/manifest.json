@@ -18,16 +18,12 @@
 	],
 	"legacyIds": [],
 	"runtime": {
-		"type": "node18",
+		"type": "node22",
 		"api": "nodejs-ipc",
 		"apiVersion": "1.0.0",
 		"entrypoint": "../dist/index.js"
 	},
 	"manufacturer": "Google",
-	"products": [
-		"YouTube"
-	],
-	"keywords": [
-		"Stream"
-	]
+	"products": ["YouTube"],
+	"keywords": ["Stream"]
 }
