@@ -1,6 +1,6 @@
 {
 	"name": "youtube-live",
-	"version": "2.7.0-dev",
+	"version": "3.0.0",
 	"type": "module",
 	"main": "dist/index.js",
 	"license": "MIT",
