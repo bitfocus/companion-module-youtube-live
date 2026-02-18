@@ -211,7 +211,6 @@ export class YoutubeInstance extends InstanceBase<RawConfig, RawSecrets> impleme
 			vars[`${item.name}`] = item.value;
 		}
 		this.setVariableValues(vars);
-		this.setPresetDefinitions(listPresets(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt })));
 		this.setFeedbackDefinitions(
 			listFeedbacks({
 				broadcasts: memory.Broadcasts,
@@ -226,6 +225,7 @@ export class YoutubeInstance extends InstanceBase<RawConfig, RawSecrets> impleme
 				core: this.#core,
 			})
 		);
+		this.setPresetDefinitions(listPresets(() => ({ broadcasts: memory.Broadcasts, unfinishedCount: unfinishedCnt })));
 		this.checkFeedbacks();
 	}
 
