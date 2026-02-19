@@ -385,12 +385,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@googleapis/youtube@npm:^30.3.0":
-  version: 30.3.0
-  resolution: "@googleapis/youtube@npm:30.3.0"
+"@googleapis/youtube@npm:^31.0.0":
+  version: 31.0.0
+  resolution: "@googleapis/youtube@npm:31.0.0"
   dependencies:
     googleapis-common: "npm:^8.0.0"
-  checksum: 10c0/878d3aa75d62c27d5aef9ca60e88b59a5bdf87fb4424a27ea495ea9be6265c2e47a53aa96ea80e920395dc8846cbff7d25e795d55a16d529b25dfcec4619c028
+  checksum: 10c0/5df044eab30c8fb5c7f81bd64a718e08b4d4e1c341df0ccc8480e9c28484e9e4b45ca0cad902f8769a4400231338d7341d30e5555d94beb19b40f911b503a63c
   languageName: node
   linkType: hard
 
@@ -5349,7 +5349,7 @@ __metadata:
   dependencies:
     "@companion-module/base": "npm:~1.13.0"
     "@companion-module/tools": "npm:^2.6.1"
-    "@googleapis/youtube": "npm:^30.3.0"
+    "@googleapis/youtube": "npm:^31.0.0"
     "@types/node": "npm:^22.15.18"
     eslint: "npm:~9.36.0"
     google-auth-library: "npm:^10.5.0"

@@ -33,7 +33,7 @@
 	},
 	"dependencies": {
 		"@companion-module/base": "~1.13.0",
-		"@googleapis/youtube": "^30.3.0",
+		"@googleapis/youtube": "^31.0.0",
 		"google-auth-library": "^10.5.0"
 	},
 	"devDependencies": {
