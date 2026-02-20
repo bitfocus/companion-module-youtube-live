@@ -115,6 +115,9 @@ export interface Stream {
 
 	/** Health metric of this stream */
 	Health: StreamHealth;
+
+	/** Display name of the stream */
+	Name?: string;
 }
 
 /**
@@ -124,9 +127,15 @@ export interface StateMemory {
 	/** All fetched broadcasts. */
 	Broadcasts: Record<BroadcastID, Broadcast>;
 
-	/** All fetched streams */
+	/** All fetched streams (with names, for dropdowns) */
 	Streams: Record<StreamID, Stream>;
+
+	/** Streams bound to broadcasts (for health monitoring) */
+	BoundStreams: Record<StreamID, Stream>;
 
 	/** Unfinished broadcasts */
 	UnfinishedBroadcasts: Array<Broadcast>;
+
+	/** Most recently created broadcast */
+	LastCreatedBroadcast: Broadcast | null;
 }
