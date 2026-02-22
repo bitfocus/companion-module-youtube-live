@@ -7,6 +7,7 @@
 		"paths": {
 			"*": ["./node_modules/*"]
 		},
+		"lib": ["ES2024"],
 
 		// We rely on eslint @typescript-eslint/no-unused-vars to forbid unused
 		// variables (without limiting them just to names starting with '_'), so

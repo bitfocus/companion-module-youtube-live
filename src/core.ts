@@ -1,6 +1,6 @@
 import { type StateMemory, type BroadcastID, BroadcastLifecycle, type Broadcast } from './cache.js';
 import { Transition, type Visibility, type YoutubeAPI } from './youtube.js';
-import { DetachedPromise, type Logger } from './common.js';
+import type { Logger } from './common.js';
 
 /**
  * Interface between executive core and the Companion module glue
@@ -483,7 +483,7 @@ export class Core {
  */
 class Poller {
 	/** Promise provided by this waiter */
-	private Signal: DetachedPromise<void>;
+	private Signal: PromiseWithResolvers<void>;
 
 	/** Broadcast ID to wait for */
 	private BroadcastID: BroadcastID;
@@ -508,7 +508,7 @@ class Poller {
 	 * @param to Broadcast lifecycle phase to poll for
 	 */
 	constructor(interval: number, core: Core, id: BroadcastID, to: Transition) {
-		this.Signal = new DetachedPromise();
+		this.Signal = Promise.withResolvers<void>();
 		this.Interval = interval;
 		this.Core = core;
 		this.BroadcastID = id;
@@ -520,7 +520,7 @@ class Poller {
 	 */
 	async startWait(): Promise<void> {
 		this.Timer = global.setInterval(this.loop.bind(this), this.Interval);
-		return this.Signal.Promise;
+		return this.Signal.promise;
 	}
 
 	/**
@@ -532,7 +532,7 @@ class Poller {
 				if ((currentStatus as string) == (this.TransitionTo as string)) {
 					this.Core.Module.log('debug', 'poll done');
 					if (this.Timer) global.clearInterval(this.Timer);
-					this.Signal.Resolve();
+					this.Signal.resolve();
 				} else {
 					this.Core.Module.log('debug', 'poll pending');
 				}
@@ -540,7 +540,7 @@ class Poller {
 			.catch((err) => {
 				this.Core.Module.log('debug', 'poll failed');
 				if (this.Timer) global.clearInterval(this.Timer);
-				this.Signal.Reject(err);
+				this.Signal.reject(err);
 			});
 	}
 
@@ -549,7 +549,7 @@ class Poller {
 	 */
 	cancel(): void {
 		if (this.Timer) global.clearInterval(this.Timer);
-		this.Signal.Reject(new Error('Transition cancelled'));
+		this.Signal.reject(new Error('Transition cancelled'));
 	}
 }
 
