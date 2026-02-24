@@ -4,17 +4,13 @@ import { afterAll, afterEach, beforeEach, describe, expect, type MockedObject, t
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import { listFeedbacks } from './feedbacks.js';
 import { BroadcastLifecycle, StreamHealth, type StateMemory } from './cache.js';
-import {
-	type CompanionFeedbackAdvancedEvent,
-	type CompanionAdvancedFeedbackResult,
-	combineRgb,
-} from '@companion-module/base';
+import type { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult } from '@companion-module/base';
+import { Blue, Green, Red, Yellow } from './colors.js';
 import { clone } from './common.js';
 import { type ModuleBase, Core } from './core.js';
 import type { YoutubeAPI } from './youtube.js';
 import { makeMockModule, makeMockYT } from './__mocks__/@googleapis/youtube.js';
 import { MockContext } from './__mocks__/context.js';
-
 //
 // SAMPLE DATA
 //
@@ -50,10 +46,10 @@ const SampleBroadcastCheck: CompanionFeedbackAdvancedEvent = {
 	type: 'advanced',
 	feedbackId: 'broadcast_status',
 	options: {
-		bg_ready: combineRgb(0, 255, 0),
-		bg_testing: combineRgb(255, 255, 0),
-		bg_live: combineRgb(255, 0, 0),
-		bg_complete: combineRgb(0, 0, 255),
+		bg_ready: Green,
+		bg_testing: Yellow,
+		bg_live: Red,
+		bg_complete: Blue,
 		broadcast_id_is_text: false,
 		broadcast_id: 'test',
 		broadcast_id_text: 'BAD',
@@ -66,10 +62,10 @@ const SampleStreamCheck: CompanionFeedbackAdvancedEvent = {
 	type: 'advanced',
 	feedbackId: 'broadcast_bound_stream_health',
 	options: {
-		bg_good: combineRgb(0, 255, 0),
-		bg_ok: combineRgb(255, 255, 0),
-		bg_bad: combineRgb(255, 0, 0),
-		bg_no_data: combineRgb(0, 0, 255),
+		bg_good: Green,
+		bg_ok: Yellow,
+		bg_bad: Red,
+		bg_no_data: Blue,
 		broadcast_id_is_text: true,
 		broadcast_id: 'BAD',
 		broadcast_id_text: 'test',
@@ -211,10 +207,10 @@ describe('Broadcast lifecycle feedback', () => {
 			type: 'advanced',
 			feedbackId: 'broadcast_status',
 			options: {
-				bg_ready: combineRgb(0, 255, 0),
-				bg_testing: combineRgb(255, 255, 0),
-				bg_live: combineRgb(255, 0, 0),
-				bg_complete: combineRgb(0, 0, 255),
+				bg_ready: Green,
+				bg_testing: Yellow,
+				bg_live: Red,
+				bg_complete: Blue,
 				broadcast: 'test',
 			},
 			controlId: 'control0',
@@ -236,10 +232,10 @@ describe('Broadcast lifecycle feedback', () => {
 			type: 'advanced',
 			feedbackId: 'broadcast_status',
 			options: {
-				bg_ready: combineRgb(0, 255, 0),
-				bg_testing: combineRgb(255, 255, 0),
-				bg_live: combineRgb(255, 0, 0),
-				bg_complete: combineRgb(0, 0, 255),
+				bg_ready: Green,
+				bg_testing: Yellow,
+				bg_live: Red,
+				bg_complete: Blue,
 			},
 			controlId: 'control0',
 		};
@@ -330,10 +326,10 @@ describe('Stream health feedback', () => {
 			type: 'advanced',
 			feedbackId: 'broadcast_bound_stream_health',
 			options: {
-				bg_ready: combineRgb(0, 255, 0),
-				bg_testing: combineRgb(255, 255, 0),
-				bg_live: combineRgb(255, 0, 0),
-				bg_complete: combineRgb(0, 0, 255),
+				bg_ready: Green,
+				bg_testing: Yellow,
+				bg_live: Red,
+				bg_complete: Blue,
 				broadcast: 'test',
 			},
 			controlId: 'control0',
@@ -373,10 +369,10 @@ describe('Stream health feedback', () => {
 			type: 'advanced',
 			feedbackId: 'broadcast_bound_stream_health',
 			options: {
-				bg_ready: combineRgb(0, 255, 0),
-				bg_testing: combineRgb(255, 255, 0),
-				bg_live: combineRgb(255, 0, 0),
-				bg_complete: combineRgb(0, 0, 255),
+				bg_ready: Green,
+				bg_testing: Yellow,
+				bg_live: Red,
+				bg_complete: Blue,
 				broadcast: 'test',
 			},
 			controlId: 'control0',
@@ -398,10 +394,10 @@ describe('Stream health feedback', () => {
 			type: 'advanced',
 			feedbackId: 'broadcast_bound_stream_health',
 			options: {
-				bg_ready: combineRgb(0, 255, 0),
-				bg_testing: combineRgb(255, 255, 0),
-				bg_live: combineRgb(255, 0, 0),
-				bg_complete: combineRgb(0, 0, 255),
+				bg_ready: Green,
+				bg_testing: Yellow,
+				bg_live: Red,
+				bg_complete: Blue,
 			},
 			controlId: 'control0',
 		};

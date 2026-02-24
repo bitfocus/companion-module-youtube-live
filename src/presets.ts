@@ -1,8 +1,22 @@
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import type { Broadcast, BroadcastMap } from './cache.js';
-import { type CompanionOptionValues, type CompanionPresetDefinitions, combineRgb } from '@companion-module/base';
+import { type CompanionOptionValues, type CompanionPresetDefinitions } from '@companion-module/base';
 import { FeedbackId } from './feedbacks.js';
 import { ActionId } from './actions.js';
+import {
+	SafetyOrange,
+	Red,
+	GoldenFoil,
+	PhosphorGreen,
+	TunicGreen,
+	RedPegasus,
+	BohemianBlue,
+	White,
+	MarchGreen,
+	CloakAndDagger,
+	PastelPurple,
+	AgedMoustacheGray,
+} from './colors.js';
 import { BroadcastIdDropdownOptionId, BroadcastIdIsTextOptionId, BroadcastIdTextOptionId } from './common.js';
 
 function addBroadcastSelectionOptions(
@@ -42,7 +56,7 @@ export function listPresets(
 			style: {
 				text: `Start ${item.Name}`,
 				size: 'auto',
-				color: combineRgb(255, 255, 255),
+				color: White,
 				bgcolor: 0,
 			},
 			feedbacks: [
@@ -50,10 +64,10 @@ export function listPresets(
 					feedbackId: FeedbackId.BroadcastStatus,
 					options: addBroadcastSelectionOptions(
 						{
-							bg_live: combineRgb(222, 0, 0),
-							bg_testing: combineRgb(0, 172, 0),
-							bg_complete: combineRgb(0, 0, 168),
-							bg_ready: combineRgb(209, 209, 0),
+							bg_live: RedPegasus,
+							bg_testing: PhosphorGreen,
+							bg_complete: BohemianBlue,
+							bg_ready: MarchGreen,
 						},
 						item.Id
 					),
@@ -79,7 +93,7 @@ export function listPresets(
 			style: {
 				text: `Stop ${item.Name}`,
 				size: 'auto',
-				color: combineRgb(255, 255, 255),
+				color: White,
 				bgcolor: 0,
 			},
 			feedbacks: [
@@ -87,10 +101,10 @@ export function listPresets(
 					feedbackId: FeedbackId.BroadcastStatus,
 					options: addBroadcastSelectionOptions(
 						{
-							bg_live: combineRgb(222, 0, 0),
-							bg_testing: combineRgb(0, 172, 0),
-							bg_complete: combineRgb(0, 0, 168),
-							bg_ready: combineRgb(209, 209, 0),
+							bg_live: RedPegasus,
+							bg_testing: PhosphorGreen,
+							bg_complete: BohemianBlue,
+							bg_ready: MarchGreen,
 						},
 						item.Id
 					),
@@ -116,7 +130,7 @@ export function listPresets(
 			style: {
 				text: `Toggle ${item.Name}`,
 				size: 'auto',
-				color: combineRgb(255, 255, 255),
+				color: White,
 				bgcolor: 0,
 			},
 			feedbacks: [
@@ -124,10 +138,10 @@ export function listPresets(
 					feedbackId: FeedbackId.BroadcastStatus,
 					options: addBroadcastSelectionOptions(
 						{
-							bg_live: combineRgb(222, 0, 0),
-							bg_testing: combineRgb(0, 172, 0),
-							bg_complete: combineRgb(0, 0, 168),
-							bg_ready: combineRgb(209, 209, 0),
+							bg_live: RedPegasus,
+							bg_testing: PhosphorGreen,
+							bg_complete: BohemianBlue,
+							bg_ready: MarchGreen,
 						},
 						item.Id
 					),
@@ -153,7 +167,7 @@ export function listPresets(
 			style: {
 				text: `Init ${item.Name}`,
 				size: 'auto',
-				color: combineRgb(255, 255, 255),
+				color: White,
 				bgcolor: 0,
 			},
 			feedbacks: [
@@ -161,10 +175,10 @@ export function listPresets(
 					feedbackId: FeedbackId.BroadcastStatus,
 					options: addBroadcastSelectionOptions(
 						{
-							bg_live: combineRgb(222, 0, 0),
-							bg_testing: combineRgb(0, 172, 0),
-							bg_complete: combineRgb(0, 0, 168),
-							bg_ready: combineRgb(209, 209, 0),
+							bg_live: RedPegasus,
+							bg_testing: PhosphorGreen,
+							bg_complete: BohemianBlue,
+							bg_ready: MarchGreen,
 						},
 						item.Id
 					),
@@ -195,7 +209,7 @@ export function listPresets(
 					style: {
 						text: `$(YT:unfinished_state_${i})\\n$(yt:unfinished_short_${i})`,
 						size: 'auto',
-						color: combineRgb(125, 125, 125),
+						color: AgedMoustacheGray,
 						bgcolor: 0,
 					},
 					feedbacks: [
@@ -203,11 +217,11 @@ export function listPresets(
 							feedbackId: FeedbackId.BroadcastStatus,
 							options: addBroadcastSelectionOptions(
 								{
-									bg_live: combineRgb(222, 0, 0),
-									bg_testing: combineRgb(0, 172, 0),
-									bg_complete: combineRgb(87, 0, 87),
-									text_complete: combineRgb(182, 155, 182),
-									bg_ready: combineRgb(209, 209, 0),
+									bg_live: RedPegasus,
+									bg_testing: PhosphorGreen,
+									bg_complete: CloakAndDagger,
+									text_complete: PastelPurple,
+									bg_ready: MarchGreen,
 								},
 								`unfinished_${i}`
 							),
@@ -222,7 +236,7 @@ export function listPresets(
 					style: {
 						text: `Stream #${i}\\n$(YT:unfinished_health_${i})`,
 						size: 'auto',
-						color: combineRgb(125, 125, 125),
+						color: AgedMoustacheGray,
 						bgcolor: 0,
 					},
 					feedbacks: [
@@ -230,14 +244,14 @@ export function listPresets(
 							feedbackId: FeedbackId.StreamHealth,
 							options: addBroadcastSelectionOptions(
 								{
-									bg_good: combineRgb(0, 204, 0),
-									text_good: combineRgb(255, 255, 255),
-									bg_ok: combineRgb(204, 204, 0),
-									text_ok: combineRgb(255, 255, 255),
-									bg_bad: combineRgb(255, 102, 0),
-									text_bad: combineRgb(255, 255, 255),
-									bg_no_data: combineRgb(255, 0, 0),
-									text_no_data: combineRgb(255, 255, 255),
+									bg_good: TunicGreen,
+									text_good: White,
+									bg_ok: GoldenFoil,
+									text_ok: White,
+									bg_bad: SafetyOrange,
+									text_bad: White,
+									bg_no_data: Red,
+									text_no_data: White,
 								},
 								`unfinished_${i}`
 							),
@@ -252,7 +266,7 @@ export function listPresets(
 					style: {
 						text: `Stream #${i}\\n$(YT:unfinished_concurrent_viewers_${i}) viewers`,
 						size: 'auto',
-						color: combineRgb(255, 255, 255),
+						color: White,
 						bgcolor: 0,
 					},
 					feedbacks: [],

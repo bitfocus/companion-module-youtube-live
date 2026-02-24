@@ -149,6 +149,19 @@ const customConfig = [
 					varsIgnorePattern: '^(?:assert)?_',
 				},
 			],
+
+			'no-restricted-imports': [
+				'error',
+				{
+					paths: [
+						{
+							name: '@companion-module/base',
+							importNames: ['combineRgb'],
+							message: 'Please define a named constant in src/colors.ts.',
+						},
+					],
+				},
+			],
 		},
 	},
 

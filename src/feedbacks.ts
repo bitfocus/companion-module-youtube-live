@@ -2,11 +2,22 @@ import {
 	type CompanionAdvancedFeedbackDefinition,
 	type CompanionAdvancedFeedbackResult,
 	type CompanionFeedbackAdvancedEvent,
-	combineRgb,
 	type CompanionMigrationFeedback,
 	type CompanionOptionValues,
 } from '@companion-module/base';
 import { type Broadcast, type BroadcastMap, BroadcastLifecycle, type Stream, StreamHealth } from './cache.js';
+import {
+	MarchGreen,
+	PhosphorGreen,
+	RedPegasus,
+	White,
+	BohemianBlue,
+	AgedMoustacheGray,
+	TunicGreen,
+	GoldenFoil,
+	SafetyOrange,
+	Red,
+} from './colors.js';
 import {
 	BroadcastIdIsTextOptionId,
 	BroadcastIdDropdownOptionId,
@@ -20,17 +31,6 @@ export enum FeedbackId {
 	BroadcastStatus = 'broadcast_status',
 	StreamHealth = 'broadcast_bound_stream_health',
 }
-
-const Yellow = combineRgb(209, 209, 0);
-const Green = combineRgb(0, 172, 0);
-const Red = combineRgb(222, 0, 0);
-const White = combineRgb(255, 255, 255);
-const RoyalBlue = combineRgb(0, 0, 168);
-const Gray = combineRgb(126, 126, 126);
-const LimeGreen = combineRgb(0, 204, 0);
-const DarkYellow = combineRgb(204, 204, 0);
-const BrightOrange = combineRgb(255, 102, 0);
-const BrightRed = combineRgb(255, 0, 0);
 
 export function tryUpgradeFeedbackSelectingBroadcastID(feedback: CompanionMigrationFeedback): boolean {
 	switch (feedback.feedbackId) {
@@ -122,19 +122,19 @@ export function listFeedbacks({
 					type: 'colorpicker',
 					label: 'Background color (ready)',
 					id: BgReadyColorOptionId,
-					default: Yellow,
+					default: MarchGreen,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (testing)',
 					id: BgTestingColorOptionId,
-					default: Green,
+					default: PhosphorGreen,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Background color (live)',
 					id: BgLiveColorOptionId,
-					default: Red,
+					default: RedPegasus,
 				},
 				{
 					type: 'colorpicker',
@@ -146,13 +146,13 @@ export function listFeedbacks({
 					type: 'colorpicker',
 					label: 'Background color (complete)',
 					id: BgCompleteColorOptionId,
-					default: RoyalBlue,
+					default: BohemianBlue,
 				},
 				{
 					type: 'colorpicker',
 					label: 'Text color (complete)',
 					id: TextCompleteColorOptionId,
-					default: Gray,
+					default: AgedMoustacheGray,
 				},
 				...selectFromAllBroadcasts,
 			],
@@ -170,12 +170,12 @@ export function listFeedbacks({
 					broadcastStatus = broadcast.Status;
 				}
 
-				const bgReady = getColor(options, BgReadyColorOptionId, Yellow);
-				const bgTesting = getColor(options, BgTestingColorOptionId, Green);
-				const bgLive = getColor(options, BgLiveColorOptionId, Red);
-				const bgComplete = getColor(options, BgCompleteColorOptionId, RoyalBlue);
+				const bgReady = getColor(options, BgReadyColorOptionId, MarchGreen);
+				const bgTesting = getColor(options, BgTestingColorOptionId, PhosphorGreen);
+				const bgLive = getColor(options, BgLiveColorOptionId, RedPegasus);
+				const bgComplete = getColor(options, BgCompleteColorOptionId, BohemianBlue);
 				const textColor = getColor(options, TextColorOptionId, White);
-				const textComplete = getColor(options, TextCompleteColorOptionId, Gray);
+				const textComplete = getColor(options, TextCompleteColorOptionId, AgedMoustacheGray);
 
 				let bgcolor: number;
 				let color: number = textColor;
@@ -223,7 +223,7 @@ export function listFeedbacks({
 					type: 'colorpicker',
 					label: 'Background color (good)',
 					id: BgGoodColorOptionId,
-					default: LimeGreen,
+					default: TunicGreen,
 				},
 				{
 					type: 'colorpicker',
@@ -235,7 +235,7 @@ export function listFeedbacks({
 					type: 'colorpicker',
 					label: 'Background color (ok)',
 					id: BgOkColorOptionId,
-					default: DarkYellow,
+					default: GoldenFoil,
 				},
 				{
 					type: 'colorpicker',
@@ -247,7 +247,7 @@ export function listFeedbacks({
 					type: 'colorpicker',
 					label: 'Background color (bad)',
 					id: BgBadColorOptionId,
-					default: BrightOrange,
+					default: SafetyOrange,
 				},
 				{
 					type: 'colorpicker',
@@ -259,7 +259,7 @@ export function listFeedbacks({
 					type: 'colorpicker',
 					label: 'Background color (No data)',
 					id: BgNoDataColorOptionId,
-					default: BrightRed,
+					default: Red,
 				},
 				{
 					type: 'colorpicker',
@@ -293,22 +293,22 @@ export function listFeedbacks({
 				let color: number;
 				switch (stream.Health) {
 					case StreamHealth.Good:
-						bgcolor = getColor(options, BgGoodColorOptionId, LimeGreen);
+						bgcolor = getColor(options, BgGoodColorOptionId, TunicGreen);
 						color = getColor(options, TextGoodColorOptionId, White);
 						break;
 					case StreamHealth.OK:
-						bgcolor = getColor(options, BgOkColorOptionId, DarkYellow);
+						bgcolor = getColor(options, BgOkColorOptionId, GoldenFoil);
 						color = getColor(options, TextOkColorOptionId, White);
 						break;
 					case StreamHealth.Bad:
-						bgcolor = getColor(options, BgBadColorOptionId, BrightOrange);
+						bgcolor = getColor(options, BgBadColorOptionId, SafetyOrange);
 						color = getColor(options, TextBadColorOptionId, White);
 						break;
 					case StreamHealth.NoData:
 						if (broadcastStatus == BroadcastLifecycle.Complete) {
 							return {};
 						}
-						bgcolor = getColor(options, BgNoDataColorOptionId, BrightRed);
+						bgcolor = getColor(options, BgNoDataColorOptionId, Red);
 						color = getColor(options, TextNoDataColorOptionId, White);
 						break;
 				}
