@@ -30,17 +30,19 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 		});
 	});
 
-	[...Array(unfinishedCnt).keys()].forEach((i) => {
-		result.push({ variableId: `unfinished_${i}`, name: `Unfinished/planned broadcast name #${i}` });
-		result.push({ variableId: `unfinished_${i}_id`, name: `Unfinished/planned broadcast id #${i}` });
-		result.push({ variableId: `unfinished_short_${i}`, name: `Unfinished/planned broadcast name shortened #${i}` });
-		result.push({ variableId: `unfinished_state_${i}`, name: `Unfinished/planned broadcast state #${i}` });
-		result.push({ variableId: `unfinished_health_${i}`, name: `Unfinished/planned broadcast's stream health #${i}` });
-		result.push({
-			variableId: `unfinished_concurrent_viewers_${i}`,
-			name: `Unfinished/planned broadcast's concurrent viewers #${i}`,
+	Array(unfinishedCnt)
+		.keys()
+		.forEach((i) => {
+			result.push({ variableId: `unfinished_${i}`, name: `Unfinished/planned broadcast name #${i}` });
+			result.push({ variableId: `unfinished_${i}_id`, name: `Unfinished/planned broadcast id #${i}` });
+			result.push({ variableId: `unfinished_short_${i}`, name: `Unfinished/planned broadcast name shortened #${i}` });
+			result.push({ variableId: `unfinished_state_${i}`, name: `Unfinished/planned broadcast state #${i}` });
+			result.push({ variableId: `unfinished_health_${i}`, name: `Unfinished/planned broadcast's stream health #${i}` });
+			result.push({
+				variableId: `unfinished_concurrent_viewers_${i}`,
+				name: `Unfinished/planned broadcast's concurrent viewers #${i}`,
+			});
 		});
-	});
 
 	return result;
 }
@@ -81,10 +83,12 @@ export function exportVars(memory: StateMemory, unfinishedCnt: number): Variable
 	});
 
 	if (loop < unfinishedCnt) {
-		[...Array(unfinishedCnt - loop).keys()].forEach((i) => {
-			result.push(...getUnfinishedDefaultVars(loop + i));
-			result.push(...getStreamHealthVarsForUnfinishedBroadcastDefault(loop + i));
-		});
+		Array(unfinishedCnt - loop)
+			.keys()
+			.forEach((i) => {
+				result.push(...getUnfinishedDefaultVars(loop + i));
+				result.push(...getStreamHealthVarsForUnfinishedBroadcastDefault(loop + i));
+			});
 	}
 
 	return result;

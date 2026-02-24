@@ -184,80 +184,82 @@ export function listPresets(
 		};
 	});
 
-	[...Array(unfinishedCount).keys()].forEach((i) => {
-		if (i < unfinishedCount) {
-			presets[`unfinished_state_name_${i}`] = {
-				type: 'button',
-				category: 'Unfinished/planned broadcasts',
-				name: `Unfinished broadcast state/name #${i}`,
-				style: {
-					text: `$(YT:unfinished_state_${i})\\n$(yt:unfinished_short_${i})`,
-					size: 'auto',
-					color: combineRgb(125, 125, 125),
-					bgcolor: 0,
-				},
-				feedbacks: [
-					{
-						feedbackId: FeedbackId.BroadcastStatus,
-						options: addBroadcastSelectionOptions(
-							{
-								bg_live: combineRgb(222, 0, 0),
-								bg_testing: combineRgb(0, 172, 0),
-								bg_complete: combineRgb(87, 0, 87),
-								text_complete: combineRgb(182, 155, 182),
-								bg_ready: combineRgb(209, 209, 0),
-							},
-							`unfinished_${i}`
-						),
+	Array(unfinishedCount)
+		.keys()
+		.forEach((i) => {
+			if (i < unfinishedCount) {
+				presets[`unfinished_state_name_${i}`] = {
+					type: 'button',
+					category: 'Unfinished/planned broadcasts',
+					name: `Unfinished broadcast state/name #${i}`,
+					style: {
+						text: `$(YT:unfinished_state_${i})\\n$(yt:unfinished_short_${i})`,
+						size: 'auto',
+						color: combineRgb(125, 125, 125),
+						bgcolor: 0,
 					},
-				],
-				steps: [],
-			};
-			presets[`unfinished_stream_health_${i}`] = {
-				type: 'button',
-				category: 'Unfinished/planned broadcasts',
-				name: `Unfinished broadcast's stream health #${i}`,
-				style: {
-					text: `Stream #${i}\\n$(YT:unfinished_health_${i})`,
-					size: 'auto',
-					color: combineRgb(125, 125, 125),
-					bgcolor: 0,
-				},
-				feedbacks: [
-					{
-						feedbackId: FeedbackId.StreamHealth,
-						options: addBroadcastSelectionOptions(
-							{
-								bg_good: combineRgb(0, 204, 0),
-								text_good: combineRgb(255, 255, 255),
-								bg_ok: combineRgb(204, 204, 0),
-								text_ok: combineRgb(255, 255, 255),
-								bg_bad: combineRgb(255, 102, 0),
-								text_bad: combineRgb(255, 255, 255),
-								bg_no_data: combineRgb(255, 0, 0),
-								text_no_data: combineRgb(255, 255, 255),
-							},
-							`unfinished_${i}`
-						),
+					feedbacks: [
+						{
+							feedbackId: FeedbackId.BroadcastStatus,
+							options: addBroadcastSelectionOptions(
+								{
+									bg_live: combineRgb(222, 0, 0),
+									bg_testing: combineRgb(0, 172, 0),
+									bg_complete: combineRgb(87, 0, 87),
+									text_complete: combineRgb(182, 155, 182),
+									bg_ready: combineRgb(209, 209, 0),
+								},
+								`unfinished_${i}`
+							),
+						},
+					],
+					steps: [],
+				};
+				presets[`unfinished_stream_health_${i}`] = {
+					type: 'button',
+					category: 'Unfinished/planned broadcasts',
+					name: `Unfinished broadcast's stream health #${i}`,
+					style: {
+						text: `Stream #${i}\\n$(YT:unfinished_health_${i})`,
+						size: 'auto',
+						color: combineRgb(125, 125, 125),
+						bgcolor: 0,
 					},
-				],
-				steps: [],
-			};
-			presets[`unfinished_concurrent_viewers_number_${i}`] = {
-				type: 'button',
-				category: 'Unfinished/planned broadcasts',
-				name: `Unfinished broadcast's number of concurrent viewers #${i}`,
-				style: {
-					text: `Stream #${i}\\n$(YT:unfinished_concurrent_viewers_${i}) viewers`,
-					size: 'auto',
-					color: combineRgb(255, 255, 255),
-					bgcolor: 0,
-				},
-				feedbacks: [],
-				steps: [],
-			};
-		}
-	});
+					feedbacks: [
+						{
+							feedbackId: FeedbackId.StreamHealth,
+							options: addBroadcastSelectionOptions(
+								{
+									bg_good: combineRgb(0, 204, 0),
+									text_good: combineRgb(255, 255, 255),
+									bg_ok: combineRgb(204, 204, 0),
+									text_ok: combineRgb(255, 255, 255),
+									bg_bad: combineRgb(255, 102, 0),
+									text_bad: combineRgb(255, 255, 255),
+									bg_no_data: combineRgb(255, 0, 0),
+									text_no_data: combineRgb(255, 255, 255),
+								},
+								`unfinished_${i}`
+							),
+						},
+					],
+					steps: [],
+				};
+				presets[`unfinished_concurrent_viewers_number_${i}`] = {
+					type: 'button',
+					category: 'Unfinished/planned broadcasts',
+					name: `Unfinished broadcast's number of concurrent viewers #${i}`,
+					style: {
+						text: `Stream #${i}\\n$(YT:unfinished_concurrent_viewers_${i}) viewers`,
+						size: 'auto',
+						color: combineRgb(255, 255, 255),
+						bgcolor: 0,
+					},
+					feedbacks: [],
+					steps: [],
+				};
+			}
+		});
 
 	return presets;
 }
