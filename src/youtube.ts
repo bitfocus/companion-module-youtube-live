@@ -1,5 +1,6 @@
 import type { OAuth2Client } from 'google-auth-library';
 import { youtube, type youtube_v3 } from '@googleapis/youtube';
+import { Readable } from 'stream';
 import type { Broadcast, BroadcastID, BroadcastLifecycle, BroadcastMap, StreamHealth, StreamMap } from './cache.js';
 
 /**
@@ -92,6 +93,48 @@ export interface YoutubeAPI {
 	 * @param visibility Visibility of the broadcast
 	 */
 	setVisibility(id: BroadcastID, visibility: Visibility): Promise<void>;
+
+	/**
+	 * Create a new broadcast
+	 * @param title Title of the broadcast (1-100 chars)
+	 * @param scheduledStartTime ISO 8601 formatted start time
+	 * @param privacyStatus Privacy status of the broadcast
+	 * @param description Optional description (max 5000 chars)
+	 * @param enableAutoStart Whether to automatically start when stream becomes active
+	 * @param enableAutoStop Whether to automatically stop when stream becomes inactive
+	 * @param enableMonitorStream Whether to enable the monitor stream
+	 * @returns ID of the created broadcast
+	 */
+	createBroadcast(
+		title: string,
+		scheduledStartTime: string,
+		privacyStatus: Visibility,
+		description?: string,
+		enableAutoStart?: boolean,
+		enableAutoStop?: boolean,
+		enableMonitorStream?: boolean
+	): Promise<BroadcastID>;
+
+	/**
+	 * Upload and set a custom thumbnail for a broadcast/video
+	 * @param broadcastId The broadcast (video) ID
+	 * @param imageData Buffer containing the image data
+	 * @param mimeType MIME type of the image (image/jpeg or image/png)
+	 */
+	setThumbnail(broadcastId: BroadcastID, imageData: Buffer, mimeType: string): Promise<void>;
+
+	/**
+	 * List all streams for the authenticated user
+	 * @returns Map of available streams
+	 */
+	listStreams(): Promise<StreamMap>;
+
+	/**
+	 * Bind a broadcast to a stream (or unbind by omitting streamId)
+	 * @param broadcastId Broadcast ID to bind
+	 * @param streamId Stream ID to bind to (omit to unbind)
+	 */
+	bindBroadcastToStream(broadcastId: BroadcastID, streamId?: string): Promise<void>;
 }
 
 /**
@@ -350,6 +393,97 @@ export class YoutubeConnector implements YoutubeAPI {
 					privacyStatus: visibility,
 				},
 			},
+		});
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	async createBroadcast(
+		title: string,
+		scheduledStartTime: string,
+		privacyStatus: Visibility,
+		description?: string,
+		enableAutoStart?: boolean,
+		enableAutoStop?: boolean,
+		enableMonitorStream?: boolean
+	): Promise<BroadcastID> {
+		const response = await this.ApiClient.liveBroadcasts.insert({
+			part: ['snippet', 'status', 'contentDetails'],
+			requestBody: {
+				snippet: {
+					title,
+					scheduledStartTime,
+					description,
+				},
+				status: {
+					privacyStatus,
+				},
+				contentDetails: {
+					enableAutoStart: enableAutoStart ?? false,
+					enableAutoStop: enableAutoStop ?? false,
+					monitorStream: {
+						enableMonitorStream: enableMonitorStream ?? true,
+					},
+				},
+			},
+		});
+
+		const id = response.data.id;
+		if (!id) {
+			throw new Error('Failed to create broadcast: no ID returned');
+		}
+
+		return id;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	async setThumbnail(broadcastId: BroadcastID, imageData: Buffer, mimeType: string): Promise<void> {
+		await this.ApiClient.thumbnails.set({
+			videoId: broadcastId,
+			media: {
+				mimeType,
+				body: Readable.from(imageData),
+			},
+		});
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	async listStreams(): Promise<StreamMap> {
+		const response = await this.ApiClient.liveStreams.list({
+			part: ['id', 'snippet', 'status'],
+			mine: true,
+			maxResults: 50,
+		});
+
+		const mapping: StreamMap = {};
+
+		response.data.items?.forEach((item) => {
+			const id = item.id!;
+			const health = item.status!.healthStatus!.status! as StreamHealth;
+
+			mapping[id] = {
+				Id: id,
+				Health: health,
+				Name: item.snippet?.title ?? undefined,
+			};
+		});
+
+		return mapping;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	async bindBroadcastToStream(broadcastId: BroadcastID, streamId?: string): Promise<void> {
+		await this.ApiClient.liveBroadcasts.bind({
+			part: ['id'],
+			id: broadcastId,
+			streamId,
 		});
 	}
 }
