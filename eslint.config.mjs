@@ -1,6 +1,7 @@
 // @ts-check
 
 import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs';
+import vitest from '@vitest/eslint-plugin';
 
 const baseConfig = await generateEslintConfig({
 	enableTypescript: true,
@@ -180,25 +181,22 @@ const customConfig = [
 
 	{
 		files: allTestFilePatterns,
+		plugins: {
+			vitest,
+		},
 		rules: {
 			// The TypeScript eslint rule that flags references to unbound
 			// functions that discard a proper `this`, also flags
 			// `expect(obj.nonStaticFunc).toHaveBeenCalled()` and similar test
-			// patterns.
-			//
-			// Jest has the jest/unbound-method rule which will exempt the Jest
-			// pattern from consideration.  Unfortunately, vitest doesn't yet
-			// have such a rule exempting the pattern written for vitest.
-			// https://github.com/vitest-dev/eslint-plugin-vitest/issues/591
-			// So for now we turn off the TypeScript eslint rule and wait for
-			// that vitest-aware version to be created.
+			// patterns.  Disable the rule in favor of a vitest-specific rule that
+			// doesn't flag valid `expect`-related operations.
 			'@typescript-eslint/unbound-method': 'off',
-			// 'vitest/unbound-method': 'error',
+			'vitest/unbound-method': 'error',
 		},
 	},
 
 	permitLimitedUnpublishedImports(allTestFilePatterns, ['vitest']),
-	permitLimitedUnpublishedImports(['eslint.config.mjs'], ['@companion-module/tools']),
+	permitLimitedUnpublishedImports(['eslint.config.mjs'], ['@companion-module/tools', '@vitest/eslint-plugin']),
 	permitLimitedUnpublishedImports(['knip.config.ts'], ['knip']),
 	permitLimitedUnpublishedImports(['vitest.config.ts'], ['vitest']),
 ];
