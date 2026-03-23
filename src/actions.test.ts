@@ -10,7 +10,7 @@ import { BroadcastLifecycle, type BroadcastID, type StateMemory } from './cache.
 import { clone } from './common.js';
 import { type ModuleBase, Core } from './core.js';
 import { Visibility, type YoutubeAPI } from './youtube.js';
-import { MockContext } from './__mocks__/context.js';
+import { MockContext } from './__tests__/mock-context.js';
 
 const SampleMemory: StateMemory = {
 	Broadcasts: {

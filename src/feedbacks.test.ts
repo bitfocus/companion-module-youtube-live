@@ -11,7 +11,7 @@ import { type ModuleBase, Core } from './core.js';
 import type { YoutubeAPI } from './youtube.js';
 import { makeMockModule } from './__tests__/mock/module.js';
 import { makeMockYT } from './__tests__/mock/youtube-api.js';
-import { MockContext } from './__mocks__/context.js';
+import { MockContext } from './__tests__/mock-context.js';
 //
 // SAMPLE DATA
 //
