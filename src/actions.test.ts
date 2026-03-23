@@ -3,7 +3,8 @@ import { afterAll, afterEach, describe, expect, type MockedObject, test, vi } fr
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import type { CompanionActionEvent, CompanionOptionValues } from '@companion-module/base';
-import { makeMockModule, makeMockYT } from './__mocks__/@googleapis/youtube.js';
+import { makeMockModule } from './__mocks__/@googleapis/youtube.js';
+import { makeMockYT } from './__tests__/mock/youtube-api.js';
 import { listActions, ActionId } from './actions.js';
 import { BroadcastLifecycle, type BroadcastID, type StateMemory } from './cache.js';
 import { clone } from './common.js';
