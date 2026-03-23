@@ -185,6 +185,8 @@ const customConfig = [
 			vitest,
 		},
 		rules: {
+			...vitest.configs.recommended.rules,
+
 			// The TypeScript eslint rule that flags references to unbound
 			// functions that discard a proper `this`, also flags
 			// `expect(obj.nonStaticFunc).toHaveBeenCalled()` and similar test
