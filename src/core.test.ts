@@ -5,7 +5,7 @@ import type { YoutubeAPI } from './youtube.js';
 import { type ModuleBase, Core } from './core.js';
 import { sleep } from './common.js';
 import { type StateMemory, BroadcastLifecycle, StreamHealth } from './cache.js';
-import { makeMockModule } from './__mocks__/@googleapis/youtube.js';
+import { makeMockModule } from './__tests__/mock/module.js';
 import { makeMockYT } from './__tests__/mock/youtube-api.js';
 
 describe('Miscellaneous', () => {

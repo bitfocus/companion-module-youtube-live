@@ -1,15 +1,5 @@
 import type { youtube_v3 } from '@googleapis/youtube';
 import { expect, vi } from 'vitest';
-import type { ModuleBase } from '../../core.js';
-
-export function makeMockModule(): ModuleBase {
-	return {
-		reloadAll: vi.fn<ModuleBase['reloadAll']>(),
-		reloadStates: vi.fn<ModuleBase['reloadStates']>(),
-		reloadBroadcast: vi.fn<ModuleBase['reloadBroadcast']>(),
-		log: vi.fn<ModuleBase['log']>(),
-	};
-}
 
 // All methods mocked below are heavily overloaded.  If we were to use e.g.
 // `youtube_v3.YouTube['liveStreams']['list']`, this would require that the mock
