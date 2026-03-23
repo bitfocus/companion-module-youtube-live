@@ -115,14 +115,18 @@ describe('Miscellaneous', () => {
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Ready;
 		await core.init();
 
-		const promise1 = expect(core.startBroadcastTest('bA')).resolves.toBe(undefined);
-		const promise2 = expect(core.startBroadcastTest('bA')).rejects.toBeInstanceOf(Error);
+		const startTwicePromise = Promise.allSettled([
+			core.startBroadcastTest('bA'), // resolves
+			core.startBroadcastTest('bA'), // rejects
+		]);
 
 		await sleep(60);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Testing;
 
-		await promise1;
-		await promise2;
+		await expect(startTwicePromise).resolves.toMatchObject([
+			{ status: 'fulfilled' },
+			{ status: 'rejected', reason: expect.any(Error) },
+		]);
 	});
 
 	test('Full reload works', async () => {
