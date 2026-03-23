@@ -89,7 +89,7 @@ describe('Miscellaneous', () => {
 	test('Double destroy works', async () => {
 		await core.init();
 		core.destroy();
-		core.destroy();
+		expect(() => core.destroy()).not.toThrow();
 	}, 1000);
 
 	test('Periodic callback failure prints a message to log', async () => {
@@ -104,10 +104,10 @@ describe('Miscellaneous', () => {
 	test('Cancel pending transition', async () => {
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Ready;
 		await core.init();
-		const promise = expect(core.startBroadcastTest('bA')).rejects.toBeInstanceOf(Error);
+		const startPromise = core.startBroadcastTest('bA');
 		await sleep(120);
 		core.destroy();
-		return promise;
+		return expect(startPromise).rejects.toBeInstanceOf(Error);
 	});
 
 	test('Double transition is not allowed', async () => {
@@ -207,12 +207,12 @@ describe('Starting tests on broadcasts', () => {
 	test('Starting test on currently ready broadcast polls and succeeds', async () => {
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Ready;
 		await core.init();
-		const promise = expect(core.startBroadcastTest('bA')).resolves.toBe(undefined);
+		const startPromise = core.startBroadcastTest('bA');
 		await sleep(120);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.TestStarting;
 		await sleep(120);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Testing;
-		await promise;
+		await expect(startPromise).resolves.toBe(undefined);
 		expect(mockYT.refreshBroadcastStatus1).toHaveBeenCalledTimes(1 + 3);
 	});
 
@@ -233,10 +233,10 @@ describe('Starting tests on broadcasts', () => {
 	test('Failure at starting test gets passed through, variant 3', async () => {
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Ready;
 		await core.init();
-		const promise = expect(core.startBroadcastTest('bA')).rejects.toBeInstanceOf(Error);
+		const startPromise = core.startBroadcastTest('bA');
 		await sleep(60);
 		mockYT.refreshBroadcastStatus1.mockRejectedValueOnce(new Error('nope'));
-		return promise;
+		return expect(startPromise).rejects.toBeInstanceOf(Error);
 	});
 });
 
@@ -300,12 +300,12 @@ describe('Going live with broadcasts', () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Ready;
 		await core.init();
-		const promise = expect(core.makeBroadcastLive('bA')).resolves.toBe(undefined);
+		const makeLivePromise = core.makeBroadcastLive('bA');
 		await sleep(120);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Testing;
 		await sleep(120);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Live;
-		await promise;
+		await expect(makeLivePromise).resolves.toBe(undefined);
 		expect(mockYT.transitionBroadcast).toHaveBeenCalledTimes(2);
 	});
 
@@ -313,10 +313,10 @@ describe('Going live with broadcasts', () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Testing;
 		await core.init();
-		const promise = expect(core.makeBroadcastLive('bA')).resolves.toBe(undefined);
+		const makeLivePromise = core.makeBroadcastLive('bA');
 		await sleep(60);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Live;
-		await promise;
+		await expect(makeLivePromise).resolves.toBe(undefined);
 		expect(mockYT.transitionBroadcast).toHaveBeenCalledTimes(1);
 	});
 
@@ -335,10 +335,10 @@ describe('Going live with broadcasts', () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = false;
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Ready;
 		await core.init();
-		const promise = expect(core.makeBroadcastLive('bA')).resolves.toBe(undefined);
+		const makeLivePromise = core.makeBroadcastLive('bA');
 		await sleep(60);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Live;
-		await promise;
+		await expect(makeLivePromise).resolves.toBe(undefined);
 	});
 });
 
@@ -400,10 +400,10 @@ describe('Finishing live broadcasts', () => {
 	test('Starting finish on currently ready broadcast succeeds', async () => {
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Live;
 		await core.init();
-		const promise = expect(core.finishBroadcast('bA')).resolves.toBe(undefined);
+		const finishPromise = core.finishBroadcast('bA');
 		await sleep(60);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Complete;
-		await promise;
+		await expect(finishPromise).resolves.toBe(undefined);
 	});
 });
 
@@ -456,30 +456,30 @@ describe('Toggling live broadcasts', () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Ready;
 		await core.init();
-		const promise = expect(core.toggleBroadcast('bA')).resolves.toBe(undefined);
+		const togglePromise = core.toggleBroadcast('bA');
 		await sleep(60);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Testing;
-		await promise;
+		await expect(togglePromise).resolves.toBe(undefined);
 	});
 
 	test('Toggle works for testing stream [monitor = on]', async () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Testing;
 		await core.init();
-		const promise = expect(core.toggleBroadcast('bA')).resolves.toBe(undefined);
+		const togglePromise = core.toggleBroadcast('bA');
 		await sleep(60);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Live;
-		await promise;
+		await expect(togglePromise).resolves.toBe(undefined);
 	});
 
 	test('Toggle works for live stream [monitor = on]', async () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = true;
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Live;
 		await core.init();
-		const promise = expect(core.toggleBroadcast('bA')).resolves.toBe(undefined);
+		const togglePromise = core.toggleBroadcast('bA');
 		await sleep(60);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Complete;
-		await promise;
+		await expect(togglePromise).resolves.toBe(undefined);
 	});
 
 	test('Toggle fails for streams in invalid state [monitor = on]', async () => {
@@ -499,20 +499,20 @@ describe('Toggling live broadcasts', () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = false;
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Ready;
 		await core.init();
-		const promise = expect(core.toggleBroadcast('bA')).resolves.toBe(undefined);
+		const togglePromise = core.toggleBroadcast('bA');
 		await sleep(60);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Live;
-		await promise;
+		await expect(togglePromise).resolves.toBe(undefined);
 	});
 
 	test('Toggle works for live stream [monitor = off]', async () => {
 		memory.Broadcasts.bA.MonitorStreamEnabled = false;
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Live;
 		await core.init();
-		const promise = expect(core.toggleBroadcast('bA')).resolves.toBe(undefined);
+		const togglePromise = core.toggleBroadcast('bA');
 		await sleep(60);
 		memory.Broadcasts.bA.Status = BroadcastLifecycle.Complete;
-		await promise;
+		await expect(togglePromise).resolves.toBe(undefined);
 	});
 
 	test('Toggle fails for streams in invalid state [monitor = off]', async () => {
