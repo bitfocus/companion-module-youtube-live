@@ -198,7 +198,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	async refreshBroadcastStatus(current: BroadcastMap): Promise<BroadcastMap> {
 		const response = await this.ApiClient.liveBroadcasts.list({
 			part: ['snippet', 'status', 'statistics'],
-			id: Array.from(Object.keys(current)),
+			id: Object.keys(current),
 			maxResults: this.MaxBroadcasts,
 		});
 
