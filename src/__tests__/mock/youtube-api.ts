@@ -34,5 +34,17 @@ export function makeMockYT(memory: StateMemory): YoutubeAPI {
 		setVisibility: vi.fn<YoutubeAPI['setVisibility']>().mockImplementation(async () => {
 			return Promise.resolve();
 		}),
+		createBroadcast: vi.fn<YoutubeAPI['createBroadcast']>().mockImplementation(async () => {
+			return Promise.resolve('newBroadcastId');
+		}),
+		setThumbnail: vi.fn<YoutubeAPI['setThumbnail']>().mockImplementation(async () => {
+			return Promise.resolve();
+		}),
+		listStreams: vi.fn<YoutubeAPI['listStreams']>().mockImplementation(async () => {
+			return Promise.resolve(memory.Streams);
+		}),
+		bindBroadcastToStream: vi.fn<YoutubeAPI['bindBroadcastToStream']>().mockImplementation(async () => {
+			return Promise.resolve();
+		}),
 	};
 }

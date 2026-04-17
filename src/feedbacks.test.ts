@@ -39,7 +39,14 @@ const SampleMemory: StateMemory = {
 			Health: StreamHealth.Good,
 		},
 	},
+	BoundStreams: {
+		abcd: {
+			Id: 'abcd',
+			Health: StreamHealth.Good,
+		},
+	},
 	UnfinishedBroadcasts: [],
+	LastCreatedBroadcast: null,
 };
 
 const SampleBroadcastCheck: CompanionFeedbackAdvancedEvent = {
@@ -103,7 +110,7 @@ async function tryBroadcast(phase: BroadcastLifecycle, core: Core): Promise<Comp
 
 async function tryStream(health: StreamHealth, core: Core): Promise<CompanionAdvancedFeedbackResult> {
 	await core.init();
-	core.Cache.Streams['abcd'].Health = health;
+	core.Cache.BoundStreams['abcd'].Health = health;
 	const feedbacks = listFeedbacks({ broadcasts: SampleMemory.Broadcasts, unfinishedCount: 0, core });
 	return feedbacks.broadcast_bound_stream_health.callback(SampleStreamCheck, SampleContext);
 }
@@ -202,7 +209,13 @@ describe('Broadcast lifecycle feedback', () => {
 	});
 
 	test('Unknown broadcasts', async () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
+		const data: StateMemory = {
+			Broadcasts: {},
+			Streams: {},
+			BoundStreams: {},
+			UnfinishedBroadcasts: [],
+			LastCreatedBroadcast: null,
+		};
 		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'advanced',
@@ -227,7 +240,13 @@ describe('Broadcast lifecycle feedback', () => {
 	});
 
 	test('Events without ID', async () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
+		const data: StateMemory = {
+			Broadcasts: {},
+			Streams: {},
+			BoundStreams: {},
+			UnfinishedBroadcasts: [],
+			LastCreatedBroadcast: null,
+		};
 		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'advanced',
@@ -321,7 +340,13 @@ describe('Stream health feedback', () => {
 	});
 
 	test('Unknown broadcasts', async () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
+		const data: StateMemory = {
+			Broadcasts: {},
+			Streams: {},
+			BoundStreams: {},
+			UnfinishedBroadcasts: [],
+			LastCreatedBroadcast: null,
+		};
 		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'advanced',
@@ -362,7 +387,9 @@ describe('Stream health feedback', () => {
 				},
 			},
 			Streams: {},
+			BoundStreams: {},
 			UnfinishedBroadcasts: [],
+			LastCreatedBroadcast: null,
 		};
 
 		const event: CompanionFeedbackAdvancedEvent = {
@@ -389,7 +416,13 @@ describe('Stream health feedback', () => {
 	});
 
 	test('Events without ID', async () => {
-		const data: StateMemory = { Broadcasts: {}, Streams: {}, UnfinishedBroadcasts: [] };
+		const data: StateMemory = {
+			Broadcasts: {},
+			Streams: {},
+			BoundStreams: {},
+			UnfinishedBroadcasts: [],
+			LastCreatedBroadcast: null,
+		};
 		const event: CompanionFeedbackAdvancedEvent = {
 			id: 'abcd1234',
 			type: 'advanced',
