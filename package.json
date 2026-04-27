@@ -47,9 +47,9 @@
 		"prettier": "^3.8.1",
 		"rimraf": "^4.4.1",
 		"type-testing": "^0.2.0",
-		"typescript": "~5.9.3",
-		"typescript-eslint": "~8.57.1",
-		"vitest": "^4.0.18"
+		"typescript": "~6.0.3",
+		"typescript-eslint": "~8.59.0",
+		"vitest": "^4.1.5"
 	},
 	"packageManager": "yarn@4.13.0"
 }
