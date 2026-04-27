@@ -67,6 +67,7 @@ const customConfig = [
 					fixStyle: 'inline-type-imports',
 				},
 			],
+			'n/prefer-node-protocol': 'error',
 
 			'@typescript-eslint/naming-convention': [
 				'error',
