@@ -4,7 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { declareVars, getBroadcastVars, getStreamVars, exportVars, type VariableContent } from './vars.js';
 import type { Broadcast, StateMemory } from './cache.js';
 import { BroadcastLifecycle } from './lifecycle.js';
-import { StreamHealth } from './types.js';
+import { StreamHealth, Visibility } from './types.js';
 import type { CompanionVariableDefinition } from '@companion-module/base';
 import { clone } from './common.js';
 
@@ -21,6 +21,7 @@ const SampleMemory: StateMemory = {
 			LiveChatId: 'livechatID',
 			LiveConcurrentViewers: '0',
 			Description: '',
+			Visibility: Visibility.Public,
 		},
 	},
 	Streams: {
@@ -108,6 +109,14 @@ describe('Variable declarations', () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					variableId: 'unfinished_concurrent_viewers_0',
+				}),
+			])
+		);
+
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'unfinished_visibility_0',
 				}),
 			])
 		);

@@ -1,4 +1,4 @@
-import type { BroadcastID, StreamHealth, StreamID } from './types.js';
+import type { BroadcastID, StreamHealth, StreamID, Visibility } from './types.js';
 import { BroadcastLifecycle } from './lifecycle.js';
 
 /**
@@ -34,6 +34,9 @@ export interface Broadcast {
 
 	/** The description of the broadcast */
 	Description: string;
+
+	/** Privacy/visibility status of the broadcast */
+	Visibility: Visibility;
 }
 
 /**

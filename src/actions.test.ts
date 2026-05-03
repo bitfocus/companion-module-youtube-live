@@ -27,6 +27,7 @@ const SampleMemory: StateMemory = {
 			LiveChatId: 'lcTest',
 			LiveConcurrentViewers: '33',
 			Description: 'Live description',
+			Visibility: Visibility.Public,
 		},
 	},
 	Streams: {},

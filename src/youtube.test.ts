@@ -6,7 +6,7 @@ import { YoutubeConnector, Transition } from './youtube.js';
 import type { FakeYouTube } from './__tests__/mock/fake-youtube.js';
 import type { StateMemory } from './cache.js';
 import { BroadcastLifecycle } from './lifecycle.js';
-import { StreamHealth } from './types.js';
+import { StreamHealth, Visibility } from './types.js';
 vi.mock('@googleapis/youtube', async () => {
 	return import('./__mocks__/@googleapis/youtube.js');
 });
@@ -26,6 +26,7 @@ const memory: StateMemory = {
 			LiveChatId: 'lcA',
 			LiveConcurrentViewers: '0',
 			Description: '',
+			Visibility: Visibility.Private,
 		},
 		bB: {
 			Id: 'bB',
@@ -38,6 +39,7 @@ const memory: StateMemory = {
 			LiveChatId: 'lcB',
 			LiveConcurrentViewers: '42',
 			Description: 'Live description',
+			Visibility: Visibility.Public,
 		},
 		bC: {
 			Id: 'bC',
@@ -50,6 +52,7 @@ const memory: StateMemory = {
 			LiveChatId: 'lcC',
 			LiveConcurrentViewers: '21',
 			Description: 'Ready description',
+			Visibility: Visibility.Unlisted,
 		},
 	},
 	Streams: {
@@ -78,6 +81,7 @@ const memoryUpdated: StateMemory = {
 			LiveChatId: 'lcB',
 			LiveConcurrentViewers: '0',
 			Description: 'Live description',
+			Visibility: Visibility.Public,
 		},
 		bC: {
 			Id: 'bC',
@@ -90,6 +94,7 @@ const memoryUpdated: StateMemory = {
 			LiveChatId: 'lcC',
 			LiveConcurrentViewers: '0',
 			Description: 'Ready description',
+			Visibility: Visibility.Unlisted,
 		},
 	},
 	Streams: {},
@@ -113,7 +118,7 @@ describe('Queries', () => {
 					items: [
 						{
 							id: 'bA',
-							status: { lifeCycleStatus: 'testing' },
+							status: { lifeCycleStatus: 'testing', privacyStatus: 'private' },
 							snippet: {
 								title: 'Broadcast A',
 								scheduledStartTime: '2011-11-11T11:11:11',
@@ -128,7 +133,7 @@ describe('Queries', () => {
 						},
 						{
 							id: 'bB',
-							status: { lifeCycleStatus: 'live' },
+							status: { lifeCycleStatus: 'live', privacyStatus: 'public' },
 							snippet: {
 								title: 'Broadcast B',
 								scheduledStartTime: '2022-22-22T22:22:22',
@@ -144,7 +149,7 @@ describe('Queries', () => {
 						},
 						{
 							id: 'bC',
-							status: { lifeCycleStatus: 'ready' },
+							status: { lifeCycleStatus: 'ready', privacyStatus: 'unlisted' },
 							snippet: {
 								title: 'Broadcast C',
 								scheduledStartTime: '2033-33-33T33:33:33',
@@ -178,7 +183,7 @@ describe('Queries', () => {
 					items: [
 						{
 							id: 'bB',
-							status: { lifeCycleStatus: 'complete' },
+							status: { lifeCycleStatus: 'complete', privacyStatus: 'public' },
 							snippet: {
 								title: 'Broadcast B',
 								scheduledStartTime: '2022-22-22T22:22:22',
@@ -190,7 +195,7 @@ describe('Queries', () => {
 						},
 						{
 							id: 'bC',
-							status: { lifeCycleStatus: 'testStarting' },
+							status: { lifeCycleStatus: 'testStarting', privacyStatus: 'unlisted' },
 							snippet: {
 								title: 'Broadcast C',
 								scheduledStartTime: '2033-33-33T33:33:33',
@@ -234,7 +239,7 @@ describe('Queries', () => {
 					items: [
 						{
 							id: 'bB',
-							status: { lifeCycleStatus: 'complete' },
+							status: { lifeCycleStatus: 'complete', privacyStatus: 'public' },
 							snippet: {
 								title: 'Broadcast B',
 								scheduledStartTime: '2022-22-22T22:22:22',
