@@ -1,8 +1,8 @@
 import type { Broadcast, StateMemory } from './cache.js';
 import type { Logger } from './common.js';
 import { BroadcastLifecycle } from './lifecycle.js';
-import type { BroadcastID } from './types.js';
-import { Transition, type Visibility, type YoutubeAPI } from './youtube.js';
+import type { BroadcastID, Visibility } from './types.js';
+import { Transition, type YoutubeAPI } from './youtube.js';
 
 /**
  * Interface between executive core and the Companion module glue

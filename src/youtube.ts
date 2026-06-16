@@ -2,7 +2,7 @@ import type { OAuth2Client } from 'google-auth-library';
 import { youtube, type youtube_v3 } from '@googleapis/youtube';
 import type { Broadcast, BroadcastMap, StreamMap } from './cache.js';
 import type { BroadcastLifecycle } from './lifecycle.js';
-import type { BroadcastID, StreamHealth } from './types.js';
+import type { BroadcastID, StreamHealth, Visibility } from './types.js';
 
 /**
  * Broadcast transition types
@@ -14,12 +14,6 @@ export enum Transition {
 	ToLive = 'live',
 	/** Transition from live state to complete state */
 	ToComplete = 'complete',
-}
-
-export enum Visibility {
-	Private = 'private',
-	Unlisted = 'unlisted',
-	Public = 'public',
 }
 
 export interface YoutubeAPI {

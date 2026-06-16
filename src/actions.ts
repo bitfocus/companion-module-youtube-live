@@ -6,7 +6,7 @@ import type {
 } from '@companion-module/base';
 import { type BroadcastMap, youngerThan } from './cache.js';
 import { BroadcastLifecycle } from './lifecycle.js';
-import type { BroadcastID } from './types.js';
+import { type BroadcastID, Visibility } from './types.js';
 import {
 	BroadcastIdIsTextOptionId,
 	BroadcastIdDropdownOptionId,
@@ -15,7 +15,6 @@ import {
 	selectBroadcastOptions,
 } from './common.js';
 import type { Core } from './core.js';
-import { Visibility } from './youtube.js';
 
 export enum ActionId {
 	InitBroadcast = 'init_broadcast',

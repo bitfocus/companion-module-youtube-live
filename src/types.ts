@@ -20,3 +20,12 @@ export enum StreamHealth {
 	/** YouTube's live streaming backend servers do not have any information about the stream's health status. */
 	NoData = 'noData',
 }
+
+/**
+ * Privacy/visibility status of a YouTube broadcast.
+ */
+export enum Visibility {
+	Private = 'private',
+	Unlisted = 'unlisted',
+	Public = 'public',
+}

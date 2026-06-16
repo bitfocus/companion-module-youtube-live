@@ -8,10 +8,10 @@ import { makeMockYT } from './__tests__/mock/youtube-api.js';
 import { listActions, ActionId } from './actions.js';
 import type { StateMemory } from './cache.js';
 import { BroadcastLifecycle } from './lifecycle.js';
-import type { BroadcastID } from './types.js';
+import { type BroadcastID, Visibility } from './types.js';
 import { clone } from './common.js';
 import { type ModuleBase, Core } from './core.js';
-import { Visibility, type YoutubeAPI } from './youtube.js';
+import type { YoutubeAPI } from './youtube.js';
 import { MockContext } from './__tests__/mock-context.js';
 
 const SampleMemory: StateMemory = {
