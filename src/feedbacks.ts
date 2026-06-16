@@ -5,7 +5,9 @@ import {
 	type CompanionMigrationFeedback,
 	type CompanionOptionValues,
 } from '@companion-module/base';
-import { type Broadcast, type BroadcastMap, BroadcastLifecycle, type Stream, StreamHealth } from './cache.js';
+import type { Broadcast, BroadcastMap, Stream } from './cache.js';
+import { BroadcastLifecycle } from './lifecycle.js';
+import { StreamHealth } from './types.js';
 import {
 	MarchGreen,
 	PhosphorGreen,

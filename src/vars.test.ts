@@ -2,7 +2,9 @@ import { describe, expect, test } from 'vitest';
 
 //require("leaked-handles");
 import { declareVars, getBroadcastVars, getStreamVars, exportVars, type VariableContent } from './vars.js';
-import { type StateMemory, BroadcastLifecycle, StreamHealth, type Broadcast } from './cache.js';
+import type { Broadcast, StateMemory } from './cache.js';
+import { BroadcastLifecycle } from './lifecycle.js';
+import { StreamHealth } from './types.js';
 import type { CompanionVariableDefinition } from '@companion-module/base';
 import { clone } from './common.js';
 

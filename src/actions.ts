@@ -4,7 +4,9 @@ import type {
 	CompanionMigrationAction,
 	DropdownChoice,
 } from '@companion-module/base';
-import { type BroadcastMap, type BroadcastID, youngerThan, BroadcastLifecycle } from './cache.js';
+import { type BroadcastMap, youngerThan } from './cache.js';
+import { BroadcastLifecycle } from './lifecycle.js';
+import type { BroadcastID } from './types.js';
 import {
 	BroadcastIdIsTextOptionId,
 	BroadcastIdDropdownOptionId,

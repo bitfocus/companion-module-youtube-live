@@ -6,7 +6,9 @@ import type { CompanionActionEvent, CompanionOptionValues } from '@companion-mod
 import { makeMockModule } from './__tests__/mock/module.js';
 import { makeMockYT } from './__tests__/mock/youtube-api.js';
 import { listActions, ActionId } from './actions.js';
-import { BroadcastLifecycle, type BroadcastID, type StateMemory } from './cache.js';
+import type { StateMemory } from './cache.js';
+import { BroadcastLifecycle } from './lifecycle.js';
+import type { BroadcastID } from './types.js';
 import { clone } from './common.js';
 import { type ModuleBase, Core } from './core.js';
 import { Visibility, type YoutubeAPI } from './youtube.js';

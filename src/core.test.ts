@@ -4,7 +4,9 @@ import { afterAll, afterEach, beforeEach, describe, expect, type MockedObject, t
 import type { YoutubeAPI } from './youtube.js';
 import { type ModuleBase, Core } from './core.js';
 import { sleep } from './common.js';
-import { type StateMemory, BroadcastLifecycle, StreamHealth } from './cache.js';
+import type { StateMemory } from './cache.js';
+import { StreamHealth } from './types.js';
+import { BroadcastLifecycle } from './lifecycle.js';
 import { makeMockModule } from './__tests__/mock/module.js';
 import { makeMockYT } from './__tests__/mock/youtube-api.js';
 

@@ -6,7 +6,8 @@ import type {
 	DropdownChoice,
 	InstanceBase,
 } from '@companion-module/base';
-import type { Broadcast, BroadcastID, BroadcastMap } from './cache.js';
+import type { Broadcast, BroadcastMap } from './cache.js';
+import type { BroadcastID } from './types.js';
 import type { YoutubeConfig } from './config.js';
 
 /** Generic module skeleton for extracting function types. */

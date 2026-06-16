@@ -1,6 +1,8 @@
 import type { OAuth2Client } from 'google-auth-library';
 import { youtube, type youtube_v3 } from '@googleapis/youtube';
-import type { Broadcast, BroadcastID, BroadcastLifecycle, BroadcastMap, StreamHealth, StreamMap } from './cache.js';
+import type { Broadcast, BroadcastMap, StreamMap } from './cache.js';
+import type { BroadcastLifecycle } from './lifecycle.js';
+import type { BroadcastID, StreamHealth } from './types.js';
 
 /**
  * Broadcast transition types

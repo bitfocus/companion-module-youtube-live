@@ -3,7 +3,9 @@ import { afterAll, afterEach, beforeEach, describe, expect, type MockedObject, t
 //require("leaked-handles");
 /* eslint-disable @typescript-eslint/naming-convention -- option ids don't follow conventions */
 import { listFeedbacks } from './feedbacks.js';
-import { BroadcastLifecycle, StreamHealth, type StateMemory } from './cache.js';
+import type { StateMemory } from './cache.js';
+import { BroadcastLifecycle } from './lifecycle.js';
+import { StreamHealth } from './types.js';
 import type { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult } from '@companion-module/base';
 import { Blue, Green, Red, Yellow } from './colors.js';
 import { clone } from './common.js';

@@ -1,5 +1,7 @@
 import type { CompanionVariableDefinition } from '@companion-module/base';
-import { type StateMemory, BroadcastLifecycle, StreamHealth, type Broadcast, type Stream } from './cache.js';
+import type { Broadcast, StateMemory, Stream } from './cache.js';
+import { BroadcastLifecycle } from './lifecycle.js';
+import { StreamHealth } from './types.js';
 
 /**
  * Structure for representing contents of one variable
