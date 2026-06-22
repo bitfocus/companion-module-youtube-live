@@ -22,14 +22,20 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 	const result: CompanionVariableDefinition[] = [];
 
 	Object.values(memory.Broadcasts).forEach((item) => {
-		result.push({
-			variableId: `broadcast_${item.Id}_lifecycle`,
-			name: `Lifecycle state of broadcast titled '${item.Name}'`,
-		});
-		result.push({
-			variableId: `broadcast_${item.Id}_health`,
-			name: `Health of the stream bound to broadcast titled '${item.Name}'`,
-		});
+		result.push(
+			{
+				variableId: `broadcast_${item.Id}_lifecycle`,
+				name: `Lifecycle state of broadcast titled '${item.Name}'`,
+			},
+			{
+				variableId: `broadcast_${item.Id}_health`,
+				name: `Health of the stream bound to broadcast titled '${item.Name}'`,
+			},
+			{
+				variableId: `broadcast_${item.Id}_visibility`,
+				name: `Visibility of the stream bound to broadcast titled '${item.Name}'`,
+			}
+		);
 	});
 
 	Array(unfinishedCnt)
@@ -43,6 +49,10 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 			result.push({
 				variableId: `unfinished_concurrent_viewers_${i}`,
 				name: `Unfinished/planned broadcast's concurrent viewers #${i}`,
+			});
+			result.push({
+				variableId: `unfinished_visibility_${i}`,
+				name: `Unfinished/planned broadcast's visibility #${i}`,
 			});
 		});
 
@@ -101,39 +111,44 @@ export function exportVars(memory: StateMemory, unfinishedCnt: number): Variable
  * @param broadcast Broadcast to generate variables for
  */
 export function getBroadcastVars(broadcast: Broadcast): VariableContent[] {
-	const content: VariableContent = {
+	const lifecycle: VariableContent = {
 		name: `broadcast_${broadcast.Id}_lifecycle`,
 		value: 'unknown',
 	};
 
 	switch (broadcast.Status) {
 		case BroadcastLifecycle.Revoked:
-			content.value = 'REMOVED';
+			lifecycle.value = 'REMOVED';
 			break;
 		case BroadcastLifecycle.Created:
-			content.value = 'NOTCONF';
+			lifecycle.value = 'NOTCONF';
 			break;
 		case BroadcastLifecycle.Ready:
-			content.value = 'INIT';
+			lifecycle.value = 'INIT';
 			break;
 		case BroadcastLifecycle.TestStarting:
-			content.value = 'TEST*';
+			lifecycle.value = 'TEST*';
 			break;
 		case BroadcastLifecycle.Testing:
-			content.value = 'TEST';
+			lifecycle.value = 'TEST';
 			break;
 		case BroadcastLifecycle.LiveStarting:
-			content.value = 'LIVE*';
+			lifecycle.value = 'LIVE*';
 			break;
 		case BroadcastLifecycle.Live:
-			content.value = 'LIVE';
+			lifecycle.value = 'LIVE';
 			break;
 		case BroadcastLifecycle.Complete:
-			content.value = 'DONE';
+			lifecycle.value = 'DONE';
 			break;
 	}
 
-	return [content];
+	const visibility: VariableContent = {
+		name: `broadcast_${broadcast.Id}_visibility`,
+		value: broadcast.Visibility,
+	};
+
+	return [lifecycle, visibility];
 }
 
 /**
@@ -187,8 +202,12 @@ function getUnfinishedBroadcastVars(index: number, broadcast: Broadcast): Variab
 		name: `unfinished_concurrent_viewers_${index}`,
 		value: broadcast.LiveConcurrentViewers,
 	};
+	const visibility: VariableContent = {
+		name: `unfinished_visibility_${index}`,
+		value: broadcast.Visibility,
+	};
 
-	return [contentName, contentId, contentShort, concurrentViewers];
+	return [contentName, contentId, contentShort, concurrentViewers, visibility];
 }
 
 /**
@@ -253,8 +272,12 @@ function getUnfinishedDefaultVars(index: number): VariableContent[] {
 		name: `unfinished_concurrent_viewers_${index}`,
 		value: 'n/a',
 	};
+	const visibility: VariableContent = {
+		name: `unfinished_visibility_${index}`,
+		value: 'n/a',
+	};
 
-	return [content, contentId, contentShort, health, concurrentViewers];
+	return [content, contentId, contentShort, health, concurrentViewers, visibility];
 }
 
 /**

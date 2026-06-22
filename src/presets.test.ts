@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { listPresets } from './presets.js';
 import type { BroadcastMap } from './cache.js';
 import { BroadcastLifecycle } from './lifecycle.js';
+import { Visibility } from './types.js';
 
 describe('Preset list', () => {
 	test('There are no broadcast-independent presets', () => {
@@ -25,6 +26,7 @@ describe('Preset list', () => {
 				LiveChatId: 'lcTest',
 				LiveConcurrentViewers: '0',
 				Description: '',
+				Visibility: Visibility.Private,
 			},
 		};
 		const result = listPresets(() => ({ broadcasts, unfinishedCount: 0 }));
@@ -51,6 +53,7 @@ describe('Preset list', () => {
 				LiveChatId: 'lcTest',
 				LiveConcurrentViewers: '0',
 				Description: '',
+				Visibility: Visibility.Private,
 			},
 		};
 		const result = listPresets(() => ({ broadcasts, unfinishedCount: 1 }));

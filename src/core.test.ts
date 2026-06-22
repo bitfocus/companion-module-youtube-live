@@ -5,7 +5,7 @@ import type { YoutubeAPI } from './youtube.js';
 import { type ModuleBase, Core } from './core.js';
 import { sleep } from './common.js';
 import type { StateMemory } from './cache.js';
-import { StreamHealth } from './types.js';
+import { StreamHealth, Visibility } from './types.js';
 import { BroadcastLifecycle } from './lifecycle.js';
 import { makeMockModule } from './__tests__/mock/module.js';
 import { makeMockYT } from './__tests__/mock/youtube-api.js';
@@ -30,6 +30,7 @@ describe('Miscellaneous', () => {
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
 					Description: '',
+					Visibility: Visibility.Private,
 				},
 			},
 			Streams: {
@@ -50,6 +51,7 @@ describe('Miscellaneous', () => {
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
 					Description: '',
+					Visibility: Visibility.Private,
 				},
 			],
 		};
@@ -171,6 +173,7 @@ describe('Starting tests on broadcasts', () => {
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
 					Description: '',
+					Visibility: Visibility.Private,
 				},
 			},
 			Streams: {
@@ -267,6 +270,7 @@ describe('Going live with broadcasts', () => {
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
 					Description: '',
+					Visibility: Visibility.Private,
 				},
 			},
 			Streams: {
@@ -369,6 +373,7 @@ describe('Finishing live broadcasts', () => {
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
 					Description: '',
+					Visibility: Visibility.Private,
 				},
 			},
 			Streams: {
@@ -434,6 +439,7 @@ describe('Toggling live broadcasts', () => {
 					LiveChatId: 'lcA',
 					LiveConcurrentViewers: '0',
 					Description: '',
+					Visibility: Visibility.Private,
 				},
 			},
 			Streams: {

@@ -2,7 +2,7 @@ import type { OAuth2Client } from 'google-auth-library';
 import { youtube, type youtube_v3 } from '@googleapis/youtube';
 import type { Broadcast, BroadcastMap, StreamMap } from './cache.js';
 import type { BroadcastLifecycle } from './lifecycle.js';
-import type { BroadcastID, StreamHealth, Visibility } from './types.js';
+import { type BroadcastID, type StreamHealth, Visibility } from './types.js';
 
 /**
  * Broadcast transition types
@@ -14,6 +14,11 @@ export enum Transition {
 	ToLive = 'live',
 	/** Transition from live state to complete state */
 	ToComplete = 'complete',
+}
+
+function broadcastVisibility(broadcast: youtube_v3.Schema$LiveBroadcast): Visibility {
+	const privacyStatus = broadcast.status!.privacyStatus;
+	return privacyStatus ? (privacyStatus as Visibility) : Visibility.Private;
 }
 
 export interface YoutubeAPI {
@@ -132,6 +137,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			const monitor = item.contentDetails!.monitorStream!.enableMonitorStream ?? true;
 			const concurrentViewers = item.statistics!.concurrentViewers ?? 'n/a';
 			const description = item.snippet!.description ?? '';
+			const visibility = broadcastVisibility(item);
 
 			mapping[id] = {
 				Id: id,
@@ -144,6 +150,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				LiveChatId: item.snippet!.liveChatId!,
 				LiveConcurrentViewers: concurrentViewers,
 				Description: description,
+				Visibility: visibility,
 			};
 		});
 
@@ -173,6 +180,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				? item.snippet.actualStartTime
 				: null;
 		const description = item.snippet!.description ?? '';
+		const visibility = broadcastVisibility(item);
 
 		return {
 			Id: broadcast.Id,
@@ -185,6 +193,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			LiveChatId: broadcast.LiveChatId,
 			LiveConcurrentViewers: concurrentViewers,
 			Description: description,
+			Visibility: visibility,
 		};
 	}
 
@@ -210,6 +219,7 @@ export class YoutubeConnector implements YoutubeAPI {
 					? item.snippet.actualStartTime
 					: null;
 			const description = item.snippet!.description ?? '';
+			const visibility = broadcastVisibility(item);
 
 			mapping[id] = {
 				Id: id,
@@ -222,6 +232,7 @@ export class YoutubeConnector implements YoutubeAPI {
 				LiveChatId: current[id].LiveChatId,
 				LiveConcurrentViewers: concurrentViewers,
 				Description: description,
+				Visibility: visibility,
 			};
 		});
 

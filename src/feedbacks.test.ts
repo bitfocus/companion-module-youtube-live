@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, type MockedObject, t
 import { listFeedbacks } from './feedbacks.js';
 import type { StateMemory } from './cache.js';
 import { BroadcastLifecycle } from './lifecycle.js';
-import { StreamHealth } from './types.js';
+import { StreamHealth, Visibility } from './types.js';
 import type { CompanionFeedbackAdvancedEvent, CompanionAdvancedFeedbackResult } from '@companion-module/base';
 import { Blue, Green, Red, Yellow } from './colors.js';
 import { clone } from './common.js';
@@ -33,6 +33,7 @@ const SampleMemory: StateMemory = {
 			LiveChatId: 'lcTest',
 			LiveConcurrentViewers: '24',
 			Description: '',
+			Visibility: Visibility.Public,
 		},
 	},
 	Streams: {
@@ -361,6 +362,7 @@ describe('Stream health feedback', () => {
 					LiveChatId: 'lcTest',
 					LiveConcurrentViewers: '24',
 					Description: '',
+					Visibility: Visibility.Public,
 				},
 			},
 			Streams: {},
