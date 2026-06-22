@@ -50,7 +50,7 @@ describe('Variable declarations', () => {
 		expect(result).toHaveLength(0);
 	});
 
-	test('Lifecycle and health added for each broadcast', () => {
+	test('Lifecycle, health, visibility added for each broadcast', () => {
 		const result = declareVars(SampleMemory, 0);
 
 		expect(result).toEqual(
@@ -65,6 +65,14 @@ describe('Variable declarations', () => {
 			expect.arrayContaining([
 				expect.objectContaining({
 					variableId: 'broadcast_broadcastID_health',
+				}),
+			])
+		);
+
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'broadcast_broadcastID_visibility',
 				}),
 			])
 		);
@@ -130,10 +138,11 @@ describe('Variable values', () => {
 		expect(result).toHaveLength(0);
 	});
 
-	test('Lifecycle and health added for each broadcast', () => {
+	test('Lifecycle, health, visibility added for each broadcast', () => {
 		const result = exportVars(SampleMemory, 1);
 		expect(hasAny(result, 'broadcast_broadcastID_lifecycle')).toBeTruthy();
 		expect(hasAny(result, 'broadcast_broadcastID_health')).toBeTruthy();
+		expect(hasAny(result, 'broadcast_broadcastID_visibility')).toBeTruthy();
 	});
 
 	test('Broadcasts without bound stream are handled', () => {
@@ -154,6 +163,19 @@ describe('Variable values', () => {
 		const inputs: Broadcast[] = Object.values(BroadcastLifecycle).map((phase: BroadcastLifecycle): Broadcast => {
 			const broadcast: Broadcast = clone(SampleMemory.Broadcasts.broadcastID);
 			broadcast.Status = phase;
+			return broadcast;
+		});
+
+		inputs.forEach((memory) => {
+			const output = getBroadcastVars(memory);
+			expect(output[0].name.length).toBeGreaterThan(0);
+		});
+	});
+
+	test('All visibility strings have nonzero length', () => {
+		const inputs: Broadcast[] = Object.values(Visibility).map((visibility: Visibility): Broadcast => {
+			const broadcast: Broadcast = clone(SampleMemory.Broadcasts.broadcastID);
+			broadcast.Visibility = visibility;
 			return broadcast;
 		});
 
