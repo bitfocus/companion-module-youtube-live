@@ -188,6 +188,7 @@ Per-broadcast variables (where `ID` is the YouTube broadcast ID):
 
 - `broadcast_ID_lifecycle` - Lifecycle state of the broadcast
 - `broadcast_ID_health` - Health of the stream bound to the broadcast
+- `broadcast_ID_visibility` - Visibility (public/private/unlisted) of the broadcast
 
 Unfinished broadcast variables (where `N` is the index, starting from 0):
 
@@ -197,6 +198,7 @@ Unfinished broadcast variables (where `N` is the index, starting from 0):
 - `unfinished_state_N` - State of unfinished broadcast #N
 - `unfinished_health_N` - Stream health of unfinished broadcast #N
 - `unfinished_concurrent_viewers_N` - Concurrent viewers of unfinished broadcast #N
+- `unfinished_visibility_N` - Visibility (public/private/unlisted) of the broadcast
 
 Global variables:
 
