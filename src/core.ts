@@ -1,4 +1,4 @@
-import * as fs from 'node:fs';
+import * as fs from 'node:fs/promises';
 import * as https from 'node:https';
 import * as http from 'node:http';
 import type { Broadcast, StateMemory, StreamMap } from './cache.js';
@@ -612,16 +612,15 @@ export class Core {
 			imageData = result.data;
 			mimeType = result.mimeType;
 		} else {
-			if (!fs.existsSync(imagePath)) {
-				throw new Error(`Thumbnail file not found: ${imagePath}`);
+			const stat = await fs.stat(imagePath);
+			if (!stat) {
+				throw new Error(`Thumbnail file not found or inaccessible: ${imagePath}`);
 			}
-
-			const stat = fs.statSync(imagePath);
 			if (stat.size > maxSize) {
 				throw new Error(`Thumbnail file too large: ${stat.size} bytes (max 2MB)`);
 			}
 
-			imageData = fs.readFileSync(imagePath);
+			imageData = await fs.readFile(imagePath);
 			mimeType = this.detectMimeType(imageData, imagePath);
 		}
 
