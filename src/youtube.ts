@@ -22,6 +22,8 @@ function broadcastVisibility(broadcast: youtube_v3.Schema$LiveBroadcast): Visibi
 	return privacyStatus ? (privacyStatus as Visibility) : Visibility.Private;
 }
 
+type ImageMimeType = 'image/png' | 'image/jpeg';
+
 export interface CreateYouTubeBroadcastParameters {
 	title: string;
 	scheduledStartTime: string;
@@ -132,7 +134,7 @@ export interface YoutubeAPI {
 	 * @param imageData Buffer containing the image data
 	 * @param mimeType MIME type of the image (image/jpeg or image/png)
 	 */
-	setThumbnail(broadcastId: BroadcastID, imageData: Buffer, mimeType: string): Promise<void>;
+	setThumbnail(broadcastId: BroadcastID, imageData: Buffer, mimeType: ImageMimeType): Promise<void>;
 
 	/**
 	 * List all streams for the authenticated user
@@ -459,7 +461,7 @@ export class YoutubeConnector implements YoutubeAPI {
 	/**
 	 * @inheritdoc
 	 */
-	async setThumbnail(broadcastId: BroadcastID, imageData: Buffer, mimeType: string): Promise<void> {
+	async setThumbnail(broadcastId: BroadcastID, imageData: Buffer, mimeType: ImageMimeType): Promise<void> {
 		await this.ApiClient.thumbnails.set({
 			videoId: broadcastId,
 			media: {
