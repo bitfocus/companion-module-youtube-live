@@ -49,8 +49,8 @@ export interface Stream {
 	/** Health metric of this stream */
 	Health: StreamHealth;
 
-	/** Display name of the stream */
-	Name?: string;
+	/** Display name of the stream, if any. */
+	Name: string | null;
 }
 
 /** Map of all fetched broadcasts */

@@ -37,6 +37,7 @@ describe('Miscellaneous', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [
@@ -58,6 +59,7 @@ describe('Miscellaneous', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			LastCreatedBroadcast: null,
@@ -188,6 +190,7 @@ describe('Starting tests on broadcasts', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [],
@@ -287,6 +290,7 @@ describe('Going live with broadcasts', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [],
@@ -392,6 +396,7 @@ describe('Finishing live broadcasts', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [],
@@ -460,6 +465,7 @@ describe('Toggling live broadcasts', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [],

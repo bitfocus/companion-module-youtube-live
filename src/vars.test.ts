@@ -28,6 +28,7 @@ const SampleMemory: StateMemory = {
 		streamID: {
 			Id: 'streamID',
 			Health: StreamHealth.Good,
+			Name: null,
 		},
 	},
 	UnfinishedBroadcasts: [],

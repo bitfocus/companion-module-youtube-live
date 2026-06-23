@@ -40,12 +40,14 @@ const SampleMemory: StateMemory = {
 		abcd: {
 			Id: 'abcd',
 			Health: StreamHealth.Good,
+			Name: null,
 		},
 	},
 	BoundStreams: {
 		abcd: {
 			Id: 'abcd',
 			Health: StreamHealth.Good,
+			Name: null,
 		},
 	},
 	UnfinishedBroadcasts: [],

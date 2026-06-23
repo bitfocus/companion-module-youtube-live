@@ -59,10 +59,12 @@ const memory: StateMemory = {
 		sA: {
 			Id: 'sA',
 			Health: StreamHealth.Good,
+			Name: null,
 		},
 		sB: {
 			Id: 'sB',
 			Health: StreamHealth.Bad,
+			Name: null,
 		},
 	},
 	UnfinishedBroadcasts: [],
@@ -558,7 +560,7 @@ describe('List streams', () => {
 		const result = await instance.listStreams();
 		expect(result).toStrictEqual({
 			stream1: { Id: 'stream1', Health: StreamHealth.Good, Name: 'My Stream' },
-			stream2: { Id: 'stream2', Health: StreamHealth.NoData, Name: undefined },
+			stream2: { Id: 'stream2', Health: StreamHealth.NoData, Name: null },
 		});
 		expect(mock.liveStreams.list).toHaveBeenCalledTimes(1);
 	});

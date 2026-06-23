@@ -299,10 +299,12 @@ export class YoutubeConnector implements YoutubeAPI {
 		response.data.items?.forEach((item) => {
 			const id = item.id!;
 			const health = item.status!.healthStatus!.status! as StreamHealth;
+			const name = item.snippet?.title ?? null;
 
 			mapping[id] = {
 				Id: id,
 				Health: health,
+				Name: name,
 			};
 		});
 
@@ -476,7 +478,7 @@ export class YoutubeConnector implements YoutubeAPI {
 			mapping[id] = {
 				Id: id,
 				Health: health,
-				Name: item.snippet?.title ?? undefined,
+				Name: item.snippet?.title ?? null,
 			};
 		});
 
