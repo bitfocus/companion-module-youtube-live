@@ -658,17 +658,17 @@ export function listActions({
 					}
 				}
 
-				await core.createBroadcast(
+				await core.createBroadcast({
 					title,
 					scheduledStartTime,
-					privacy,
-					description || undefined,
-					autoStart,
-					autoStop,
-					templateId || undefined,
-					thumbnailPath || undefined,
-					streamId || undefined
-				);
+					privacyStatus: privacy,
+					description: description || undefined,
+					enableAutoStart: autoStart,
+					enableAutoStop: autoStop,
+					templateId: templateId || undefined,
+					thumbnailPath: thumbnailPath || undefined,
+					streamId: streamId || undefined,
+				});
 			},
 		},
 		[ActionId.SetThumbnail]: {

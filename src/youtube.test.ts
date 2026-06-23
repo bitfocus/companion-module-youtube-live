@@ -508,15 +508,15 @@ describe('Create broadcast', () => {
 				data: { id: 'newBroadcast123' },
 			});
 		});
-		const result = await instance.createBroadcast(
-			'Test Title',
-			'2024-01-01T00:00:00Z',
-			Visibility.Private,
-			'Test description',
-			true,
-			false,
-			true
-		);
+		const result = await instance.createBroadcast({
+			title: 'Test Title',
+			scheduledStartTime: '2024-01-01T00:00:00Z',
+			privacyStatus: Visibility.Private,
+			description: 'Test description',
+			enableAutoStart: true,
+			enableAutoStop: false,
+			enableMonitorStream: true,
+		});
 		expect(result).toBe('newBroadcast123');
 		expect(mock.liveBroadcasts.insert).toHaveBeenCalledTimes(1);
 	});
@@ -527,9 +527,13 @@ describe('Create broadcast', () => {
 				data: { id: null },
 			});
 		});
-		await expect(instance.createBroadcast('Test', '2024-01-01T00:00:00Z', Visibility.Private)).rejects.toThrowError(
-			'Failed to create broadcast: no ID returned'
-		);
+		await expect(
+			instance.createBroadcast({
+				title: 'Test',
+				scheduledStartTime: '2024-01-01T00:00:00Z',
+				privacyStatus: Visibility.Private,
+			})
+		).rejects.toThrowError('Failed to create broadcast: no ID returned');
 	});
 });
 

@@ -24,6 +24,49 @@ export interface ModuleBase {
 	log: Logger;
 }
 
+interface CreateBroadcastParameters {
+	/** The title of the broadcast.  Must not be empty. */
+	title: string;
+
+	/** ISO 8601 formatted start time. */
+	scheduledStartTime: string;
+
+	/** How publicly visible (public/private/unlisted) the broadcast will be. */
+	privacyStatus: Visibility;
+
+	/** The description of the broadcast. */
+	description?: string;
+
+	/**
+	 * Whether the broadcast should automatically start once streaming video data
+	 * is received.
+	 */
+	enableAutoStart?: boolean;
+
+	/**
+	 * Whether the broadcast should automatically end when streaming video data
+	 * stops being received (plus a tiny buffer to account for unstable network
+	 * conditions).
+	 */
+	enableAutoStop?: boolean;
+
+	/**
+	 * If supplied, the broadcast ID of a broadcast that will fill in title,
+	 * description, and stream to associate with this broadcast if any of these
+	 * weren't specified.
+	 */
+	templateId?: BroadcastID;
+
+	/**
+	 * A URL (http: or https:) or a file path to a JPEG/PNG thumbnail image to
+	 * associate with the broadcast.
+	 */
+	thumbnailPath?: string;
+
+	/** The ID of a stream to associate with the broadcast. */
+	streamId?: string;
+}
+
 /**
  * Executive core of the module
  */
@@ -489,17 +532,17 @@ export class Core {
 		return this.YouTube.setVisibility(id, visibility);
 	}
 
-	async createBroadcast(
-		title: string,
-		scheduledStartTime: string,
-		privacyStatus: Visibility,
-		description?: string,
-		enableAutoStart?: boolean,
-		enableAutoStop?: boolean,
-		templateId?: BroadcastID,
-		thumbnailPath?: string,
-		streamId?: string
-	): Promise<BroadcastID> {
+	async createBroadcast({
+		title,
+		scheduledStartTime,
+		privacyStatus,
+		description,
+		enableAutoStart,
+		enableAutoStop,
+		templateId,
+		thumbnailPath,
+		streamId,
+	}: CreateBroadcastParameters): Promise<BroadcastID> {
 		this.Cache.LastCreatedBroadcast = null;
 
 		if (description && description.length > 5000) {
@@ -529,15 +572,15 @@ export class Core {
 			throw new Error(`Title must be between 1 and 100 characters (got ${finalTitle?.length ?? 0})`);
 		}
 
-		const broadcastId = await this.YouTube.createBroadcast(
-			finalTitle,
+		const broadcastId = await this.YouTube.createBroadcast({
+			title: finalTitle,
 			scheduledStartTime,
 			privacyStatus,
-			finalDescription,
+			description: finalDescription,
 			enableAutoStart,
 			enableAutoStop,
-			enableMonitorStream
-		);
+			enableMonitorStream,
+		});
 
 		this.Module.log('info', `Created broadcast: ${broadcastId}`);
 

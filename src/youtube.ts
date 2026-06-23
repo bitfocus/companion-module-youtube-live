@@ -22,6 +22,16 @@ function broadcastVisibility(broadcast: youtube_v3.Schema$LiveBroadcast): Visibi
 	return privacyStatus ? (privacyStatus as Visibility) : Visibility.Private;
 }
 
+export interface CreateYouTubeBroadcastParameters {
+	title: string;
+	scheduledStartTime: string;
+	privacyStatus: Visibility;
+	description?: string;
+	enableAutoStart?: boolean;
+	enableAutoStop?: boolean;
+	enableMonitorStream?: boolean;
+}
+
 export interface YoutubeAPI {
 	/**
 	 * Fetch known broadcasts (limited by max count)
@@ -106,15 +116,15 @@ export interface YoutubeAPI {
 	 * @param enableMonitorStream Whether to enable the monitor stream
 	 * @returns ID of the created broadcast
 	 */
-	createBroadcast(
-		title: string,
-		scheduledStartTime: string,
-		privacyStatus: Visibility,
-		description?: string,
-		enableAutoStart?: boolean,
-		enableAutoStop?: boolean,
-		enableMonitorStream?: boolean
-	): Promise<BroadcastID>;
+	createBroadcast({
+		title,
+		scheduledStartTime,
+		privacyStatus,
+		description,
+		enableAutoStart,
+		enableAutoStop,
+		enableMonitorStream,
+	}: CreateYouTubeBroadcastParameters): Promise<BroadcastID>;
 
 	/**
 	 * Upload and set a custom thumbnail for a broadcast/video
@@ -408,15 +418,15 @@ export class YoutubeConnector implements YoutubeAPI {
 	/**
 	 * @inheritdoc
 	 */
-	async createBroadcast(
-		title: string,
-		scheduledStartTime: string,
-		privacyStatus: Visibility,
-		description?: string,
-		enableAutoStart?: boolean,
-		enableAutoStop?: boolean,
-		enableMonitorStream?: boolean
-	): Promise<BroadcastID> {
+	async createBroadcast({
+		title,
+		scheduledStartTime,
+		privacyStatus,
+		description,
+		enableAutoStart,
+		enableAutoStop,
+		enableMonitorStream,
+	}: CreateYouTubeBroadcastParameters): Promise<BroadcastID> {
 		const response = await this.ApiClient.liveBroadcasts.insert({
 			part: ['snippet', 'status', 'contentDetails'],
 			requestBody: {
