@@ -608,7 +608,7 @@ export class Core {
 		let mimeType: string;
 
 		if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-			const result = await this.fetchImageFromUrl(imagePath);
+			const result = await this.#fetchImageFromUrl(imagePath);
 			imageData = result.data;
 			mimeType = result.mimeType;
 		} else {
@@ -621,7 +621,7 @@ export class Core {
 			}
 
 			imageData = await fs.readFile(imagePath);
-			mimeType = this.detectMimeType(imageData, imagePath);
+			mimeType = this.#detectMimeType(imageData, imagePath);
 		}
 
 		if (imageData.length > maxSize) {
@@ -652,7 +652,7 @@ export class Core {
 		await this.reloadEverything();
 	}
 
-	private async fetchImageFromUrl(url: string, remainingRedirects = 5): Promise<{ data: Buffer; mimeType: string }> {
+	async #fetchImageFromUrl(url: string, remainingRedirects = 5): Promise<{ data: Buffer; mimeType: string }> {
 		return new Promise((resolve, reject) => {
 			const protocol = url.startsWith('https://') ? https : http;
 
@@ -667,7 +667,7 @@ export class Core {
 						reject(new Error('Too many redirects'));
 						return;
 					}
-					this.fetchImageFromUrl(response.headers.location, remainingRedirects - 1)
+					this.#fetchImageFromUrl(response.headers.location, remainingRedirects - 1)
 						.then(resolve)
 						.catch(reject);
 					return;
@@ -686,7 +686,7 @@ export class Core {
 					let mimeType = contentType.split(';')[0].trim();
 
 					if (mimeType !== 'image/jpeg' && mimeType !== 'image/png') {
-						mimeType = this.detectMimeType(data, url);
+						mimeType = this.#detectMimeType(data, url);
 					}
 
 					resolve({ data, mimeType });
@@ -703,7 +703,7 @@ export class Core {
 		});
 	}
 
-	private detectMimeType(data: Buffer, path: string): string {
+	#detectMimeType(data: Buffer, path: string): string {
 		if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) {
 			return 'image/jpeg';
 		}
