@@ -569,9 +569,7 @@ export function listActions({
 				},
 			],
 			callback: async ({ options }): Promise<void> => {
-				if (!core) {
-					throw new Error('Module core is not initialized');
-				}
+				if (!core) noModuleCore();
 
 				const title = String(options.title || '');
 				const useTemplate = !!options.use_template;
