@@ -454,7 +454,7 @@ export function listActions({
 					type: 'textinput',
 					label: 'Template ID:',
 					id: 'template_id_text',
-					useVariables: true,
+					useVariables: { local: true },
 					isVisibleExpression: '!!$(options:use_template) && !!$(options:template_id_is_text)',
 				},
 				{
@@ -463,14 +463,14 @@ export function listActions({
 					id: 'title',
 					regex: '/^.{0,100}$/',
 					description: 'Max 100 characters. Leave empty to use template title.',
-					useVariables: true,
+					useVariables: { local: true },
 				},
 				{
 					type: 'textinput',
 					label: 'Description:',
 					id: 'description',
 					description: 'Max 5000 characters. Leave empty to use template.',
-					useVariables: true,
+					useVariables: { local: true },
 					multiline: true,
 				},
 				{
@@ -478,7 +478,7 @@ export function listActions({
 					label: 'Thumbnail:',
 					id: 'thumbnail_path',
 					description: 'Local file path or URL to JPEG/PNG image (max 2MB)',
-					useVariables: true,
+					useVariables: { local: true },
 				},
 				{
 					type: 'textinput',
@@ -486,7 +486,7 @@ export function listActions({
 					id: 'privacy',
 					default: 'private',
 					description: 'private, unlisted, or public. Leave empty to use template.',
-					useVariables: true,
+					useVariables: { local: true },
 				},
 				{
 					type: 'dropdown',
@@ -504,7 +504,7 @@ export function listActions({
 					label: 'Minutes from now:',
 					id: 'minutes_from_now',
 					default: '5',
-					useVariables: true,
+					useVariables: { local: true },
 					isVisibleExpression: "$(options:start_time_type) === 'minutes'",
 				},
 				{
@@ -513,7 +513,7 @@ export function listActions({
 					id: 'custom_start_time',
 					tooltip: 'e.g. 2024-12-31T23:59:00Z',
 					description: 'Format: YYYY-MM-DDTHH:MM:SSZ (UTC timezone)',
-					useVariables: true,
+					useVariables: { local: true },
 					isVisibleExpression: "$(options:start_time_type) === 'custom'",
 				},
 				{
@@ -564,7 +564,7 @@ export function listActions({
 					label: 'Stream ID:',
 					id: 'stream_id_text',
 					description: 'Found in YouTube Studio > Go Live > Stream Settings',
-					useVariables: true,
+					useVariables: { local: true },
 					isVisibleExpression: '!!$(options:bind_stream) && !!$(options:stream_id_is_text)',
 				},
 			],
@@ -678,7 +678,7 @@ export function listActions({
 					id: 'image_path',
 					required: true,
 					description: 'Local file path or URL to JPEG/PNG image (max 2MB)',
-					useVariables: true,
+					useVariables: { local: true },
 				},
 			],
 			callback: broadcastCallback(async (core, broadcastId, event) => {
@@ -714,7 +714,7 @@ export function listActions({
 					label: 'Stream ID:',
 					id: 'stream_id_text',
 					description: 'Found in YouTube Studio > Go Live > Stream Settings',
-					useVariables: true,
+					useVariables: { local: true },
 					isVisibleExpression: '!!$(options:stream_id_is_text)',
 				},
 			],
