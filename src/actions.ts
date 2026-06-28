@@ -606,8 +606,7 @@ export function listActions({
 				const privacyStr = String(options.privacy || '');
 				let privacy: Visibility;
 				if (privacyStr) {
-					const lowerPrivacy = privacyStr.toLowerCase();
-					const validPrivacy = Object.values(Visibility).find((v) => (v as string) === lowerPrivacy);
+					const validPrivacy = Object.values(Visibility).find((v) => (v as string) === privacyStr);
 					if (!validPrivacy) {
 						throw new Error(`Invalid privacy value: ${privacyStr} (must be private, unlisted, or public)`);
 					}
