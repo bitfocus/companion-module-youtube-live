@@ -440,9 +440,10 @@ export function listActions({
 					id: 'template_id',
 					choices: [
 						...Object.values(broadcasts).map((item): DropdownChoice => ({ id: item.Id, label: item.Name })),
-						...[...Array(unfinishedCount).keys()].map(
-							(i): DropdownChoice => ({ id: `unfinished_${i}`, label: `Unfinished/planned #${i}` })
-						),
+						...Array(unfinishedCount)
+							.keys()
+							.toArray()
+							.map((i): DropdownChoice => ({ id: `unfinished_${i}`, label: `Unfinished/planned #${i}` })),
 					],
 					default:
 						Object.values(broadcasts).length > 0
