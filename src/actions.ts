@@ -568,13 +568,13 @@ export function listActions({
 					isVisibleExpression: '!!$(options:bind_stream) && !!$(options:stream_id_is_text)',
 				},
 			],
-			callback: async (event): Promise<void> => {
+			callback: async ({ options }): Promise<void> => {
 				if (!core) {
 					throw new Error('Module core is not initialized');
 				}
 
-				const title = String(event.options.title || '');
-				const useTemplate = !!event.options.use_template;
+				const title = String(options.title || '');
+				const useTemplate = !!options.use_template;
 				if (!useTemplate && (!title || title.length === 0)) {
 					throw new Error('Title is required when not using a template');
 				}
@@ -583,12 +583,12 @@ export function listActions({
 				}
 
 				let scheduledStartTime: string;
-				switch (event.options.start_time_type) {
+				switch (options.start_time_type) {
 					case 'now':
 						scheduledStartTime = new Date().toISOString();
 						break;
 					case 'minutes': {
-						const minutesStr = String(event.options.minutes_from_now || '5');
+						const minutesStr = String(options.minutes_from_now || '5');
 						const minutes = parseInt(minutesStr, 10);
 						if (isNaN(minutes) || minutes < 0) {
 							throw new Error('Invalid minutes value');
@@ -597,7 +597,7 @@ export function listActions({
 						break;
 					}
 					case 'custom':
-						scheduledStartTime = String(event.options.custom_start_time || '');
+						scheduledStartTime = String(options.custom_start_time || '');
 						if (!scheduledStartTime) {
 							throw new Error('Custom start time is required');
 						}
@@ -606,7 +606,7 @@ export function listActions({
 						scheduledStartTime = new Date().toISOString();
 				}
 
-				const privacyStr = String(event.options.privacy || '');
+				const privacyStr = String(options.privacy || '');
 				let privacy: Visibility;
 				if (privacyStr) {
 					const lowerPrivacy = privacyStr.toLowerCase();
@@ -619,21 +619,21 @@ export function listActions({
 					privacy = Visibility.Private;
 				}
 
-				const description = String(event.options.description || '');
+				const description = String(options.description || '');
 
 				let autoStart: boolean | undefined;
 				let autoStop: boolean | undefined;
-				if (event.options.auto_start === 'yes') autoStart = true;
-				else if (event.options.auto_start === 'no') autoStart = false;
-				if (event.options.auto_stop === 'yes') autoStop = true;
-				else if (event.options.auto_stop === 'no') autoStop = false;
+				if (options.auto_start === 'yes') autoStart = true;
+				else if (options.auto_start === 'no') autoStart = false;
+				if (options.auto_stop === 'yes') autoStop = true;
+				else if (options.auto_stop === 'no') autoStop = false;
 
 				let templateId: BroadcastID | undefined;
-				if (event.options.use_template) {
-					if (event.options.template_id_is_text) {
-						templateId = String(event.options.template_id_text || '');
+				if (options.use_template) {
+					if (options.template_id_is_text) {
+						templateId = String(options.template_id_text || '');
 					} else {
-						templateId = String(event.options.template_id || '');
+						templateId = String(options.template_id || '');
 					}
 					if (templateId && templateId.startsWith('unfinished_')) {
 						const hit = core.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === templateId);
@@ -643,14 +643,14 @@ export function listActions({
 					}
 				}
 
-				const thumbnailPath = String(event.options.thumbnail_path || '');
+				const thumbnailPath = String(options.thumbnail_path || '');
 
 				let streamId: string | undefined;
-				if (event.options.bind_stream) {
-					if (event.options.stream_id_is_text) {
-						streamId = String(event.options.stream_id_text || '');
+				if (options.bind_stream) {
+					if (options.stream_id_is_text) {
+						streamId = String(options.stream_id_text || '');
 					} else {
-						streamId = String(event.options.stream_id || '');
+						streamId = String(options.stream_id || '');
 					}
 				}
 
@@ -681,8 +681,8 @@ export function listActions({
 					useVariables: { local: true },
 				},
 			],
-			callback: broadcastCallback(async (core, broadcastId, event) => {
-				const imagePath = String(event.options.image_path || '');
+			callback: broadcastCallback(async (core, broadcastId, { options }) => {
+				const imagePath = String(options.image_path || '');
 				if (!imagePath) {
 					throw new Error('Image path is required');
 				}
@@ -718,12 +718,12 @@ export function listActions({
 					isVisibleExpression: '!!$(options:stream_id_is_text)',
 				},
 			],
-			callback: broadcastCallback(async (core, broadcastId, event) => {
+			callback: broadcastCallback(async (core, broadcastId, { options }) => {
 				let streamId: string;
-				if (event.options.stream_id_is_text) {
-					streamId = String(event.options.stream_id_text || '');
+				if (options.stream_id_is_text) {
+					streamId = String(options.stream_id_text || '');
 				} else {
-					streamId = String(event.options.stream_id || '');
+					streamId = String(options.stream_id || '');
 				}
 
 				if (!streamId) {
