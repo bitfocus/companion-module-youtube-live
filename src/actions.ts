@@ -582,9 +582,6 @@ export function listActions({
 
 				let scheduledStartTime: string;
 				switch (options.start_time_type) {
-					case 'now':
-						scheduledStartTime = new Date().toISOString();
-						break;
 					case 'minutes': {
 						const minutesStr = String(options.minutes_from_now || '5');
 						const minutes = parseInt(minutesStr, 10);
@@ -600,8 +597,10 @@ export function listActions({
 							throw new Error('Custom start time is required');
 						}
 						break;
+					case 'now':
 					default:
 						scheduledStartTime = new Date().toISOString();
+						break;
 				}
 
 				const privacyStr = String(options.privacy || '');
