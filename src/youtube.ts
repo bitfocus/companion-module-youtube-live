@@ -110,7 +110,7 @@ export interface YoutubeAPI {
 	/**
 	 * Create a new broadcast
 	 * @param title Title of the broadcast (1-100 chars)
-	 * @param scheduledStartTime ISO 8601 formatted start time
+	 * @param scheduledStartTime ISO 8601-formatted (`YYYY-MM-DDThh:mm:ss.sZ`) start time
 	 * @param privacyStatus Privacy status of the broadcast
 	 * @param description Optional description (max 5000 chars)
 	 * @param enableAutoStart Whether to automatically start when stream becomes active
