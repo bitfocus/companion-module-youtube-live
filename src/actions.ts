@@ -52,8 +52,6 @@ export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationA
 		case ActionId.PrependToDescription as string:
 		case ActionId.AppendToDescription as string:
 		case ActionId.AddChapterToDescription as string:
-		case ActionId.SetThumbnail as string:
-		case ActionId.BindStream as string:
 			options = action.options;
 			if (BroadcastIdIsTextOptionId in options) {
 				return false;
