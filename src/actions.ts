@@ -118,6 +118,8 @@ export function listActions({
 		};
 	};
 
+	const allBroadcasts = Object.values(broadcasts);
+
 	// We expose all requested unfinished broadcasts, without any filtering.
 	// These seem always to have been exposed a bit prospectively, regardless
 	// whether there are actually any unfinished broadcasts to expose.
@@ -439,18 +441,13 @@ export function listActions({
 					label: 'Template broadcast:',
 					id: 'template_id',
 					choices: [
-						...Object.values(broadcasts).map((item): DropdownChoice => ({ id: item.Id, label: item.Name })),
+						...allBroadcasts.map((item): DropdownChoice => ({ id: item.Id, label: item.Name })),
 						...Array(unfinishedCount)
 							.keys()
 							.toArray()
 							.map((i): DropdownChoice => ({ id: `unfinished_${i}`, label: `Unfinished/planned #${i}` })),
 					],
-					default:
-						Object.values(broadcasts).length > 0
-							? Object.values(broadcasts)[0].Id
-							: unfinishedCount > 0
-								? 'unfinished_0'
-								: '',
+					default: allBroadcasts.length > 0 ? allBroadcasts[0].Id : unfinishedCount > 0 ? 'unfinished_0' : '',
 					isVisibleExpression: '!!$(options:use_template) && !$(options:template_id_is_text)',
 				},
 				{
