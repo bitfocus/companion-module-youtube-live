@@ -4,7 +4,7 @@ import type {
 	CompanionMigrationAction,
 	DropdownChoice,
 } from '@companion-module/base';
-import { type BroadcastMap, youngerThan } from './cache.js';
+import { type BroadcastMap, type StreamMap, youngerThan } from './cache.js';
 import { BroadcastLifecycle } from './lifecycle.js';
 import { type BroadcastID, Visibility } from './types.js';
 import {
@@ -32,6 +32,9 @@ export enum ActionId {
 	AppendToDescription = 'append_to_description',
 	AddChapterToDescription = 'add_chapter_to_description',
 	SetVisibility = 'set_visibility',
+	CreateBroadcast = 'create_broadcast',
+	SetThumbnail = 'set_thumbnail',
+	BindStream = 'bind_stream',
 }
 
 export function tryUpgradeActionSelectingBroadcastId(action: CompanionMigrationAction): boolean {
@@ -76,10 +79,12 @@ export function listActions({
 	broadcasts,
 	unfinishedCount,
 	core,
+	streams,
 }: {
 	broadcasts: BroadcastMap;
 	unfinishedCount: number;
 	core: Core | null;
+	streams: StreamMap;
 }): Record<ActionId, CompanionActionDefinition> {
 	const noModuleCore: () => never = () => {
 		throw new Error('Error: module core undefined.');
@@ -113,6 +118,8 @@ export function listActions({
 		};
 	};
 
+	const allBroadcasts = Object.values(broadcasts);
+
 	// We expose all requested unfinished broadcasts, without any filtering.
 	// These seem always to have been exposed a bit prospectively, regardless
 	// whether there are actually any unfinished broadcasts to expose.
@@ -142,6 +149,15 @@ export function listActions({
 		unfinishedCount,
 		youngerThan(BroadcastLifecycle.Complete)
 	);
+
+	const streamEntries: DropdownChoice[] = Object.values(streams).map(
+		(item): DropdownChoice => ({
+			id: item.Id,
+			label: item.Name ? `${item.Name} (${item.Id})` : item.Id,
+		})
+	);
+
+	const defaultStream = streamEntries.length === 0 ? '' : streamEntries[0].id;
 
 	return {
 		[ActionId.InitBroadcast]: {
@@ -265,6 +281,7 @@ export function listActions({
 					regex: '/^.{0,5000}$/',
 					tooltip: 'Seize a description with a maximum length of 5000 characters',
 					useVariables: true,
+					multiline: true,
 				},
 			],
 			callback: broadcastCallback(async (core, broadcastId, event) => {
@@ -288,6 +305,7 @@ export function listActions({
 					regex: '/^.{1,5000}$/',
 					tooltip: 'The total length of the description must not exceed 5000 characters.',
 					useVariables: true,
+					multiline: true,
 				},
 			],
 			callback: broadcastCallback(async (core, broadcastId, event) => {
@@ -315,6 +333,7 @@ export function listActions({
 					regex: '/^.{1,5000}$/',
 					tooltip: 'The total length of the description must not exceed 5000 characters.',
 					useVariables: true,
+					multiline: true,
 				},
 			],
 			callback: broadcastCallback(async (core, broadcastId, event) => {
@@ -398,6 +417,316 @@ export function listActions({
 				}
 
 				return core.setVisibility(broadcastId, visibility);
+			}),
+		},
+		[ActionId.CreateBroadcast]: {
+			name: 'Create new broadcast',
+			description: 'Creates a new YouTube broadcast with the specified settings.',
+			options: [
+				{
+					type: 'checkbox',
+					label: 'Use existing broadcast as template?',
+					id: 'use_template',
+					default: false,
+				},
+				{
+					type: 'checkbox',
+					label: 'Specify template ID from text',
+					id: 'template_id_is_text',
+					default: false,
+					isVisibleExpression: '!!$(options:use_template)',
+				},
+				{
+					type: 'dropdown',
+					label: 'Template broadcast:',
+					id: 'template_id',
+					choices: [
+						...allBroadcasts.map((item): DropdownChoice => ({ id: item.Id, label: item.Name })),
+						...Array(unfinishedCount)
+							.keys()
+							.toArray()
+							.map((i): DropdownChoice => ({ id: `unfinished_${i}`, label: `Unfinished/planned #${i}` })),
+					],
+					default: allBroadcasts.length > 0 ? allBroadcasts[0].Id : unfinishedCount > 0 ? 'unfinished_0' : '',
+					isVisibleExpression: '!!$(options:use_template) && !$(options:template_id_is_text)',
+				},
+				{
+					type: 'textinput',
+					label: 'Template ID:',
+					id: 'template_id_text',
+					useVariables: { local: true },
+					isVisibleExpression: '!!$(options:use_template) && !!$(options:template_id_is_text)',
+				},
+				{
+					type: 'textinput',
+					label: 'Title:',
+					id: 'title',
+					regex: '/^.{0,100}$/',
+					description: 'Max 100 characters. Leave empty to use template title.',
+					useVariables: { local: true },
+				},
+				{
+					type: 'textinput',
+					label: 'Description:',
+					id: 'description',
+					description: 'Max 5000 characters. Leave empty to use template.',
+					useVariables: { local: true },
+					multiline: true,
+				},
+				{
+					type: 'textinput',
+					label: 'Thumbnail:',
+					id: 'thumbnail_path',
+					description: 'Local file path or URL to JPEG/PNG image (max 2MB)',
+					useVariables: { local: true },
+				},
+				{
+					type: 'textinput',
+					label: 'Privacy:',
+					id: 'privacy',
+					default: 'private',
+					description: 'private, unlisted, or public. Leave empty to use template.',
+					useVariables: { local: true },
+				},
+				{
+					type: 'dropdown',
+					label: 'Start time type:',
+					id: 'start_time_type',
+					choices: [
+						{ id: 'now', label: 'Now' },
+						{ id: 'minutes', label: 'Minutes from now' },
+						{ id: 'custom', label: 'Custom (ISO 8601)' },
+					],
+					default: 'now',
+				},
+				{
+					type: 'textinput',
+					label: 'Minutes from now:',
+					id: 'minutes_from_now',
+					default: '5',
+					useVariables: { local: true },
+					isVisibleExpression: "$(options:start_time_type) === 'minutes'",
+				},
+				{
+					type: 'textinput',
+					label: 'Custom start time (ISO 8601):',
+					id: 'custom_start_time',
+					tooltip: 'e.g. 2024-12-31T23:59:00Z',
+					description: 'Format: YYYY-MM-DDTHH:MM:SSZ (UTC timezone)',
+					useVariables: { local: true },
+					isVisibleExpression: "$(options:start_time_type) === 'custom'",
+				},
+				{
+					type: 'dropdown',
+					label: 'Auto-start:',
+					id: 'auto_start',
+					choices: [
+						{ id: 'no', label: 'No' },
+						{ id: 'yes', label: 'Yes' },
+						{ id: 'template', label: 'Use template' },
+					],
+					default: 'no',
+				},
+				{
+					type: 'dropdown',
+					label: 'Auto-stop:',
+					id: 'auto_stop',
+					choices: [
+						{ id: 'no', label: 'No' },
+						{ id: 'yes', label: 'Yes' },
+						{ id: 'template', label: 'Use template' },
+					],
+					default: 'no',
+				},
+				{
+					type: 'checkbox',
+					label: 'Bind to stream?',
+					id: 'bind_stream',
+					default: false,
+				},
+				{
+					type: 'checkbox',
+					label: 'Specify stream ID from text',
+					id: 'stream_id_is_text',
+					default: false,
+					isVisibleExpression: '!!$(options:bind_stream)',
+				},
+				{
+					type: 'dropdown',
+					label: 'Stream:',
+					id: 'stream_id',
+					choices: streamEntries,
+					default: defaultStream,
+					isVisibleExpression: '!!$(options:bind_stream) && !$(options:stream_id_is_text)',
+				},
+				{
+					type: 'textinput',
+					label: 'Stream ID:',
+					id: 'stream_id_text',
+					description: 'Found in YouTube Studio > Go Live > Stream Settings',
+					useVariables: { local: true },
+					isVisibleExpression: '!!$(options:bind_stream) && !!$(options:stream_id_is_text)',
+				},
+			],
+			callback: async ({ options }): Promise<void> => {
+				if (!core) noModuleCore();
+
+				const title = String(options.title || '');
+				const useTemplate = !!options.use_template;
+				if (!useTemplate && (!title || title.length === 0)) {
+					throw new Error('Title is required when not using a template');
+				}
+				if (title.length > 100) {
+					throw new Error('Title must be 100 characters or less');
+				}
+
+				let scheduledStartTime: string;
+				switch (options.start_time_type) {
+					case 'minutes': {
+						const minutesStr = String(options.minutes_from_now || '5');
+						const minutes = parseInt(minutesStr, 10);
+						if (isNaN(minutes) || minutes < 0) {
+							throw new Error('Invalid minutes value');
+						}
+						scheduledStartTime = new Date(Date.now() + minutes * 60 * 1000).toISOString();
+						break;
+					}
+					case 'custom':
+						scheduledStartTime = String(options.custom_start_time || '');
+						if (!scheduledStartTime) {
+							throw new Error('Custom start time is required');
+						}
+						break;
+					case 'now':
+					default:
+						scheduledStartTime = new Date().toISOString();
+						break;
+				}
+
+				const privacyStr = String(options.privacy || '');
+				let privacy: Visibility;
+				if (privacyStr) {
+					const validPrivacy = Object.values(Visibility).find((v) => (v as string) === privacyStr);
+					if (!validPrivacy) {
+						throw new Error(`Invalid privacy value: ${privacyStr} (must be private, unlisted, or public)`);
+					}
+					privacy = validPrivacy;
+				} else {
+					privacy = Visibility.Private;
+				}
+
+				const description = String(options.description || '');
+
+				let autoStart: boolean | undefined;
+				let autoStop: boolean | undefined;
+				if (options.auto_start === 'yes') autoStart = true;
+				else if (options.auto_start === 'no') autoStart = false;
+				if (options.auto_stop === 'yes') autoStop = true;
+				else if (options.auto_stop === 'no') autoStop = false;
+
+				let templateId: BroadcastID | undefined;
+				if (options.use_template) {
+					if (options.template_id_is_text) {
+						templateId = String(options.template_id_text || '');
+					} else {
+						templateId = String(options.template_id || '');
+					}
+					if (templateId && templateId.startsWith('unfinished_')) {
+						const hit = core.Cache.UnfinishedBroadcasts.find((_a, i) => `unfinished_${i}` === templateId);
+						if (hit) {
+							templateId = hit.Id;
+						}
+					}
+				}
+
+				const thumbnailPath = String(options.thumbnail_path || '');
+
+				let streamId: string | undefined;
+				if (options.bind_stream) {
+					if (options.stream_id_is_text) {
+						streamId = String(options.stream_id_text || '');
+					} else {
+						streamId = String(options.stream_id || '');
+					}
+				}
+
+				await core.createBroadcast({
+					title,
+					scheduledStartTime,
+					privacyStatus: privacy,
+					description: description || undefined,
+					enableAutoStart: autoStart,
+					enableAutoStop: autoStop,
+					templateId: templateId || undefined,
+					thumbnailPath: thumbnailPath || undefined,
+					streamId: streamId || undefined,
+				});
+			},
+		},
+		[ActionId.SetThumbnail]: {
+			name: 'Set broadcast thumbnail',
+			description: 'Upload and set a custom thumbnail image. Must be JPEG or PNG, max 2MB.',
+			options: [
+				...selectFromAllBroadcasts,
+				{
+					type: 'textinput',
+					label: 'Image path or URL:',
+					id: 'image_path',
+					required: true,
+					description: 'Local file path or URL to JPEG/PNG image (max 2MB)',
+					useVariables: { local: true },
+				},
+			],
+			callback: broadcastCallback(async (core, broadcastId, { options }) => {
+				const imagePath = String(options.image_path || '');
+				if (!imagePath) {
+					throw new Error('Image path is required');
+				}
+
+				return core.setThumbnail(broadcastId, imagePath);
+			}),
+		},
+		[ActionId.BindStream]: {
+			name: 'Bind stream to broadcast',
+			description: 'Bind a video stream to a broadcast. Required before going live.',
+			options: [
+				...selectFromAllBroadcasts,
+				{
+					type: 'checkbox',
+					label: 'Specify stream ID from text',
+					id: 'stream_id_is_text',
+					default: false,
+				},
+				{
+					type: 'dropdown',
+					label: 'Stream:',
+					id: 'stream_id',
+					choices: streamEntries,
+					default: defaultStream,
+					isVisibleExpression: '!$(options:stream_id_is_text)',
+				},
+				{
+					type: 'textinput',
+					label: 'Stream ID:',
+					id: 'stream_id_text',
+					description: 'Found in YouTube Studio > Go Live > Stream Settings',
+					useVariables: { local: true },
+					isVisibleExpression: '!!$(options:stream_id_is_text)',
+				},
+			],
+			callback: broadcastCallback(async (core, broadcastId, { options }) => {
+				let streamId: string;
+				if (options.stream_id_is_text) {
+					streamId = String(options.stream_id_text || '');
+				} else {
+					streamId = String(options.stream_id || '');
+				}
+
+				if (!streamId) {
+					throw new Error('Stream ID is required');
+				}
+
+				return core.bindStream(broadcastId, streamId);
 			}),
 		},
 	};

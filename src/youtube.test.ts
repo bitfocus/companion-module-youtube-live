@@ -59,13 +59,17 @@ const memory: StateMemory = {
 		sA: {
 			Id: 'sA',
 			Health: StreamHealth.Good,
+			Name: null,
 		},
 		sB: {
 			Id: 'sB',
 			Health: StreamHealth.Bad,
+			Name: null,
 		},
 	},
 	UnfinishedBroadcasts: [],
+	BoundStreams: {},
+	LastCreatedBroadcast: null,
 };
 
 const memoryUpdated: StateMemory = {
@@ -99,6 +103,8 @@ const memoryUpdated: StateMemory = {
 	},
 	Streams: {},
 	UnfinishedBroadcasts: [],
+	BoundStreams: {},
+	LastCreatedBroadcast: null,
 };
 
 describe('Queries', () => {
@@ -488,5 +494,100 @@ describe('Set description', () => {
 			instance.setDescription('bB', '2022-22-22T21:21:21', 'Broadcast B', 'Test description')
 		).rejects.toBeInstanceOf(Error);
 		expect(mock.liveBroadcasts.update).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('Create broadcast', () => {
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	test('success', async () => {
+		mock.liveBroadcasts.insert.mockImplementation(async () => {
+			return Promise.resolve({
+				data: { id: 'newBroadcast123' },
+			});
+		});
+		const result = await instance.createBroadcast({
+			title: 'Test Title',
+			scheduledStartTime: '2024-01-01T00:00:00Z',
+			privacyStatus: Visibility.Private,
+			description: 'Test description',
+			enableAutoStart: true,
+			enableAutoStop: false,
+			enableMonitorStream: true,
+		});
+		expect(result).toBe('newBroadcast123');
+		expect(mock.liveBroadcasts.insert).toHaveBeenCalledTimes(1);
+	});
+
+	test('failure - no ID returned', async () => {
+		mock.liveBroadcasts.insert.mockImplementation(async () => {
+			return Promise.resolve({
+				data: { id: null },
+			});
+		});
+		await expect(
+			instance.createBroadcast({
+				title: 'Test',
+				scheduledStartTime: '2024-01-01T00:00:00Z',
+				privacyStatus: Visibility.Private,
+			})
+		).rejects.toThrowError('Failed to create broadcast: no ID returned');
+	});
+});
+
+describe('List streams', () => {
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	test('success', async () => {
+		mock.liveStreams.list.mockImplementation(async () => {
+			return Promise.resolve({
+				data: {
+					items: [
+						{
+							id: 'stream1',
+							snippet: { title: 'My Stream' },
+							status: { healthStatus: { status: 'good' } },
+						},
+						{
+							id: 'stream2',
+							snippet: { title: undefined },
+							status: { healthStatus: { status: 'noData' } },
+						},
+					],
+				},
+			});
+		});
+		const result = await instance.listStreams();
+		expect(result).toStrictEqual({
+			stream1: { Id: 'stream1', Health: StreamHealth.Good, Name: 'My Stream' },
+			stream2: { Id: 'stream2', Health: StreamHealth.NoData, Name: null },
+		});
+		expect(mock.liveStreams.list).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe('Bind broadcast to stream', () => {
+	beforeEach(() => {
+		vi.resetAllMocks();
+	});
+
+	test('bind success', async () => {
+		mock.liveBroadcasts.bind.mockImplementation(async () => {
+			return Promise.resolve();
+		});
+		await expect(instance.bindBroadcastToStream('bA', 'sA')).resolves.toBeUndefined();
+		expect(mock.liveBroadcasts.bind).toHaveBeenCalledTimes(1);
+	});
+
+	test('unbind success', async () => {
+		mock.liveBroadcasts.bind.mockImplementation(async () => {
+			return Promise.resolve();
+		});
+		await expect(instance.bindBroadcastToStream('bA')).resolves.toBeUndefined();
+		expect(mock.liveBroadcasts.bind).toHaveBeenCalledTimes(1);
 	});
 });
