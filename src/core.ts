@@ -1,6 +1,4 @@
 import * as fs from 'node:fs/promises';
-import * as https from 'node:https';
-import * as http from 'node:http';
 import type { Broadcast, StateMemory, StreamMap } from './cache.js';
 import type { Logger } from './common.js';
 import { BroadcastLifecycle } from './lifecycle.js';
@@ -58,8 +56,8 @@ interface CreateBroadcastParameters {
 	templateId?: BroadcastID;
 
 	/**
-	 * A URL (http: or https:) or a file path to a JPEG/PNG thumbnail image to
-	 * associate with the broadcast.
+	 * A local file path to a JPEG/PNG thumbnail image to associate with the
+	 * broadcast.
 	 */
 	thumbnailPath?: string;
 
@@ -604,29 +602,25 @@ export class Core {
 
 	async setThumbnail(broadcastId: BroadcastID, imagePath: string): Promise<void> {
 		const maxSize = 2 * 1024 * 1024;
-		let imageData: Buffer;
-		let mimeType: string;
 
+		// Only local files are supported: Companion cancels actions that run
+		// longer than ~5s, so downloading remote images isn't reliably possible.
 		if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-			const result = await this.#fetchImageFromUrl(imagePath);
-			imageData = result.data;
-			mimeType = result.mimeType;
-		} else {
-			const stat = await fs.stat(imagePath);
-			if (!stat) {
-				throw new Error(`Thumbnail file not found or inaccessible: ${imagePath}`);
-			}
-			if (stat.size > maxSize) {
-				throw new Error(`Thumbnail file too large: ${stat.size} bytes (max 2MB)`);
-			}
-
-			imageData = await fs.readFile(imagePath);
-			mimeType = this.#detectMimeType(imageData, imagePath);
+			throw new Error(
+				`Remote thumbnail URLs are not supported; provide a local file path to a JPEG/PNG image (got: ${imagePath})`
+			);
 		}
 
-		if (imageData.length > maxSize) {
-			throw new Error(`Thumbnail data too large: ${imageData.length} bytes (max 2MB)`);
+		const stat = await fs.stat(imagePath).catch(() => null);
+		if (!stat) {
+			throw new Error(`Thumbnail file not found or inaccessible: ${imagePath}`);
 		}
+		if (stat.size > maxSize) {
+			throw new Error(`Thumbnail file too large: ${stat.size} bytes (max 2MB)`);
+		}
+
+		const imageData = await fs.readFile(imagePath);
+		const mimeType = this.#detectMimeType(imageData, imagePath);
 
 		if (mimeType !== 'image/jpeg' && mimeType !== 'image/png') {
 			throw new Error(`Invalid thumbnail type: ${mimeType} (must be JPEG or PNG)`);
@@ -650,57 +644,6 @@ export class Core {
 		await this.YouTube.bindBroadcastToStream(broadcastId);
 		this.Module.log('info', `Unbound stream from broadcast ${broadcastId}`);
 		await this.reloadEverything();
-	}
-
-	async #fetchImageFromUrl(url: string, remainingRedirects = 5): Promise<{ data: Buffer; mimeType: string }> {
-		return new Promise((resolve, reject) => {
-			const protocol = url.startsWith('https://') ? https : http;
-
-			const request = protocol.get(url, { timeout: 30000 }, (response) => {
-				if (
-					response.statusCode &&
-					response.statusCode >= 300 &&
-					response.statusCode < 400 &&
-					response.headers.location
-				) {
-					if (remainingRedirects <= 0) {
-						reject(new Error('Too many redirects'));
-						return;
-					}
-					this.#fetchImageFromUrl(response.headers.location, remainingRedirects - 1)
-						.then(resolve)
-						.catch(reject);
-					return;
-				}
-
-				if (response.statusCode !== 200) {
-					reject(new Error(`Failed to fetch image: HTTP ${response.statusCode}`));
-					return;
-				}
-
-				const chunks: Buffer[] = [];
-				response.on('data', (chunk: Buffer) => chunks.push(chunk));
-				response.on('end', () => {
-					const data = Buffer.concat(chunks);
-					const contentType = response.headers['content-type'] || '';
-					let mimeType = contentType.split(';')[0].trim();
-
-					if (mimeType !== 'image/jpeg' && mimeType !== 'image/png') {
-						mimeType = this.#detectMimeType(data, url);
-					}
-
-					resolve({ data, mimeType });
-				});
-				response.on('error', reject);
-			});
-
-			request.on('timeout', () => {
-				request.destroy();
-				reject(new Error('Request timeout'));
-			});
-
-			request.on('error', reject);
-		});
 	}
 
 	#detectMimeType(data: Buffer, path: string): string {

@@ -477,7 +477,7 @@ export function listActions({
 					type: 'textinput',
 					label: 'Thumbnail:',
 					id: 'thumbnail_path',
-					description: 'Local file path or URL to JPEG/PNG image (max 2MB)',
+					description: 'Local file path to a JPEG/PNG image (max 2MB)',
 					useVariables: { local: true },
 				},
 				{
@@ -670,10 +670,10 @@ export function listActions({
 				...selectFromAllBroadcasts,
 				{
 					type: 'textinput',
-					label: 'Image path or URL:',
+					label: 'Image path:',
 					id: 'image_path',
 					required: true,
-					description: 'Local file path or URL to JPEG/PNG image (max 2MB)',
+					description: 'Local file path to a JPEG/PNG image (max 2MB)',
 					useVariables: { local: true },
 				},
 			],

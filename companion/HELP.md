@@ -52,8 +52,8 @@ The module can create new broadcasts and manipulate existing ones.
   8601), privacy status, auto-start/auto-stop, thumbnail upload, and stream
   binding.
 - **Set broadcast thumbnail** - This action uploads and sets a custom thumbnail
-  image for a broadcast. Accepts a local file path or URL to a JPEG/PNG image
-  (max 2MB).
+  image for a broadcast. Accepts a local file path to a JPEG/PNG image (max
+  2MB).
 - **Bind stream to broadcast** - This action binds a video stream to a
   broadcast, which is required before going live. Select a stream from the
   dropdown or enter a stream ID manually.
