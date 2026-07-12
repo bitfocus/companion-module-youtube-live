@@ -301,7 +301,7 @@ export class YoutubeConnector implements YoutubeAPI {
 		const streamIds = Array.from(new Set(Object.values(broadcasts).map((broadcast) => broadcast.BoundStreamId)));
 
 		const response = await this.ApiClient.liveStreams.list({
-			part: ['status'],
+			part: ['snippet', 'status'],
 			id: streamIds as Array<string>,
 			maxResults: this.MaxBroadcasts,
 		});

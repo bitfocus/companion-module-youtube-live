@@ -59,7 +59,7 @@ const memory: StateMemory = {
 		sA: {
 			Id: 'sA',
 			Health: StreamHealth.Good,
-			Name: null,
+			Name: 'Stream A',
 		},
 		sB: {
 			Id: 'sB',
@@ -268,6 +268,7 @@ describe('Queries', () => {
 	test('get bound streams', async () => {
 		mock.liveStreams.list.mockImplementation(async ({ part, id: localID }) => {
 			expect(part).toContain('status');
+			expect(part).toContain('snippet');
 			expect(localID).toHaveLength(2);
 			Object.values(memory.Streams).forEach((item) => {
 				expect(localID).toContain(item.Id);
@@ -275,7 +276,7 @@ describe('Queries', () => {
 			return Promise.resolve({
 				data: {
 					items: [
-						{ id: 'sA', status: { healthStatus: { status: 'good' } } },
+						{ id: 'sA', snippet: { title: 'Stream A' }, status: { healthStatus: { status: 'good' } } },
 						{ id: 'sB', status: { healthStatus: { status: 'bad' } } },
 					],
 				},
