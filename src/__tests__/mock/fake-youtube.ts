@@ -23,6 +23,10 @@ type LiveBroadcastsMethod<Func extends keyof LiveBroadcasts, Params extends any[
 	Params
 >;
 
+type Thumbnails = youtube_v3.Youtube['thumbnails'];
+
+type ThumbnailsMethod<Func extends keyof Thumbnails, Params extends any[]> = APIMethod<Thumbnails, Func, Params>;
+
 export class FakeYouTube {
 	liveStreams = {
 		list: vi.fn<LiveStreamsMethod<'list', [youtube_v3.Params$Resource$Livestreams$List]>>(),
@@ -33,5 +37,10 @@ export class FakeYouTube {
 		insertCuepoint:
 			vi.fn<LiveBroadcastsMethod<'insertCuepoint', [youtube_v3.Params$Resource$Livebroadcasts$Insertcuepoint]>>(),
 		update: vi.fn<LiveBroadcastsMethod<'update', [youtube_v3.Params$Resource$Livebroadcasts$Update]>>(),
+		insert: vi.fn<LiveBroadcastsMethod<'insert', [youtube_v3.Params$Resource$Livebroadcasts$Insert]>>(),
+		bind: vi.fn<LiveBroadcastsMethod<'bind', [youtube_v3.Params$Resource$Livebroadcasts$Bind]>>(),
+	};
+	thumbnails = {
+		set: vi.fn<ThumbnailsMethod<'set', [youtube_v3.Params$Resource$Thumbnails$Set]>>(),
 	};
 }
