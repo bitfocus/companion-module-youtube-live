@@ -293,7 +293,7 @@ export function listConfigFields(instance: Pick<YoutubeInstance, 'label'>): Some
 <p>Then, and whenever YouTube requires you to reauthenticate:</p>
 
 <ol>
-	<li><a href="./instance/${instance.label}/authorize" target="_blank">Consent
+	<li>Click on this link to <a href="./instance/${instance.label}/authorize" target="_blank">Consent
 	  to YouTube letting Companion operate your broadcasts</a> using a Google
 	  account and selecting your channel.  (The full consent URL is also logged
 	  in connection logs when you click that link.)</li>
