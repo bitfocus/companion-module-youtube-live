@@ -76,6 +76,14 @@ describe('Variable declarations', () => {
 				}),
 			])
 		);
+
+		expect(result).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					variableId: 'broadcast_broadcastID_description',
+				}),
+			])
+		);
 	});
 
 	test('Unfinished variables added for each unfinished broadcast', () => {
@@ -138,11 +146,26 @@ describe('Variable values', () => {
 		expect(result).toHaveLength(0);
 	});
 
-	test('Lifecycle, health, visibility added for each broadcast', () => {
+	test('Lifecycle, health, visibility, description added for each broadcast', () => {
 		const result = exportVars(SampleMemory, 1);
 		expect(hasAny(result, 'broadcast_broadcastID_lifecycle')).toBeTruthy();
 		expect(hasAny(result, 'broadcast_broadcastID_health')).toBeTruthy();
 		expect(hasAny(result, 'broadcast_broadcastID_visibility')).toBeTruthy();
+		expect(hasAny(result, 'broadcast_broadcastID_description')).toBeTruthy();
+	});
+
+	test('Broadcast description is exported', () => {
+		const data = clone(SampleMemory);
+		data.Broadcasts.broadcastID.Description = 'Test description';
+		const result = getBroadcastVars(data.Broadcasts.broadcastID);
+		expect(result).toEqual(
+			expect.arrayContaining([
+									{
+										name: 'broadcast_broadcastID_description',
+										value: 'Test description',
+									},
+			])
+		);
 	});
 
 	test('Broadcasts without bound stream are handled', () => {
