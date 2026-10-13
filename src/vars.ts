@@ -34,7 +34,11 @@ export function declareVars(memory: StateMemory, unfinishedCnt: number): Compani
 			{
 				variableId: `broadcast_${item.Id}_visibility`,
 				name: `Visibility of the stream bound to broadcast titled '${item.Name}'`,
-			}
+			},
+			{
+				variableId: `broadcast_${item.Id}_description`,
+				name: `Description of broadcast titled '${item.Name}'`,
+			},
 		);
 	});
 
@@ -148,7 +152,7 @@ export function getBroadcastVars(broadcast: Broadcast): VariableContent[] {
 		value: broadcast.Visibility,
 	};
 
-	return [lifecycle, visibility];
+	return [lifecycle, visibility, description];
 }
 
 /**
