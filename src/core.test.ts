@@ -1,6 +1,9 @@
 import { afterAll, afterEach, beforeEach, describe, expect, type MockedObject, test, vi } from 'vitest';
 
 //require("leaked-handles");
+import * as fs from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import type { YoutubeAPI } from './youtube.js';
 import { type ModuleBase, Core } from './core.js';
 import { sleep } from './common.js';
@@ -37,6 +40,7 @@ describe('Miscellaneous', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [
@@ -54,6 +58,14 @@ describe('Miscellaneous', () => {
 					Visibility: Visibility.Private,
 				},
 			],
+			BoundStreams: {
+				sA: {
+					Id: 'sA',
+					Health: StreamHealth.Good,
+					Name: null,
+				},
+			},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
@@ -76,6 +88,7 @@ describe('Miscellaneous', () => {
 		expect(mockModule.reloadAll).toHaveBeenCalledWith(core.Cache);
 		expect(mockYT.listBroadcasts).toHaveBeenCalledTimes(1);
 		expect(mockYT.listBoundStreams).toHaveBeenCalledTimes(1);
+		expect(mockYT.listStreams).toHaveBeenCalledTimes(1);
 	});
 
 	test('Periodic callback works', async () => {
@@ -180,9 +193,12 @@ describe('Starting tests on broadcasts', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [],
+			BoundStreams: {},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
@@ -277,9 +293,12 @@ describe('Going live with broadcasts', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [],
+			BoundStreams: {},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
@@ -380,9 +399,12 @@ describe('Finishing live broadcasts', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [],
+			BoundStreams: {},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
@@ -446,9 +468,12 @@ describe('Toggling live broadcasts', () => {
 				sA: {
 					Id: 'sA',
 					Health: StreamHealth.Good,
+					Name: null,
 				},
 			},
 			UnfinishedBroadcasts: [],
+			BoundStreams: {},
+			LastCreatedBroadcast: null,
 		};
 		mockYT = vi.mocked(makeMockYT(memory));
 		mockModule = vi.mocked(makeMockModule());
@@ -538,5 +563,62 @@ describe('Toggling live broadcasts', () => {
 			memory.Broadcasts.bA.Status = key;
 			await expect(core.toggleBroadcast('bA')).rejects.toBeInstanceOf(Error);
 		}
+	});
+});
+
+describe('Setting broadcast thumbnails', () => {
+	const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+	const JPEG_MAGIC = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
+
+	let mockYT: MockedObject<YoutubeAPI>;
+	let mockModule: MockedObject<ModuleBase>;
+	let core: Core;
+	let tmpDir: string;
+
+	beforeEach(async () => {
+		const memory: StateMemory = {
+			Broadcasts: {},
+			Streams: {},
+			UnfinishedBroadcasts: [],
+			BoundStreams: {},
+			LastCreatedBroadcast: null,
+		};
+		mockYT = vi.mocked(makeMockYT(memory));
+		mockModule = vi.mocked(makeMockModule());
+		core = new Core(mockModule, mockYT, 100, 100);
+		tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'yt-thumb-'));
+	});
+
+	afterEach(async () => {
+		core.destroy();
+		await fs.rm(tmpDir, { recursive: true, force: true });
+	});
+
+	async function writeTmp(name: string, data: Buffer): Promise<string> {
+		const filePath = path.join(tmpDir, name);
+		await fs.writeFile(filePath, data);
+		return filePath;
+	}
+
+	test.each<[string, string, Buffer]>([
+		// The first two prove magic bytes win over a contradicting extension;
+		// the last proves the extension is the fallback when magic bytes are absent.
+		['mislabeled.jpg', 'image/png', PNG_MAGIC],
+		['mislabeled.png', 'image/jpeg', JPEG_MAGIC],
+		['image.png', 'image/png', Buffer.from('not really a png')],
+	])('Uploads %s as %s', async (name, mime, data) => {
+		await core.setThumbnail('bId', await writeTmp(name, data));
+		expect(mockYT.setThumbnail).toHaveBeenCalledWith('bId', expect.any(Buffer), mime);
+	});
+
+	test.each<[string, () => Promise<string>, RegExp]>([
+		['a remote http URL', async () => 'http://example.com/thumb.png', /Remote thumbnail URLs are not supported/],
+		['a remote https URL', async () => 'https://example.com/thumb.jpg', /Remote thumbnail URLs are not supported/],
+		['a nonexistent path', async () => path.join(tmpDir, 'nope.png'), /not found or inaccessible/],
+		['a non-image file', async () => writeTmp('notes.txt', Buffer.from('plain text')), /Invalid thumbnail type/],
+		['a file larger than 2MB', async () => writeTmp('big.png', Buffer.alloc(2 * 1024 * 1024 + 1)), /too large/],
+	])('Rejects %s without calling the YouTube API', async (_desc, makePath, error) => {
+		await expect(core.setThumbnail('bId', await makePath())).rejects.toThrow(error);
+		expect(mockYT.setThumbnail).not.toHaveBeenCalled();
 	});
 });
