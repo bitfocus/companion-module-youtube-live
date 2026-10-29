@@ -355,6 +355,7 @@ export function listActions({
 					tooltip: 'The separator must contain at least one character',
 					useVariables: true,
 					regex: '/^.{1,}$/',
+					default: ' - ',
 					isVisibleExpression: `!$(options:${DefaultSeparatorOptionId})`,
 				},
 			],
